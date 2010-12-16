@@ -14,21 +14,14 @@ package pascal.goap.Scenario;
 
 import java.util.ArrayList;
 
+import pascal.goap.Scenario.Helper.Helper;
 import pascal.goap.pathfinding.NavNode;
 import pascal.goap.pathfinding.NavigationMap;
 
-import pascal.goap.Scenario.Helper.Helper;
-
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
-import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
-import com.jme.scene.Spatial;
 import com.jme.scene.shape.Box;
-import com.jme.scene.shape.Sphere;
-import com.jme.scene.state.MaterialState;
-import com.jme.system.DisplaySystem;
 
 
 /**

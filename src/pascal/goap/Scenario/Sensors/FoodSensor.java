@@ -12,19 +12,11 @@
 
 package pascal.goap.Scenario.Sensors;
 
-import java.awt.Point;
-
+import pascal.goap.Agent.ISensor;
+import pascal.goap.Agent.WorkingMemory;
 import pascal.goap.Scenario.BaseGame;
 import pascal.goap.Scenario.MarketStand;
 import pascal.goap.Scenario.Pedestrian;
-import pascal.goap.Scenario.Helper.Helper;
-
-import pascal.goap.pathfinding.NavNode;
-
-import pascal.goap.Agent.Agent;
-import pascal.goap.Agent.ISensor;
-import pascal.goap.Agent.MemoryObject;
-import pascal.goap.Agent.WorkingMemory;
 
 /**
  * Sensor which searches the Agents visualRange for stands which could provide food

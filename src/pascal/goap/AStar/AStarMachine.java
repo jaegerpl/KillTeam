@@ -1,8 +1,6 @@
 package pascal.goap.AStar;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.TreeMap;
 
 /**
  * A path finder implementation that uses the AStar heuristic based algorithm to

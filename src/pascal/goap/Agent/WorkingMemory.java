@@ -14,8 +14,6 @@ package pascal.goap.Agent;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import pascal.goap.GOAP.WorldState;
-
 /**
  * The WorkingMemory stores all MemoryObjects collected through sensors.
  * @author Klinge

@@ -2,9 +2,9 @@ package de.lunaticsoft.combatarena.api.testteam;
 
 import pascal.goap.Agent.GlobalKIAgent;
 import pascal.goap.Agent.GlobalKIBlackboard;
-import pascal.goap.GOAP.Action;
-import pascal.goap.GOAP.Goal;
-import pascal.goap.GOAP.IGOAPListener;
+import pascal.goap.Goap.Action;
+import pascal.goap.Goap.Goal;
+import pascal.goap.Goap.IGOAPListener;
 
 public class GlobalKI  extends GlobalKIAgent implements IGOAPListener {
 	
@@ -29,5 +29,4 @@ public class GlobalKI  extends GlobalKIAgent implements IGOAPListener {
 	public GlobalKIBlackboard getBlackBoard(){
 		return blackboard;
 	}
-
 }

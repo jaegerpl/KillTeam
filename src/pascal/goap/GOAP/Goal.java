@@ -10,10 +10,9 @@
  * this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package pascal.goap.GOAP;
+package pascal.goap.Goap;
 
 import pascal.goap.Scenario.GoapActionSystem;
-import pascal.goap.AStar.Node;
 
 /**
  * Abstract base class for all goals the agent can have.

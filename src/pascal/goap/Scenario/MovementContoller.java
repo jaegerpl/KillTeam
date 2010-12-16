@@ -14,22 +14,17 @@ package pascal.goap.Scenario;
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
 
-
 import java.util.ArrayList;
 import java.util.Random;
 
-import pascal.goap.pathfinding.NavNode;
-
 import pascal.goap.AStar.AStarMachine;
 import pascal.goap.Agent.TankBlackboard;
-
 import pascal.goap.Scenario.Helper.Helper;
+import pascal.goap.pathfinding.NavNode;
 
 import com.jme.intersection.BoundingPickResults;
-import com.jme.intersection.PickData;
 import com.jme.intersection.PickResults;
 import com.jme.math.Ray;
-import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Controller;

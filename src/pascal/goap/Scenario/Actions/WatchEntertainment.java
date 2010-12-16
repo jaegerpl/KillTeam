@@ -11,10 +11,7 @@
  */
 package pascal.goap.Scenario.Actions;
 
-import pascal.goap.GOAP.Action;
-import pascal.goap.GOAP.PropertyType;
-import pascal.goap.GOAP.TankWorldProperty;
-import pascal.goap.GOAP.WorldStateSymbol;
+import pascal.goap.Goap.Action;
 import pascal.goap.Scenario.GoapActionSystem;
 
 /**

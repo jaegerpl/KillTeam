@@ -9,15 +9,13 @@
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, see <http://www.gnu.org/licenses/>.
  */
-package pascal.goap.GOAP;
+package pascal.goap.Goap;
 
 import java.util.ArrayList;
 
 import pascal.goap.AStar.IMap;
 import pascal.goap.AStar.IMover;
 import pascal.goap.AStar.Node;
-import pascal.goap.Agent.Agent;
-import pascal.goap.Agent.WorkingMemory;
 
 /**
  * The GOAPMap is the central class in the process of formulating a new sequence of actions

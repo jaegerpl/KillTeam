@@ -10,18 +10,14 @@
  * this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package pascal.goap.GOAP;
+package pascal.goap.Goap;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
-
-import com.jme.math.Vector3f;
 
 import pascal.goap.pathfinding.NavNode;
 
-import pascal.goap.Agent.Agent;
+import com.jme.math.Vector3f;
 
 /**
  * The WorldState is basically just a collection of WorldStateSymbols

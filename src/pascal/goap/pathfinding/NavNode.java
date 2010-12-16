@@ -12,11 +12,11 @@
 
 package pascal.goap.pathfinding;
 
-import pascal.goap.Scenario.TileProperty;
 import pascal.goap.AStar.IMap;
 import pascal.goap.AStar.IMover;
 import pascal.goap.AStar.Node;
 import pascal.goap.AStar.heuristics.NavClosestHeuristic;
+import pascal.goap.Scenario.TileProperty;
 
 /**
  * A node in a navMesh. Is used in the A* search to find a valid navigation

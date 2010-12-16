@@ -1,6 +1,5 @@
 package pascal.goap.AStar;
 
-import pascal.goap.AStar.Node;
 
 /**
  * The description of a class providing a cost for a given tile based

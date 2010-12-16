@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import pascal.goap.Agent.Agent;
-import pascal.goap.GOAP.Action;
-import pascal.goap.GOAP.Goal;
-import pascal.goap.GOAP.IGOAPListener;
+import pascal.goap.Goap.Action;
+import pascal.goap.Goap.Goal;
+import pascal.goap.Goap.IGOAPListener;
 import pascal.goap.Scenario.GoapActionSystem;
 import pascal.goap.Scenario.GoapController;
 import pascal.goap.Scenario.Actions.GotoLocation;

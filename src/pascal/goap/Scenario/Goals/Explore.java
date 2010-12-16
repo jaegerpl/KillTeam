@@ -14,12 +14,12 @@ package pascal.goap.Scenario.Goals;
 
 import java.util.ArrayList;
 
-import pascal.goap.GOAP.GOAPNode;
-import pascal.goap.GOAP.Goal;
-import pascal.goap.GOAP.PropertyType;
-import pascal.goap.GOAP.TankWorldProperty;
-import pascal.goap.GOAP.WorldState;
-import pascal.goap.GOAP.WorldStateSymbol;
+import pascal.goap.Goap.GOAPNode;
+import pascal.goap.Goap.Goal;
+import pascal.goap.Goap.PropertyType;
+import pascal.goap.Goap.TankWorldProperty;
+import pascal.goap.Goap.WorldState;
+import pascal.goap.Goap.WorldStateSymbol;
 import pascal.goap.Scenario.GoapActionSystem;
 import pascal.goap.Scenario.Goals.interfaces.ITankGoal;
 

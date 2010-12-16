@@ -5,10 +5,6 @@
 
 package pascal.goap.AStar;
 
-import java.util.ArrayList;
-import java.util.UUID;
-
-import pascal.goap.AStar.heuristics.*;
 
 /**
  * A single node in the search graph

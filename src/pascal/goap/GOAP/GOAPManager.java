@@ -10,7 +10,7 @@
  * this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package pascal.goap.GOAP;
+package pascal.goap.Goap;
 
 
 import java.util.ArrayList;
@@ -19,9 +19,6 @@ import java.util.Vector;
 import pascal.goap.AStar.AStarMachine;
 import pascal.goap.AStar.IMover;
 import pascal.goap.AStar.SortedList;
-import pascal.goap.GOAP.GOAPMap;
-import pascal.goap.GOAP.GOAPNode;
-import pascal.goap.GOAP.Goal;
 
 
 public class GOAPManager implements IMover{

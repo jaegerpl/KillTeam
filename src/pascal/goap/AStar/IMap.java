@@ -1,6 +1,5 @@
 package pascal.goap.AStar;
 
-import pascal.goap.AStar.Node;
 import java.util.ArrayList;
 
 /**

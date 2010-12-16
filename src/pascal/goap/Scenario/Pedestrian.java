@@ -5,9 +5,9 @@ import java.util.Random;
 
 import pascal.goap.Agent.Agent;
 import pascal.goap.Agent.MemoryObject;
-import pascal.goap.GOAP.Action;
-import pascal.goap.GOAP.Goal;
-import pascal.goap.GOAP.IGOAPListener;
+import pascal.goap.Goap.Action;
+import pascal.goap.Goap.Goal;
+import pascal.goap.Goap.IGOAPListener;
 import pascal.goap.Scenario.Actions.WatchEntertainment;
 import pascal.goap.Scenario.Goals.Explore;
 import pascal.goap.Scenario.Sensors.ActionSensor;

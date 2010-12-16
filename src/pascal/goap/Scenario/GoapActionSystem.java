@@ -16,11 +16,11 @@ package pascal.goap.Scenario;
 import java.util.ArrayList;
 
 import pascal.goap.Agent.Agent;
-import pascal.goap.Agent.TankBlackboard;
 import pascal.goap.Agent.IActionSystem;
 import pascal.goap.Agent.MemoryObject;
+import pascal.goap.Agent.TankBlackboard;
 import pascal.goap.Agent.WorkingMemory;
-import pascal.goap.GOAP.GOAPManager;
+import pascal.goap.Goap.GOAPManager;
 
 /**
  * GOAPManager with some extra getters and setters.

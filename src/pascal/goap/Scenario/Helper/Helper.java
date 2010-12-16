@@ -12,17 +12,12 @@
 
 package pascal.goap.Scenario.Helper;
 
+import pascal.goap.Scenario.BaseGame;
 import pascal.goap.pathfinding.NavNode;
 import pascal.goap.pathfinding.NavigationMap;
 
-import pascal.goap.AStar.IMap;
-
-
-import pascal.goap.Scenario.BaseGame;
-
 import com.jme.math.FastMath;
 import com.jme.math.Vector3f;
-import com.jme.scene.Spatial;
 
 /**
  * Helper class which provides methods to map 2d NavNode coordinates to

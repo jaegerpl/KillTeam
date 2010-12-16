@@ -12,8 +12,11 @@
 package pascal.goap.Agent;
 
 import java.util.ArrayList;
+
+import pascal.goap.pathfinding.NavNode;
+import pascal.goap.pathfinding.NavigationMap;
+
 import com.jme.math.Vector3f;
-import pascal.goap.pathfinding.*;
 
 /**
  * Class which holds all data that should be shared between different modules

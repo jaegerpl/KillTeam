@@ -11,10 +11,10 @@
  */
 package pascal.goap.Scenario.Sensors;
 
-import pascal.goap.Scenario.BaseGame;
-import pascal.goap.Scenario.Pedestrian;
 import pascal.goap.Agent.ISensor;
 import pascal.goap.Agent.WorkingMemory;
+import pascal.goap.Scenario.BaseGame;
+import pascal.goap.Scenario.Pedestrian;
 
 /**
  * Sensor which searches for other Agents within an certain range in order to be able to be informed

@@ -1,9 +1,9 @@
 package pascal.goap.AStar.heuristics;
 
-import pascal.goap.pathfinding.NavNode;
 import pascal.goap.AStar.AStarHeuristic;
 import pascal.goap.AStar.IMap;
 import pascal.goap.AStar.Node;
+import pascal.goap.pathfinding.NavNode;
 
 /**
  * A heuristic that uses the tile that is closest to the target

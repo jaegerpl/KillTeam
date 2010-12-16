@@ -10,7 +10,7 @@
  * this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package pascal.goap.GOAP;
+package pascal.goap.Goap;
 
 import java.util.ArrayList;
 
