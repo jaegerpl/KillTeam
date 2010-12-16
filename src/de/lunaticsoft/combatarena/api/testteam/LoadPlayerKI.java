@@ -23,16 +23,23 @@ import de.lunaticsoft.combatarena.api.interfaces.ILoadPlayerKI;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 
 public class LoadPlayerKI implements ILoadPlayerKI {
+	
+	private GlobalKI globalKI = new GlobalKI();
+	private IPlayer tank1 = new PascalPlayer("Tank1", globalKI);
+	private IPlayer tank2 = new PascalPlayer("Tank2", globalKI);
+	private IPlayer tank3 = new PascalPlayer("Tank3", globalKI);
+	private IPlayer tank4 = new PascalPlayer("Tank4", globalKI);
+	private IPlayer tank5 = new PascalPlayer("Tank5", globalKI);
 
 	public IPlayer getKI(int index, String name) {
 		switch (index) {
-		case 1:
-		case 2:
-		case 3:
-		case 4:
-		case 5:
+		case 1: return tank1;
+		case 2: return tank2;
+		case 3: return tank3;
+		case 4: return tank4;
+		case 5: return tank5;
 		default:
-			return new TestPlayer(name);
+			return tank1;
 		}
 	}
 }

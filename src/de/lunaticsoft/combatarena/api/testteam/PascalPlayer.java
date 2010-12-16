@@ -20,6 +20,17 @@
 package de.lunaticsoft.combatarena.api.testteam;
 
 import java.util.ArrayList;
+import java.util.Random;
+
+import pascal.goap.Agent.Agent;
+import pascal.goap.GOAP.Action;
+import pascal.goap.GOAP.Goal;
+import pascal.goap.GOAP.IGOAPListener;
+import pascal.goap.Scenario.GoapActionSystem;
+import pascal.goap.Scenario.GoapController;
+import pascal.goap.Scenario.Actions.GotoLocation;
+import pascal.goap.Scenario.Actions.WatchEntertainment;
+import pascal.goap.Scenario.Goals.Explore;
 
 import com.jme.math.FastMath;
 import com.jme.math.Vector3f;
@@ -29,7 +40,7 @@ import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
 
-public class TestPlayer implements IPlayer {
+public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 
 	private IWorldInstance world;
 	private Vector3f direction;
@@ -46,9 +57,27 @@ public class TestPlayer implements IPlayer {
 	// my variables
 	private Vector3f startPos;
 	private boolean turnPointReached= false;
+	
+	
+	private static Random r = new Random();
+		
+	
+	// GOAP STUFF
+	private final GoapController gc = new GoapController((GoapActionSystem)actionSystem);
+	private GlobalKI globalKI;
 
-	public TestPlayer(String name) {
+	public PascalPlayer(String name, GlobalKI globalKI) {
 		this.name = name;
+		
+		// GOAP STUFF
+		this.globalKI = globalKI;
+		blackboard.name = name; // just for debugging
+		((GoapActionSystem)actionSystem).addGOAPListener(this);
+		actionSystem = new GoapActionSystem(this, blackboard,memory);	
+		
+		generateActions();
+		generateGoals();
+		generateRandomDesires();
 	}
 
 	@Override
@@ -58,6 +87,9 @@ public class TestPlayer implements IPlayer {
 
 	@Override
 	public void update(float interpolation) {
+		// GOAP STUFF
+		gc.update(interpolation);
+		
 		// current position
 		pos = world.getMyPosition();
 		if (!stop) {
@@ -148,7 +180,8 @@ public class TestPlayer implements IPlayer {
 
 	@Override
 	public void die() {
-		// damn i died....
+		// GOAP STUFF
+		globalKI.getBlackBoard().tanksAlive -= 1; // the global blackboard
 	}
 
 	@Override
@@ -194,9 +227,35 @@ public class TestPlayer implements IPlayer {
 		startPos = world.getMyPosition();
 		direction = new Vector3f(25, 0, 25);
 		stop = false;
+		
+		// GOAP STUFF
+		globalKI.getBlackBoard().tanksAlive += 1;// the global blackboard
 	}
 
 	public String getTeamName() {
 		return name;
+	}
+
+	@Override
+	public void actionChangedEvent(Object sender, Action oldAction,	Action newAction) {
+		// TODO Auto-generated method stub		
+	}
+
+	@Override
+	public void goalChangedEvent(Object sender, Goal oldGoal, Goal newGoal) {
+		// TODO Auto-generated method stub		
+	}
+	
+	private void generateGoals(){
+		((GoapActionSystem)actionSystem).addGoal(new Explore("Explore",0.6f, (GoapActionSystem) actionSystem));
+	}
+	
+	private void generateActions(){			
+		((GoapActionSystem)actionSystem).addAction(new GotoLocation((GoapActionSystem) this.actionSystem,"GoToLocation",1.0f));
+		((GoapActionSystem)actionSystem).addAction(new WatchEntertainment((GoapActionSystem) this.actionSystem,"WatchEntertianment",1.0f));
+	}
+	
+	private void generateRandomDesires(){
+//		((GoapActionSystem)actionSystem).currentWorldState.add(new WorldStateSymbol<Float>(TankWorldProperty.Boredom, r.nextFloat() % 1.0f, PropertyType.Float));
 	}
 }
