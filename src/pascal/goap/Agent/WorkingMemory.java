@@ -21,7 +21,7 @@ import java.util.HashMap;
  */
 public class WorkingMemory {
 	
-	public HashMap<String,ArrayList<MemoryObject>> memoryObjects = new HashMap<String, ArrayList<MemoryObject>>();
+	public HashMap<MemoryObjectType, ArrayList<MemoryObject>> memoryObjects = new HashMap<MemoryObjectType, ArrayList<MemoryObject>>();
 	
 	/**
 	 * The update method updates all MemoryObjects within the WorkingMemory
@@ -33,7 +33,7 @@ public class WorkingMemory {
 		ArrayList<MemoryObject> deleteList = new ArrayList<MemoryObject>();
 		
 		//the believe of each memorObject decreases over time if it is not renewed
-		for(String key : memoryObjects.keySet())
+		for(MemoryObjectType key : memoryObjects.keySet())
 			for(MemoryObject m : memoryObjects.get(key))
 			{
 				//Persistent memories do not get weaker over time

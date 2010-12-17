@@ -111,27 +111,27 @@ public class Pedestrian extends Agent implements IGOAPListener{
 	
     private void createNavLocations(){
     	
-		for(Vector3f exit : BaseGame.entrances)
-		{
-			MemoryObject o = new MemoryObject(1.0f,"Exit", exit);
-			o.persistend = true;
-			memory.addMemory(o);
-		}
-
-		MemoryObject i = new MemoryObject(1.0f,"Stroll", new Vector3f(10 * BaseGame.TILESIZE + BaseGame.TILESIZE / 2, 0, 12* BaseGame.TILESIZE + BaseGame.TILESIZE / 2));
-		MemoryObject k = new MemoryObject(1.0f,"Stroll", new Vector3f(30 * BaseGame.TILESIZE+ BaseGame.TILESIZE / 2, 0, 12* BaseGame.TILESIZE+ BaseGame.TILESIZE / 2));
-		//MemoryObject v = new MemoryObject(1.0f,"Stroll", new Vector3f(20 * BaseGame.TILESIZE+ BaseGame.TILESIZE / 2, 0, 35* BaseGame.TILESIZE+ BaseGame.TILESIZE / 2));
-		MemoryObject c = new MemoryObject(1.0f,"Stroll", new Vector3f(30 * BaseGame.TILESIZE+ BaseGame.TILESIZE / 2, 0, 28* BaseGame.TILESIZE+ BaseGame.TILESIZE / 2));
-		MemoryObject j = new MemoryObject(1.0f,"Stroll", new Vector3f(10 * BaseGame.TILESIZE+ BaseGame.TILESIZE / 2, 0, 28* BaseGame.TILESIZE+ BaseGame.TILESIZE / 2));
-		//MemoryObject n = new MemoryObject(1.0f,"Food",Helper.navNodeToLocalCords(BaseGame.foodStands.get(0).getFreeSpots().get(0)));
-		i.persistend = true;
-		k.persistend = true;
-		memory.addMemory(i);
-		memory.addMemory(k);	
-		c.persistend = true;
-		memory.addMemory(c);
-		j.persistend = true;
-		memory.addMemory(j);
+//		for(Vector3f exit : BaseGame.entrances)
+//		{
+//			MemoryObject o = new MemoryObject(1.0f,"Exit", exit);
+//			o.persistend = true;
+//			memory.addMemory(o);
+//		}
+//
+//		MemoryObject i = new MemoryObject(1.0f,"Stroll", new Vector3f(10 * BaseGame.TILESIZE + BaseGame.TILESIZE / 2, 0, 12* BaseGame.TILESIZE + BaseGame.TILESIZE / 2));
+//		MemoryObject k = new MemoryObject(1.0f,"Stroll", new Vector3f(30 * BaseGame.TILESIZE+ BaseGame.TILESIZE / 2, 0, 12* BaseGame.TILESIZE+ BaseGame.TILESIZE / 2));
+//		//MemoryObject v = new MemoryObject(1.0f,"Stroll", new Vector3f(20 * BaseGame.TILESIZE+ BaseGame.TILESIZE / 2, 0, 35* BaseGame.TILESIZE+ BaseGame.TILESIZE / 2));
+//		MemoryObject c = new MemoryObject(1.0f,"Stroll", new Vector3f(30 * BaseGame.TILESIZE+ BaseGame.TILESIZE / 2, 0, 28* BaseGame.TILESIZE+ BaseGame.TILESIZE / 2));
+//		MemoryObject j = new MemoryObject(1.0f,"Stroll", new Vector3f(10 * BaseGame.TILESIZE+ BaseGame.TILESIZE / 2, 0, 28* BaseGame.TILESIZE+ BaseGame.TILESIZE / 2));
+//		//MemoryObject n = new MemoryObject(1.0f,"Food",Helper.navNodeToLocalCords(BaseGame.foodStands.get(0).getFreeSpots().get(0)));
+//		i.persistend = true;
+//		k.persistend = true;
+//		memory.addMemory(i);
+//		memory.addMemory(k);	
+//		c.persistend = true;
+//		memory.addMemory(c);
+//		j.persistend = true;
+//		memory.addMemory(j);
     }
 	
 	public Spatial getModel(){

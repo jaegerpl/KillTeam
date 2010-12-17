@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import pascal.goap.Agent.Agent;
+import pascal.goap.Agent.MemoryObject;
+import pascal.goap.Agent.MemoryObjectType;
 import pascal.goap.Goap.Action;
 import pascal.goap.Goap.Goal;
 import pascal.goap.Goap.IGOAPListener;
@@ -71,9 +73,13 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 		
 		// GOAP STUFF
 		this.globalKI = globalKI;
+		if(!globalKI.worldIsSet){
+			globalKI.setWorldInstance(world);
+			globalKI.scanWorldSize();
+		}
 		blackboard.name = name; // just for debugging
-		((GoapActionSystem)actionSystem).addGOAPListener(this);
 		actionSystem = new GoapActionSystem(this, blackboard,memory);	
+		((GoapActionSystem)actionSystem).addGOAPListener(this);
 		
 		generateActions();
 		generateGoals();
@@ -110,7 +116,17 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 			}
 			lastPos = pos;
 		}
+		
+		world.getMyDirection();
+		Vector3f pos = world.getMyPosition();
+		world.getTerrainNormal(pos);
+		world.isPassable(pos);
+		world.isPassableNormal(pos);
+		world.isWater(pos);
+		world.stop(); //????
+		
 	}
+	
 
 	@Override
 	public void setWorldInstance(IWorldInstance world) {
@@ -118,25 +134,24 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 	}
 
 	/**
-	 * y = speed * time * sin(angle) - (gravity / 2) * time^2 y -> 0 0 =
-	 * speed * time * sin(angle) - (gravity / 2) * time^2<br>
+	 * y = speed * time * sin(angle) - (gravity / 2) * time^2 y -> 0 <br>
+	 * 0 = speed * time * sin(angle) - (gravity / 2) * time^2<br>
 	 * <br>
-	 * distance = speed * time * cos(angle) speed = distance / (time *
-	 * cos(angle))<br>
+	 * distance = speed * time * cos(angle)<br> 
+	 * speed = distance / (time * cos(angle))<br>
 	 * <br>
-	 * einsetzen: <br>0 = (distance / (time * cos(angle))) * time * sin(angle) -
-	 * (gravity / 2) * time^2 <br>umstellen und 'time' kürzen: <br>0 = (distance *
-	 * (sin(angle) / cos(angle))) - (gravity / 2) * time^2 sin(angle) /
-	 * cos(angle) <br>-> tan(angle) 0 = (distance * tan(angle)) - (gravity / 2)
-	 * * time^2 | (gravity / 2) (gravity / 2) <br>-> 49.05f 0 = (distance *
-	 * tan(angle)) - (gravity / 2) * time^2<br>
+	 * einsetzen: <br>
+	 * 0 = (distance / (time * cos(angle))) * time * sin(angle) - (gravity / 2) * time^2 <br>
+	 * umstellen und 'time' kürzen: <br>
+	 * 0 = (distance * (sin(angle) / cos(angle))) - (gravity / 2) * time^2 sin(angle) / cos(angle) <br>
+	 * -> tan(angle) 0 = (distance * tan(angle)) - (gravity / 2)* time^2 | (gravity / 2) (gravity / 2) <br>
+	 * -> 49.05f 0 = (distance * tan(angle)) - (gravity / 2) * time^2<br>
 	 * <br>
-	 * time^2 = (distance / 45.05f) * tan(angle) time = sqrt((distance /
-	 * 45.05f) * tan(angle))<br>
+	 * time^2 = (distance / 45.05f) * tan(angle) time = sqrt((distance / 45.05f) * tan(angle))<br>
 	 * <br>
-	 * distance = speed * time * cos(angle) umstellen: speed = distance /
-	 * (cos(angle) * time)<br>
-	 * <br>
+	 * distance = speed * time * cos(angle) <br>
+	 * umstellen:<br> 
+	 * speed = distance / (cos(angle) * time)<br>
 	 */
 	public float getSpeed(float angleDeg, float distance) {
 		// Bogenmaß
@@ -185,40 +200,12 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 	}
 
 	@Override
-	public void perceive(ArrayList<IWorldObject> worldObjects) {
-		for (IWorldObject worldObject : worldObjects) {
-			switch (worldObject.getType()) {
-			case Competitor:
-				// ATTACK
-//				if (!worldObject.getColor().equals(color)) {
-//					Vector3f direction = world.getMyPosition().clone().subtractLocal(worldObject.getPosition().clone());
-//					float distance = world.getMyPosition().distance(worldObject.getPosition());
-//					if (distance < 50) {
-//						world.move(direction);
-//					} else if (distance > 54) {
-//						world.move(direction.negateLocal());
-//					} else {
-//						world.stop();
-//						stop = true;
-//						world.shoot(direction.negateLocal(), distance, 1f);
-//					}
-//				}
-				
-				break;
-			case Hangar:
-				System.out.println("Hanger attack");
-				// ATTACK			
-				float distance = world.getMyPosition().distance(worldObject.getPosition());
-				world.shoot(worldObject.getPosition(), getSpeed(30, distance), 30);
-				break;
-			case Item:
-				// COLLECT
-				break;
-			default:
-				System.out.println("No World Object found: stop = false");
-				stop = false;
-				break;
-			}
+	public void perceive(ArrayList<IWorldObject> worldObjects) {	
+		// move WorldObjects into WorkingMemory
+		for (IWorldObject wO : worldObjects) {
+			// confidence of memoryObjects will decrease over time
+			MemoryObject memo = new MemoryObject(1.0f, new MemoryObjectType(wO.getType(), wO.getColor()), wO.getPosition());
+			memory.addMemory(memo);
 		}
 	}
 
@@ -230,6 +217,7 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 		
 		// GOAP STUFF
 		globalKI.getBlackBoard().tanksAlive += 1;// the global blackboard
+		blackboard.direction = direction;
 	}
 
 	public String getTeamName() {

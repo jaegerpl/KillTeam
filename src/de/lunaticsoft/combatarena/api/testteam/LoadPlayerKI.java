@@ -26,7 +26,7 @@ import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 public class LoadPlayerKI implements ILoadPlayerKI {
 	
 	private GlobalKI globalKI = new GlobalKI();
-	private IPlayer tank1 = (IPlayer) new PascalPlayer("Tank1", globalKI);
+	private IPlayer tank1 = new PascalPlayer("Tank1", globalKI);
 	private IPlayer tank2 = new PascalPlayer("Tank2", globalKI);
 	private IPlayer tank3 = new PascalPlayer("Tank3", globalKI);
 	private IPlayer tank4 = new PascalPlayer("Tank4", globalKI);

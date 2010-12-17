@@ -86,25 +86,24 @@ public class TestPlayer implements IPlayer {
 	}
 
 	/**
-	 * y = speed * time * sin(angle) - (gravity / 2) * time^2 y -> 0 0 =
-	 * speed * time * sin(angle) - (gravity / 2) * time^2<br>
+	 * y = speed * time * sin(angle) - (gravity / 2) * time^2 y -> 0 <br>
+	 * 0 = speed * time * sin(angle) - (gravity / 2) * time^2<br>
 	 * <br>
-	 * distance = speed * time * cos(angle) speed = distance / (time *
-	 * cos(angle))<br>
+	 * distance = speed * time * cos(angle)<br> 
+	 * speed = distance / (time * cos(angle))<br>
 	 * <br>
-	 * einsetzen: <br>0 = (distance / (time * cos(angle))) * time * sin(angle) -
-	 * (gravity / 2) * time^2 <br>umstellen und 'time' kürzen: <br>0 = (distance *
-	 * (sin(angle) / cos(angle))) - (gravity / 2) * time^2 sin(angle) /
-	 * cos(angle) <br>-> tan(angle) 0 = (distance * tan(angle)) - (gravity / 2)
-	 * * time^2 | (gravity / 2) (gravity / 2) <br>-> 49.05f 0 = (distance *
-	 * tan(angle)) - (gravity / 2) * time^2<br>
+	 * einsetzen: <br>
+	 * 0 = (distance / (time * cos(angle))) * time * sin(angle) - (gravity / 2) * time^2 <br>
+	 * umstellen und 'time' kürzen: <br>
+	 * 0 = (distance * (sin(angle) / cos(angle))) - (gravity / 2) * time^2 sin(angle) / cos(angle) <br>
+	 * -> tan(angle) 0 = (distance * tan(angle)) - (gravity / 2)* time^2 | (gravity / 2) (gravity / 2) <br>
+	 * -> 49.05f 0 = (distance * tan(angle)) - (gravity / 2) * time^2<br>
 	 * <br>
-	 * time^2 = (distance / 45.05f) * tan(angle) time = sqrt((distance /
-	 * 45.05f) * tan(angle))<br>
+	 * time^2 = (distance / 45.05f) * tan(angle) time = sqrt((distance / 45.05f) * tan(angle))<br>
 	 * <br>
-	 * distance = speed * time * cos(angle) umstellen: speed = distance /
-	 * (cos(angle) * time)<br>
-	 * <br>
+	 * distance = speed * time * cos(angle) <br>
+	 * umstellen:<br> 
+	 * speed = distance / (cos(angle) * time)<br>
 	 */
 	public float getSpeed(float angleDeg, float distance) {
 		// Bogenmaß

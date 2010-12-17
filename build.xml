@@ -8,9 +8,9 @@
 	<property name="build.dir" value="${basedir}/bin" />
 	<property name="src.dir" value="${basedir}/src" />
 	<property name="build.lib" value="${basedir}/lib" />
-	<property name="common.build.dir" value="${basedir}/../TankArena/bin" />
-	<property name="common.src.dir" value="${basedir}/../TankArena/src" />
-	<property name="deploy.dir" value="${basedir}/../TankArena/KIjars" />
+	<property name="common.build.dir" value="${basedir}/../../CompetitionSourcen/TankArena/bin" />
+	<property name="common.src.dir" value="${basedir}/../../CompetitionSourcen/TankArena/src" />
+	<property name="deploy.dir" value="${basedir}/../../CompetitionSourcen/TankArena/KIjars" />
 
 	<path id="project.classpath">
 		<fileset dir="${build.dir}">

@@ -14,18 +14,20 @@ package pascal.goap.Agent;
 import com.jme.math.Vector3f;
 
 /**
- * Everything the agent knows about the outside world is represented as a
- * MemoryObject 
+ * Everything the agent knows about the outside world is represented as a MemoryObject 
  * MemoryObjects get stored in the WorkingMemory
  * @author Klinge
+ * 
+ * Changed type from String to new MemoryObjectType to store information better
+ * @author Pascal JŠger
  *
  */
 public class MemoryObject {
 	
 	public float beliefe;
-	public String type;
+	public MemoryObjectType type;
 	public Vector3f position;
-	public boolean persistend = false;
+	public boolean persistend = false; //a persistend MemoryObjects believe will not be decreased by the WorkingMemory
 	
 	/**
 	 * Creates a new MemoryObject
@@ -33,7 +35,7 @@ public class MemoryObject {
 	 * @param type: What kind of memory
 	 * @param position: The position the agent perceived this memory
 	 */
-	public MemoryObject(float beliefe, String type, Vector3f position)
+	public MemoryObject(float beliefe, MemoryObjectType type, Vector3f position)
 	{
 		this.beliefe = beliefe;
 		this.type = type;
