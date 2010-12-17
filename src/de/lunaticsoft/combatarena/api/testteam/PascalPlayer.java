@@ -30,9 +30,6 @@ import pascal.goap.Goap.Goal;
 import pascal.goap.Goap.IGOAPListener;
 import pascal.goap.Scenario.GoapActionSystem;
 import pascal.goap.Scenario.GoapController;
-import pascal.goap.Scenario.Actions.GotoLocation;
-import pascal.goap.Scenario.Actions.WatchEntertainment;
-import pascal.goap.Scenario.Goals.Explore;
 
 import com.jme.math.FastMath;
 import com.jme.math.Vector3f;
@@ -69,21 +66,18 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 	private GlobalKI globalKI;
 
 	public PascalPlayer(String name, GlobalKI globalKI) {
+		System.out.println("PascalPlayer "+name+" gestartet");
 		this.name = name;
 		
 		// GOAP STUFF
 		this.globalKI = globalKI;
-		if(!globalKI.worldIsSet){
-			globalKI.setWorldInstance(world);
-			globalKI.scanWorldSize();
-		}
 		blackboard.name = name; // just for debugging
 		actionSystem = new GoapActionSystem(this, blackboard,memory);	
 		((GoapActionSystem)actionSystem).addGOAPListener(this);
 		
-		generateActions();
-		generateGoals();
-		generateRandomDesires();
+//		generateActions();
+//		generateGoals();
+//		generateRandomDesires();
 	}
 
 	@Override
@@ -94,7 +88,7 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 	@Override
 	public void update(float interpolation) {
 		// GOAP STUFF
-		gc.update(interpolation);
+//		gc.update(interpolation);
 		
 		// current position
 		pos = world.getMyPosition();
@@ -130,7 +124,9 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 
 	@Override
 	public void setWorldInstance(IWorldInstance world) {
+		System.out.println("Panzer "+name+" hat World Instanz bekommen.");
 		this.world = world;
+		globalKI.setWorldInstance(world);
 	}
 
 	/**
@@ -220,7 +216,7 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 		blackboard.direction = direction;
 	}
 
-	public String getTeamName() {
+	public String getName() {
 		return name;
 	}
 
@@ -235,12 +231,12 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 	}
 	
 	private void generateGoals(){
-		((GoapActionSystem)actionSystem).addGoal(new Explore("Explore",0.6f, (GoapActionSystem) actionSystem));
+//		((GoapActionSystem)actionSystem).addGoal(new Explore("Explore",0.6f, (GoapActionSystem) actionSystem));
 	}
 	
 	private void generateActions(){			
-		((GoapActionSystem)actionSystem).addAction(new GotoLocation((GoapActionSystem) this.actionSystem,"GoToLocation",1.0f));
-		((GoapActionSystem)actionSystem).addAction(new WatchEntertainment((GoapActionSystem) this.actionSystem,"WatchEntertianment",1.0f));
+//		((GoapActionSystem)actionSystem).addAction(new GotoLocation((GoapActionSystem) this.actionSystem,"GoToLocation",1.0f));
+//		((GoapActionSystem)actionSystem).addAction(new WatchEntertainment((GoapActionSystem) this.actionSystem,"WatchEntertianment",1.0f));
 	}
 	
 	private void generateRandomDesires(){
