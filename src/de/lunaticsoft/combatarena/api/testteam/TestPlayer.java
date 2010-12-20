@@ -48,6 +48,7 @@ public class TestPlayer implements IPlayer {
 	private boolean turnPointReached= false;
 
 	public TestPlayer(String name) {
+		System.out.println("TestPlayer gestartet");
 		this.name = name;
 	}
 
@@ -82,6 +83,7 @@ public class TestPlayer implements IPlayer {
 
 	@Override
 	public void setWorldInstance(IWorldInstance world) {
+		System.out.println("TestPlayer hat world instanz");
 		this.world = world;
 	}
 
