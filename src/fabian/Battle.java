@@ -1,4 +1,4 @@
-package de.mystuff;
+package fabian;
 
 import com.jme.math.FastMath;
 import com.jme.math.Vector3f;
