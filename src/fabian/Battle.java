@@ -16,7 +16,8 @@ public class Battle {
 		 * { world.move(direction.negateLocal()); } else { world.stop(); stop =
 		 * true; world.shoot(direction.negateLocal(), distance, 1f); }
 		 */
-		float angle = 0f;
+		
+		float angle = 45f;
 		return new ShootTarget(direction, distance, angle);
 
 	}
@@ -34,6 +35,8 @@ public class Battle {
 	float getAngle(float force, float time, float distance) {
 		return FastMath.acos((force * time) / distance);
 	}
+
+	
 
 	float getForce(float distance, float angleDeg, float time) {
 		float angle = angularToRadian(angleDeg);
