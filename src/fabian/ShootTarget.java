@@ -4,7 +4,7 @@ import com.jme.math.Vector3f;
 
 public class ShootTarget {
 	public final Vector3f direction;
-	public final float distance;
+	public final float force;
 	public final float angle;
 	@Override
 	public int hashCode() {
@@ -13,12 +13,12 @@ public class ShootTarget {
 		result = prime * result + Float.floatToIntBits(angle);
 		result = prime * result
 				+ ((direction == null) ? 0 : direction.hashCode());
-		result = prime * result + Float.floatToIntBits(distance);
+		result = prime * result + Float.floatToIntBits(force);
 		return result;
 	}
 	@Override
 	public String toString() {
-		return "ShootTarget [direction=" + direction + ", distance=" + distance
+		return "ShootTarget [direction=" + direction + ", distance=" + force
 				+ ", angle=" + angle + "]";
 	}
 	@Override
@@ -37,15 +37,15 @@ public class ShootTarget {
 				return false;
 		} else if (!direction.equals(other.direction))
 			return false;
-		if (Float.floatToIntBits(distance) != Float
-				.floatToIntBits(other.distance))
+		if (Float.floatToIntBits(force) != Float
+				.floatToIntBits(other.force))
 			return false;
 		return true;
 	}
 	public ShootTarget(Vector3f direction, float distance, float angle) {
 		super();
 		this.direction = direction;
-		this.distance = distance;
+		this.force = distance;
 		this.angle = angle;
 	}
 

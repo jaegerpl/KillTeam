@@ -6,42 +6,38 @@ import com.jme.math.Vector3f;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
 
 public class Battle {
-	public static ShootTarget getShootTarget(IWorldObject target, Vector3f myPos) {
-		Vector3f direction = myPos.subtract(target.getPosition()).negateLocal();
-		float distance = myPos.distance(target.getPosition());
-		float force = 120f; // max
-		// float angle = getAngle(force, ) //???
-		/*
-		 * if (distance < 50) { world.move(direction); } else if (distance > 54)
-		 * { world.move(direction.negateLocal()); } else { world.stop(); stop =
-		 * true; world.shoot(direction.negateLocal(), distance, 1f); }
-		 */
-		
-		float angle = 45f;
-		return new ShootTarget(direction, distance, angle);
+	/**
+	 * @param target
+	 * @param myPos
+	 * @return ShootTarget Klasse, welche alle benötigten Daten für ein world.shoot enthält
+	 */
+	public static ShootTarget getShootTarget(final Vector3f target, final Vector3f myPos) {
+		final float angle = 45;
 
+		final Vector3f direction = myPos.clone().subtractLocal(target.clone()).negate();
+		final float distance = myPos.distance(target);
+		return new ShootTarget(direction, calcForce(angle, distance), angle);
 	}
-
-	float getTime(float distance, float angleDeg) {
-		float angle = angularToRadian(angleDeg);
-		return FastMath.sqrt((distance / 49.05f) * FastMath.tan(angle));
-	}
-
-	float angularToRadian(float angleDeg) {
-		return angleDeg / FastMath.RAD_TO_DEG;
-		
-	}
-
-	float getAngle(float force, float time, float distance) {
-		return FastMath.acos((force * time) / distance);
-	}
-
 	
-
-	float getForce(float distance, float angleDeg, float time) {
-		float angle = angularToRadian(angleDeg);
-
-		return distance / (FastMath.cos(angle) * time);
+	public static float calcForce(float angleDeg, float distance) {
+		float angle = angleDeg / FastMath.RAD_TO_DEG;
+		float time = FastMath.sqrt((distance / 49.05f) * FastMath.tan(angle));
+		float speed = distance / (FastMath.cos(angle) * time);
+		return speed;
 	}
+	
+	public static double getMaxForce(){
+		return 120;
+	}
+	
+	public static double getAccelerationOfGravity(){
+		return 91.1f; //laut ki vorlage
+	}
+	
+	
+	public static double getMaxDistance(){
+		return (Math.pow(getMaxForce(), 2))/getAccelerationOfGravity() * Math.sin(2*45); 
+	}
+
 
 }
