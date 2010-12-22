@@ -5,6 +5,7 @@ import pascal.goap.Agent.GlobalKIBlackboard;
 import pascal.goap.Goap.Action;
 import pascal.goap.Goap.Goal;
 import pascal.goap.Goap.IGOAPListener;
+import pascal.map.WorldMap;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 
 /**
@@ -23,9 +24,11 @@ public class GlobalKI  extends GlobalKIAgent implements IGOAPListener {
 	
 	private String name = "GlobaleKI";
 	private IWorldInstance world;	
+	private WorldMap map;
 	
 	public GlobalKI() {
 		blackboard.name = name;
+		map = new WorldMap();
 	}
 
 	@Override
@@ -52,5 +55,9 @@ public class GlobalKI  extends GlobalKIAgent implements IGOAPListener {
 	 */
 	public void setWorldInstance(IWorldInstance world) {
 		this.world = world;	
+	}
+	
+	public WorldMap getWorldMap(){
+		return map;
 	}
 }

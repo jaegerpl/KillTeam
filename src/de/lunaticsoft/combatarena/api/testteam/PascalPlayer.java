@@ -19,7 +19,12 @@
 
 package de.lunaticsoft.combatarena.api.testteam;
 
+import java.awt.Point;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.Random;
 
 import pascal.goap.Agent.Agent;
@@ -30,6 +35,8 @@ import pascal.goap.Goap.Goal;
 import pascal.goap.Goap.IGOAPListener;
 import pascal.goap.Scenario.GoapActionSystem;
 import pascal.goap.Scenario.GoapController;
+import pascal.map.Tile;
+import pascal.map.WorldMap;
 
 import com.jme.math.FastMath;
 import com.jme.math.Vector3f;
@@ -42,8 +49,9 @@ import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
 public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 
 	private IWorldInstance world;
-	private Vector3f direction;
-	private Vector3f pos;
+	private Vector3f direction; // tanks direction
+	private Vector3f pos;		// takns last updated position
+	private Vector3f goalPosition; // tanks goal its heading to
 
 	private Vector3f lastPos = null;
 	private float lastDistance = 0;
@@ -55,7 +63,7 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 	
 	// my variables
 	private Vector3f startPos;
-	private boolean turnPointReached= false;
+	private int scanCounter = 0;   // scan Sichtbereich every 10 update steps
 	
 	
 	private static Random r = new Random();
@@ -64,6 +72,9 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 	// GOAP STUFF
 	private final GoapController gc = new GoapController((GoapActionSystem)actionSystem);
 	private GlobalKI globalKI;
+	private WorldMap worldMap;
+	private Queue<Tile> worldMapQueue;
+	private Map<Point, Boolean> localMap = new HashMap<Point, Boolean>();
 
 	public PascalPlayer(String name, GlobalKI globalKI) {
 		System.out.println("PascalPlayer "+name+" gestartet");
@@ -74,6 +85,8 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 		blackboard.name = name; // just for debugging
 		actionSystem = new GoapActionSystem(this, blackboard,memory);	
 		((GoapActionSystem)actionSystem).addGOAPListener(this);
+		worldMap = globalKI.getWorldMap();
+		worldMapQueue = worldMap.registerTank(this);
 		
 //		generateActions();
 //		generateGoals();
@@ -89,36 +102,20 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 	public void update(float interpolation) {
 		// GOAP STUFF
 //		gc.update(interpolation);
+		scanViewRange();
+		System.out.println("CurrentPosition ="+world.getMyPosition());
+		System.out.println("GoalPosition ="+goalPosition);
 		
 		// current position
 		pos = world.getMyPosition();
 		if (!stop) {
 			// move
-			world.move(direction);
-			// check distance to detect blocked-movement
-			if (lastPos != null) {
-				float distance = pos.distance(lastPos);
-				if (distance < (lastDistance - 0.0005f)) {
-					direction.negateLocal();
-				}
-				if(!turnPointReached && pos.distance(startPos) > 15f){
-					turnPointReached = true;
-					stop = true;
-				}
-				
-				lastDistance = distance;
+			world.move(goalPosition);
+			if(inRangeOfPosition(goalPosition)){
+				stop = true;
+				world.stop();
 			}
-			lastPos = pos;
-		}
-		
-		world.getMyDirection();
-		Vector3f pos = world.getMyPosition();
-		world.getTerrainNormal(pos);
-		world.isPassable(pos);
-		world.isPassableNormal(pos);
-		world.isWater(pos);
-		world.stop(); //????
-		
+		}		
 	}
 	
 
@@ -192,7 +189,7 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 	@Override
 	public void die() {
 		// GOAP STUFF
-		globalKI.getBlackBoard().tanksAlive -= 1; // the global blackboard
+		globalKI.getBlackBoard().tanksAlive -= 1; // tell the GlobalKI about death of tank
 	}
 
 	@Override
@@ -200,19 +197,28 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 		// move WorldObjects into WorkingMemory
 		for (IWorldObject wO : worldObjects) {
 			// confidence of memoryObjects will decrease over time
-			MemoryObject memo = new MemoryObject(1.0f, new MemoryObjectType(wO.getType(), wO.getColor()), wO.getPosition());
+			MemoryObject memo = new MemoryObject(1.0f, new MemoryObjectType(wO.getType(), 
+																			wO.getColor()), 
+																			wO.getPosition());
 			memory.addMemory(memo);
 		}
+		
 	}
 
 	@Override
 	public void spawn() {
 		startPos = world.getMyPosition();
-		direction = new Vector3f(25, 0, 25);
+		System.out.println("StartPos: "+startPos);
+		direction = world.getMyDirection();
+		goalPosition = startPos.add(new Vector3f(1,0,1));
+		goalPosition.x = (int)goalPosition.x;
+		goalPosition.z = (int)goalPosition.z;
+//		goalPosition = new Vector3f(300f,18f,300f);
 		stop = false;
+		System.out.println("goalPosition: "+goalPosition);
 		
 		// GOAP STUFF
-		globalKI.getBlackBoard().tanksAlive += 1;// the global blackboard
+		globalKI.getBlackBoard().tanksAlive += 1;// tell GlobalKI about rebirth of tank
 		blackboard.direction = direction;
 	}
 
@@ -241,5 +247,84 @@ public class PascalPlayer extends Agent implements IGOAPListener, IPlayer {
 	
 	private void generateRandomDesires(){
 //		((GoapActionSystem)actionSystem).currentWorldState.add(new WorldStateSymbol<Float>(TankWorldProperty.Boredom, r.nextFloat() % 1.0f, PropertyType.Float));
+	}
+
+	/**
+	 * Scans the view range of tank for new information to build up a global map
+	 */
+	private void scanViewRange(){
+		if(scanCounter < 40){
+			scanCounter++;
+		} else {
+			scanCounter = 0;
+			/*
+			 * Sichtbereich hat einen max Radius von 50
+			 */
+			Vector3f viewRangeCenter = getViewRangeCenter();
+			List<Tile> tiles = worldMap.getEmptyTilesInViewRange(viewRangeCenter);
+			
+			Vector3f normalVec;
+			boolean isWater = false;
+			boolean isPassable = false;
+			
+			for(Tile t : tiles){
+				normalVec = world.getTerrainNormal(t.tileCenterCoordinates);
+				isPassable = world.isPassable(t.tileCenterCoordinates);
+				isWater = tileContainsWater(t);
+				Tile tile = new Tile(t.mapIndex, isWater, isPassable, normalVec);				
+				localMap.put(t.mapIndex, true);
+				worldMapQueue.add(tile);
+			}
+		}			
+	}
+	
+	/**
+	 * Returns true if the tank is in an area of 2 units around the given goal
+	 * 
+	 * @param goal
+	 * 
+	 * @return true if tank is near the goal position, false otherwise
+	 */
+	private boolean inRangeOfPosition(Vector3f goal){
+		Vector3f tankPos = world.getMyPosition();
+		if(goal.x-2 <= tankPos.x && tankPos.x <= goal.x+2 ){
+			if(goal.z-2 <= tankPos.z && tankPos.z <= goal.z+2 ){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Returns the world position of the tanks view range center.
+	 * It is placed 30 units in front of the tanks position
+	 * 
+	 * @return world position of view range center
+	 */
+	private Vector3f getViewRangeCenter(){
+		Vector3f tankPos = world.getMyPosition();
+		Vector3f direction = world.getMyDirection();
+		direction.multLocal(-direction.length()); // einheitsvektor
+		return tankPos.add(direction.mult(30));
+	}
+	
+	/**
+	 * Returns true if one unit of tile is water.
+	 * If water is found, the other units of the tile won't be checked further.
+	 * @param t The tile to check
+	 * @return true if water is on this tile, false otherwise.
+	 */
+	private boolean tileContainsWater(Tile t){
+		int halfsize = WorldMap.tilesize;
+		int x = (int)t.tileCenterCoordinates.x;
+		int y = (int)t.tileCenterCoordinates.z;	
+		for(int i = x-halfsize; i < x+halfsize; i++){
+			for(int j = y-halfsize; j < y+halfsize; j++){
+				if(world.isWater(new Vector3f(i,0,j))){
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
