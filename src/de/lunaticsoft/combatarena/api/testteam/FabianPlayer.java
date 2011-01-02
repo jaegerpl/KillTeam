@@ -145,8 +145,8 @@ public class FabianPlayer implements IPlayer {
 			case Hangar:
 				if(stop){
 
-					ShootTarget target = Battle.getShootTarget(worldObject.getPosition(), world.getMyPosition());
-					world.shoot(target.direction, target.force, target.angle);
+				//	ShootTarget target = Battle.getShootTarget(worldObject.getPosition(), world.getMyPosition());
+				//	world.shoot(target.direction, target.force, target.angle);
 					
 				}
 			
