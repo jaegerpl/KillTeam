@@ -26,7 +26,7 @@ public class LoadPlayerKI implements ILoadPlayerKI {
 
 	public IPlayer getKI(int index, String name) {
 		switch (index) {
-		case 1:
+		case 1: return new Defender();
 		case 2:
 		case 3:
 		case 4:
