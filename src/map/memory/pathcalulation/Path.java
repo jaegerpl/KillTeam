@@ -15,6 +15,13 @@ public class Path<T extends LinkedTile> implements Iterable<T>{
 	protected MemorizedMap map;
 	protected T lastVisitedWaypoint = null;
 
+	
+	public Path(){
+		waypoints = new ArrayList<T>();
+		this.pathCalculator = pathCalculator;
+		this.map = new MemorizedMap();
+	}
+	
 	public Path(AStarPathCalculator pathCalculator, MemorizedMap map) {
 		waypoints = new ArrayList<T>();
 		this.pathCalculator = pathCalculator;

@@ -31,12 +31,13 @@ import goap.scenario.GoapController;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import map.fastmap.LinkedTile;
-import map.memory.map.MemorizedMap;
+import map.memory.pathcalulation.Path;
 
 import com.jme.math.FastMath;
 import com.jme.math.Vector3f;
@@ -50,13 +51,12 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 	private IWorldInstance world;
 	private Vector3f direction; // tanks direction
-	private Vector3f pos;		// takns last updated position
+	private Vector3f lastPos;		// tank position, last update
 	private Vector3f goalPosition; // tanks goal its heading to
-
-	private Vector3f lastPos = null;
-	private float lastDistance = 0;
-	private EColors color;
+	private LinkedTile moveTarget;
+	private boolean imHangar = true; 
 	private String name;
+	Path<LinkedTile> path = new Path();;
 
 	private boolean stop = false;
 	
@@ -65,20 +65,16 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	private Vector3f startPos;
 	
 	
-	private static Random r = new Random();
 		
 	
 	// GOAP STUFF
 	private final GoapController gc = new GoapController((GoapActionSystem)actionSystem);
 	private GlobalKI globalKI;
 	private Map<Point, Boolean> localMap = new HashMap<Point, Boolean>();
-	private MemorizedMap memoryMap;
+	private EColors color;
 
 	public KillKI(String name, GlobalKI globalKI) {
-		System.out.println("PascalPlayer "+name+" gestartet");
 		this.name = name;
-		
-		this.memoryMap = this.globalKI.getWorldMap();
 		
 		// GOAP STUFF
 		this.globalKI = globalKI;
@@ -105,20 +101,83 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		//System.out.println("GoalPosition ="+goalPosition);
 		
 		// current position
-		pos = world.getMyPosition();
+		
 		
 		//scan unknown terrain
 		scanTerrain();
-		if (!stop) {
-			// move
+		explore();
+		
+		
+		if(imHangar)
 			world.move(direction);
-		}		
+		else if(moveTarget != null){
+			System.out.println("bewege nach karte");
+			world.move(moveTarget.getTileCenterCoordinates().subtract(world.getMyPosition()));
+		}
 	}
+	
+	private Vector3f rotateVector(Vector3f vec, Double phi){
+		Vector3f result = vec.clone();
+		result.x = FastMath.cos((float) (FastMath.atan2(vec.z, vec.x)+phi));
+		result.z = FastMath.sin((float) (FastMath.atan2(vec.z, vec.x)+phi));
+		
+		return result;
+	}
+	
+	public void explore(){
+		//GOAP.getExploreDirection();
+		if(startPos.distance(world.getMyPosition()) > 15)
+			imHangar = false;
+		
+		if(lastPos == null){
+			direction = new Vector3f(FastMath.rand.nextInt(200),0, FastMath.rand.nextInt(200));
+		}
+		else if(!imHangar){
+			System.out.println("hangar verlassen");
+			//neues ziel berechnen wenn ziel erreicht wurde
+			
+			//neues Ziel berechnen
+			if(path.isEmpty()){
+				Vector3f eov = world.getMyPosition().add(world.getMyDirection().normalize().mult(10));
+				while(path.isEmpty() || (!this.globalKI.getWorldMap().getTileAtCoordinate(eov).isPassable() && this.globalKI.getWorldMap().getTileAtCoordinate(eov).isExplored())){
+					System.out.println("Berechne nächstes Ziel");
+					eov = world.getMyPosition().add(direction.normalize().mult(10));
+					System.out.println(direction);
+					
+					//TODO pfad nur berechnen wenn tile passable und explored ist
+					path = this.globalKI.getWorldMap().calculatePath(this.globalKI.getWorldMap().getTileAtCoordinate(world.getMyPosition()), this.globalKI.getWorldMap().getTileAtCoordinate(eov));
+					direction = rotateVector(direction,15.);
+
+				}
+				System.out.println("Wegpunkte: "+path.waypointCount());
+			}
+			//nächsten Wegpunkt als Ziel anvisieren
+			if(this.globalKI.getWorldMap().getTileAtCoordinate(world.getMyPosition()).equals(moveTarget) || moveTarget == null)
+			{
+				System.out.println("Wegpunkt erreicht, lese nächsten Wegpunkt, Wegpunkte im Pfad"+path.waypointCount());
+				moveTarget = path.getNextWaypoint();
+			}
+			 
+		}
+		else if(imHangar && lastPos.distance(world.getMyPosition()) < 0.06f){
+			//world.isWater(world.getMyPosition().add(world.getMyDirection().normalize().mult(3)));
+			System.out.println("STUCK");
+			System.out.println("olddirection: "+direction);
+			direction = rotateVector(direction, 45.);
+			System.out.println("newdirection: "+direction);
+		}
+		lastPos = world.getMyPosition();
+			
+		
+	}
+		
+		
+	
+	
 	
 
 	@Override
 	public void setWorldInstance(IWorldInstance world) {
-		System.out.println("Panzer "+name+" hat World Instanz bekommen.");
 		this.world = world;
 		globalKI.setWorldInstance(world);
 	}
@@ -156,6 +215,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 	@Override
 	public void attacked(IWorldObject competitor) {
+		/*
 		Vector3f enemy = competitor.getPosition();
 		String out = "Attacked by position " + enemy;
 		Vector3f direction = world.getMyPosition().clone().subtract(enemy.clone()).negate();
@@ -169,6 +229,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 		// ACHTUNG: Keine Ausgaben in der Abgabe (VorfÃ¼hrung)! "Logger" benutzen
 		System.out.println("================\r\n" + out + "\r\n================");
+		*/
 	}
 
 	@Override
@@ -208,14 +269,12 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	@Override
 	public void spawn() {
 		startPos = world.getMyPosition();
-		System.out.println("StartPos: "+startPos);
 		direction = world.getMyDirection();
 		goalPosition = startPos.add(new Vector3f(1,0,1));
 		goalPosition.x = (int)goalPosition.x;
 		goalPosition.z = (int)goalPosition.z;
 //		goalPosition = new Vector3f(300f,18f,300f);
 		stop = false;
-		System.out.println("goalPosition: "+goalPosition);
 		
 		// GOAP STUFF
 		globalKI.getBlackBoard().tanksAlive += 1;// tell GlobalKI about rebirth of tank
@@ -252,7 +311,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	
 	private void scanTerrain(){
 		boolean tileWithWater = false;
-		List<LinkedTile> tiles = this.globalKI.getWorldMap().getEmptyTilesPossiblyInViewRange(this.pos);
+		List<LinkedTile> tiles = this.globalKI.getWorldMap().getEmptyTilesPossiblyInViewRange(world.getMyPosition());
 		for(LinkedTile tile : tiles){
 			boolean isWater = false;
 			boolean isPassable  = true;
@@ -260,18 +319,24 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 			Vector3f terrain = world.getTerrainNormal(tile.getTileCenterCoordinates());
 			if(terrain != null){
 				if(!world.isPassable(tile.getTileCenterCoordinates())){
+					//System.out.println("nicht passierbar "+ tile.tileCenterCoordinates);
 					isPassable = false;
 				}
+				
 				if(world.isWater(tile.getTileCenterCoordinates())){
 					isWater = true;
+					//System.out.println("wasser");
 					tileWithWater = true;
 				}
 				
-				memoryMap.exploreTile(tile, isWater, isPassable, terrain);
+				tile.exploreTile(isWater, isPassable, terrain);
+					
+				//this.map.addTile(new LinkedTile(FastRoutableWorldMap.coordinates2MapIndex(tile.getTileCenterCoordinates()),
+				//		isWater, isPassable, terrain, true));
 			}
 		}
-		if(tileWithWater)
-			this.direction  = this.direction.negate();
+		//if(tileWithWater)
+			//this.direction  = this.direction.negate();
 
 		
 	}

@@ -30,8 +30,8 @@ public class FastRoutableWorldMap{
 	
 	public FastRoutableWorldMap(){
 		super();
-		Thread queueCrawler = new Thread(new QueueCrawler());
-		queueCrawler.start();
+	//	Thread queueCrawler = new Thread(new QueueCrawler());
+	//	queueCrawler.start();
 	}
 	
 	synchronized public LinkedTile getTileAtCoordinate(Vector3f position){
