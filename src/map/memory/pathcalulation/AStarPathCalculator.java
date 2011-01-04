@@ -1,5 +1,6 @@
 package map.memory.pathcalulation;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -108,6 +109,11 @@ public class AStarPathCalculator {
 	 * Berechnet die Manhattan Distanz
 	 */
 	public int calculateApproximatedDistance(LinkedTile start, LinkedTile destination) {
-		return Math.abs(start.getMapIndex().x - destination.getMapIndex().x) + Math.abs(start.getMapIndex().y - destination.getMapIndex().y);
+		//return Math.abs(start.getMapIndex().x - destination.getMapIndex().x) + Math.abs(start.getMapIndex().y - destination.getMapIndex().y);
+		return calculateApproximatedDistance(start.getMapIndex(), destination.getMapIndex());
+	}
+	
+	public int calculateApproximatedDistance(Point start, Point destination) {
+		return Math.abs(start.x - destination.x) + Math.abs(start.y - destination.y);
 	}
 }

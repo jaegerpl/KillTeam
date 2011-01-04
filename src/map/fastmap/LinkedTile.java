@@ -124,7 +124,7 @@ public class LinkedTile implements IPathNode {
 		return new LinkedTile(mapIndex, isWater, isPassable, normalVector, linkedTiles, isExplored, precisionLevel);
 	}
 	
-	public void exploreTile(boolean isWater, boolean isPassable, Vector3f normalVector) {
+	protected void exploreTile(boolean isWater, boolean isPassable, Vector3f normalVector) {
 		this.isWater = isWater;
 		this.isPassable = isPassable;
 		this.normalVector = normalVector;

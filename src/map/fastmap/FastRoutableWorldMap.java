@@ -26,6 +26,7 @@ public class FastRoutableWorldMap{
 	public static final int viewRangeOffset = 30;
 	
 	protected Map<Point,LinkedTile> map = Collections.synchronizedMap(new HashMap<Point, LinkedTile>());
+	protected Map<Point,LinkedTile> unexploredTiles = Collections.synchronizedMap(new HashMap<Point, LinkedTile>());
 	
 	public FastRoutableWorldMap(){
 		super();
@@ -50,10 +51,22 @@ public class FastRoutableWorldMap{
 			if(map.containsKey(tilePosition)) {
 				return map.get(tilePosition);
 			} else {
-				LinkedTile unexploredTile = new LinkedTile(tilePosition, false, false, new Vector3f(0,0,0), false);
-				map.put(tilePosition, unexploredTile);
-				return unexploredTile;
+				return createUnexploredTileAtPosition(tilePosition);
 			}
+		}
+	}
+
+	private LinkedTile createUnexploredTileAtPosition(Point tilePosition) {
+		LinkedTile unexploredTile = new LinkedTile(tilePosition, false, false, new Vector3f(0,0,0), false);
+		map.put(tilePosition, unexploredTile);
+		unexploredTiles.put(tilePosition, unexploredTile);
+		return unexploredTile;
+	}
+	
+	public void exploreTile(LinkedTile tile, boolean isWater, boolean isPassable, Vector3f normalVector) {
+		tile.exploreTile(isWater, isPassable, normalVector);
+		if(unexploredTiles.containsKey(tile.getMapIndex())) {
+			unexploredTiles.remove(tile.getMapIndex());
 		}
 	}
 	
@@ -182,10 +195,14 @@ public class FastRoutableWorldMap{
 		map.put(tile.mapIndex, tile);
 	}
 	
+	public Map<Point, LinkedTile> getUnexploredTiles() {
+		return unexploredTiles;
+	}
+	
 	//===================================================
 	// STATIC METHODS
 	//===================================================
-	
+
 	/**
 	 * Turns world coordinates into gird indices
 	 */

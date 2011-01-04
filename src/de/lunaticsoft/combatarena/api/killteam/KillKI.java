@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Random;
 
 import map.fastmap.LinkedTile;
+import map.memory.map.MemorizedMap;
 
 import com.jme.math.FastMath;
 import com.jme.math.Vector3f;
@@ -71,10 +72,13 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	private final GoapController gc = new GoapController((GoapActionSystem)actionSystem);
 	private GlobalKI globalKI;
 	private Map<Point, Boolean> localMap = new HashMap<Point, Boolean>();
+	private MemorizedMap memoryMap;
 
 	public KillKI(String name, GlobalKI globalKI) {
 		System.out.println("PascalPlayer "+name+" gestartet");
 		this.name = name;
+		
+		this.memoryMap = this.globalKI.getWorldMap();
 		
 		// GOAP STUFF
 		this.globalKI = globalKI;
@@ -255,21 +259,15 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 			
 			Vector3f terrain = world.getTerrainNormal(tile.getTileCenterCoordinates());
 			if(terrain != null){
-				System.out.println("------------------------"+tile.getMapIndex()+" Explored -> "+tile.isExplored());
 				if(!world.isPassable(tile.getTileCenterCoordinates())){
-					//System.out.println("nicht passierbar "+ tile.tileCenterCoordinates);
 					isPassable = false;
 				}
 				if(world.isWater(tile.getTileCenterCoordinates())){
 					isWater = true;
-					//System.out.println("wasser");
 					tileWithWater = true;
 				}
 				
-				tile.exploreTile(isWater, isPassable, terrain);
-					
-				//this.map.addTile(new LinkedTile(FastRoutableWorldMap.coordinates2MapIndex(tile.getTileCenterCoordinates()),
-				//		isWater, isPassable, terrain, true));
+				memoryMap.exploreTile(tile, isWater, isPassable, terrain);
 			}
 		}
 		if(tileWithWater)

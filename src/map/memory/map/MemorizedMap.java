@@ -2,6 +2,8 @@ package map.memory.map;
 
 import java.awt.Point;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import map.fastmap.FastRoutableWorldMap;
@@ -55,17 +57,36 @@ public class MemorizedMap {
 		}
 	}
 	
-//	public List<Tile> getEmptyTilesInViewRange(Vector3f pos){
-//		return worldMap.getEmptyTilesInViewRange(pos);
-//	}
-//	
-//	public List<Tile> getTilesInViewRange(Vector3f pos){
-//		return worldMap.getTilesInViewRange(pos);
-//	}
+	public void exploreTile(LinkedTile tile, boolean isWater, boolean isPassable, Vector3f normalVector) {
+		worldMap.exploreTile(tile, isWater, isPassable, normalVector);
+	}
 	
 	
 	public void addTile(LinkedTile tile){
 		worldMap.addTile(tile);
+	}
+	
+	public LinkedTile getNearestUnexploredTile(Vector3f position) {
+		Point myPosition = worldMap.getTileAtCoordinate(position).getMapIndex();
+		Map<Point, LinkedTile> unexploredTiles = worldMap.getUnexploredTiles();
+		if(0 == unexploredTiles.size()) {
+			return null;
+		}
+		if(!unexploredTiles.containsKey(myPosition)) {
+			Set<Point> coordinates = unexploredTiles.keySet();
+			Point nearest = null;
+			int nearestDistance = 0;
+			for(Point coord : coordinates) {
+				int thisDistance = pathCalculator.calculateApproximatedDistance(myPosition, coord);
+				if(nearest == null || thisDistance < nearestDistance) {
+					nearest = coord;
+					nearestDistance = thisDistance;
+				}
+			}
+			return unexploredTiles.get(nearest);
+		} else {
+			return unexploredTiles.get(myPosition);
+		}
 	}
 	
 	public LinkedTile getTileAtCoordinate(Vector3f position){
