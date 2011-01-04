@@ -2,6 +2,7 @@ package memory.objectStorage;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +30,10 @@ public class ObjectStorage {
 			tanks.put(color, new HashMap<Point, MemorizedWorldObject>());
 			hangars.put(color, new HashMap<Point, MemorizedWorldObject>());
 		}
+		
+		//start degeneration Thread
+		Thread t = new Thread(new DegenerationThread(this));
+		t.start();
 	}
 	
 	synchronized public void storeObject(Vector3f position, MemorizedWorldObject object) {
@@ -45,9 +50,6 @@ public class ObjectStorage {
 				break;
 		}
 		knownObjects.add(object);
-		
-		//start degeneration if possible
-		object.startDegeneration(this);
 	}
 	
 	synchronized public void removeObject(MemorizedWorldObject object) {
@@ -104,6 +106,41 @@ public class ObjectStorage {
 	
 	synchronized public Map<Point, MemorizedWorldObject> getRepairkits() {
 		return items;
+	}
+	
+	
+	private class DegenerationThread implements Runnable{
+		ObjectStorage storage;
+		
+		public DegenerationThread(ObjectStorage storage){
+			this.storage = storage;
+		}
+		
+		@Override
+		public void run() {
+			while(true){
+				//iterate over all enemy tanks
+				ArrayList<MemorizedWorldObject> objects = new ArrayList<MemorizedWorldObject>(storage.getEnemyTanks().values());
+				for(MemorizedWorldObject obj: objects){
+					//as long as object is durable decrease durability
+					if(obj.getDurability()>0){
+						obj.decreaseDurability(1000);
+					}
+					else{
+						//remove the object as it's not durable anymore
+						this.storage.removeObject(obj);
+					}
+				}
+				
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+		}	
 	}
 	
 }
