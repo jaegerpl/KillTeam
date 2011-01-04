@@ -76,16 +76,16 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	private MemorizedMap memoryMap;
 
 	public KillKI(String name, GlobalKI globalKI) {
-		System.out.println("PascalPlayer "+name+" gestartet");
+		System.out.println("KillKI "+name+" gestartet");
 		this.name = name;
 		
-		this.memoryMap = this.globalKI.getWorldMap();
-		
-		// GOAP STUFF
+		this.memoryMap = globalKI.getWorldMap();
 		this.globalKI = globalKI;
+		// GOAP STUFF
+		/*this.globalKI = globalKI;
 		blackboard.name = name; // just for debugging
 		actionSystem = new GoapActionSystem(this, blackboard,memory);	
-		((GoapActionSystem)actionSystem).addGOAPListener(this);
+		((GoapActionSystem)actionSystem).addGOAPListener(this);*/
 
 		
 //		generateActions();
@@ -192,6 +192,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 	@Override
 	public void perceive(ArrayList<IWorldObject> worldObjects) {	
+		
 		// move WorldObjects into WorkingMemory
 		for (IWorldObject wO : worldObjects) {
 			// confidence of memoryObjects will decrease over time
@@ -199,11 +200,28 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 																			wO.getColor()), 
 																			wO.getPosition());
 			memory.addMemory(memo);
+			
+			switch(wO.getType()){
+				case Competitor:
+					if(wO.getColor() != this.color){
+						System.out.println("Feind entdeckt");
+					}
+					break;
+				case Hangar:
+					if(wO.getColor() != this.color){
+						System.out.println("feindlichen Hangar entdeckt");
+					}
+					break;
+				case Item:
+						System.out.println("Item entdeckt");
+					break;
+				default: 
+					System.out.println("Kein WO");
+			}
 		}
 		
 		//ShootTarget target = Battle.getShootTarget(worldObject.getPosition(), world.getMyPosition());
-		//world.shoot(target.direction, target.force, target.angle);
-		
+		//world.shoot(target.direction, target.force, target.angle);*/		
 	}
 
 	@Override

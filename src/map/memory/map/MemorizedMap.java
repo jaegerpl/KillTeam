@@ -104,4 +104,10 @@ public class MemorizedMap {
 	public LinkedTile getTileAtMapIndex(Point point){
 		return getTileAtCoordinate(FastRoutableWorldMap.getTileCenterCoordinates(point));
 	}
+	
+	public int getApproxDistance(Point x, Point y){
+		AStarPathCalculator astar = new AStarPathCalculator(this);
+		return astar.calculateApproximatedDistance(x, y);
+	}
+
 }

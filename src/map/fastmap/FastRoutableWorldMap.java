@@ -30,8 +30,6 @@ public class FastRoutableWorldMap{
 	
 	public FastRoutableWorldMap(){
 		super();
-		Thread queueCrawler = new Thread(new QueueCrawler());
-		queueCrawler.start();
 	}
 	
 	synchronized public LinkedTile getTileAtCoordinate(Vector3f position){
@@ -235,43 +233,6 @@ public class FastRoutableWorldMap{
 		return new Vector3f(position.x*tilesize+tilesize/2,0,position.y*tilesize+tilesize/2);
 	}
 
-	
-	
-	
-	
-	
-	protected class QueueCrawler implements Runnable{
-
-		private boolean stop = false;
-		
-		@Override
-		public void run() {
-			System.out.println("ich leebeee");
-			while(!stop){
-				synchronized (map) {
-					LinkedTile tile;
-					for(Queue<LinkedTile> e : queues.values()){
-						if((tile = e.poll()) != null){
-							if(tile != null){
-								//map.put(tile.mapIndex, tile);
-								addTile(tile);
-							}							
-						}
-					}
-				}
-			}
-		}
-		
-		public void stopCrawling(){
-			System.out.println("stop crawling-----------------------");
-			stop = true;
-		}
-		
-		public void startCrawling(){
-			System.out.println("start crawling+++++++++++++++++++++++");
-			stop = false;
-		}
-	}
 	
 
 }
