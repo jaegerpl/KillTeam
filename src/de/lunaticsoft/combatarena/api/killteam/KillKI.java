@@ -31,13 +31,11 @@ import goap.scenario.GoapController;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import map.fastmap.LinkedTile;
-import map.memory.pathcalulation.Path;
+import memory.pathcalulation.Path;
 
 import com.jme.math.FastMath;
 import com.jme.math.Vector3f;
@@ -108,7 +106,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		explore();
 		
 		
-		if(imHangar)
+		if(imHangar || moveTarget == null)
 			world.move(direction);
 		else if(moveTarget != null){
 			System.out.println("bewege nach karte");
@@ -116,10 +114,14 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		}
 	}
 	
-	private Vector3f rotateVector(Vector3f vec, Double phi){
+	private Vector3f rotateVector(Vector3f vec, float phi){
 		Vector3f result = vec.clone();
-		result.x = FastMath.cos((float) (FastMath.atan2(vec.z, vec.x)+phi));
-		result.z = FastMath.sin((float) (FastMath.atan2(vec.z, vec.x)+phi));
+		//result.x = FastMath.cos((float) (FastMath.atan2(vec.z, vec.x)+phi));
+	//	result.z = FastMath.sin((float) (FastMath.atan2(vec.z, vec.x)+phi));
+		
+		result.x =vec.x * FastMath.cos(FastMath.DEG_TO_RAD*phi) - vec.z*FastMath.sin(FastMath.DEG_TO_RAD*phi);
+		
+		result.z =vec.z * FastMath.cos(FastMath.DEG_TO_RAD*phi) + vec.x*FastMath.sin(FastMath.DEG_TO_RAD*phi);
 		
 		return result;
 	}
@@ -137,33 +139,51 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 			//neues ziel berechnen wenn ziel erreicht wurde
 			
 			//neues Ziel berechnen
+			float drehung = 10;
+			float bereitsGedreht = 0;
 			if(path.isEmpty()){
-				Vector3f eov = world.getMyPosition().add(world.getMyDirection().normalize().mult(10));
-				while(path.isEmpty() || (!this.globalKI.getWorldMap().getTileAtCoordinate(eov).isPassable() && this.globalKI.getWorldMap().getTileAtCoordinate(eov).isExplored())){
-					System.out.println("Berechne nächstes Ziel");
-					eov = world.getMyPosition().add(direction.normalize().mult(10));
-					System.out.println(direction);
-					
+				Vector3f eov = world.getMyPosition().clone().add(direction.clone().normalize().mult(30));
+				
+				while(path.isEmpty() || (!this.globalKI.getWorldMap().getTileAtCoordinate(eov).isPassable() ||! this.globalKI.getWorldMap().getTileAtCoordinate(eov).isExplored())){
+					if(bereitsGedreht >= 360){
+						System.out.println("KEIN NEUER PFAD");
+						world.move(world.getMyPosition().add(rotateVector(direction, 45).normalize()));
+						moveTarget = null;
+						break;
+						
+					}
+					System.out.println("Berechne nächstes Ziel, eov:"+eov);
+					eov = world.getMyPosition().clone().add(direction.clone().normalize().mult(30));
+			
 					//TODO pfad nur berechnen wenn tile passable und explored ist
 					path = this.globalKI.getWorldMap().calculatePath(this.globalKI.getWorldMap().getTileAtCoordinate(world.getMyPosition()), this.globalKI.getWorldMap().getTileAtCoordinate(eov));
-					direction = rotateVector(direction,15.);
-
+					direction = rotateVector(direction, bereitsGedreht + drehung );
+				//	world.move(world.getMyPosition().add(direction.clone().normalize().mult(2)));
+					System.out.println("is eov passable: "+this.globalKI.getWorldMap().getTileAtCoordinate(eov).isPassable);
+					System.out.println("empty: "+path.isEmpty());
+					bereitsGedreht += drehung;
 				}
-				System.out.println("Wegpunkte: "+path.waypointCount());
+				
 			}
 			//nächsten Wegpunkt als Ziel anvisieren
-			if(this.globalKI.getWorldMap().getTileAtCoordinate(world.getMyPosition()).equals(moveTarget) || moveTarget == null)
+			
+			System.out.println("Myposition tile: "+this.globalKI.getWorldMap().getTileAtCoordinate(world.getMyPosition()));
+			System.out.println("target tile: "+moveTarget);
+			System.out.println("world.pos: "+world.getMyPosition());
+			if(moveTarget != null)
+				System.out.println("world.move target: "+ moveTarget.getTileCenterCoordinates());
+		//	if(this.globalKI.getWorldMap().getTileAtCoordinate(world.getMyPosition()).equals(moveTarget) || moveTarget == null)
+			if(moveTarget != null && (world.getMyPosition().distance(moveTarget.getTileCenterCoordinates())< 0.1f))
 			{
-				System.out.println("Wegpunkt erreicht, lese nächsten Wegpunkt, Wegpunkte im Pfad"+path.waypointCount());
+				System.out.println("Wegpunkt erreicht, lese nächsten Wegpunkt, Wegpunkte im Pfad "+path.waypointCount());
 				moveTarget = path.getNextWaypoint();
 			}
-			 
 		}
 		else if(imHangar && lastPos.distance(world.getMyPosition()) < 0.06f){
 			//world.isWater(world.getMyPosition().add(world.getMyDirection().normalize().mult(3)));
 			System.out.println("STUCK");
 			System.out.println("olddirection: "+direction);
-			direction = rotateVector(direction, 45.);
+			direction = rotateVector(direction, 45);
 			System.out.println("newdirection: "+direction);
 		}
 		lastPos = world.getMyPosition();
