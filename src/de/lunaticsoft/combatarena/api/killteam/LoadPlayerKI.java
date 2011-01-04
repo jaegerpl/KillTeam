@@ -24,6 +24,8 @@ import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 
 
 public class LoadPlayerKI implements ILoadPlayerKI {
+	
+	GlobalKI globalKi = new GlobalKI();
 
 	public IPlayer getKI(int index, String name) {
 		System.out.println(index);
@@ -34,7 +36,7 @@ public class LoadPlayerKI implements ILoadPlayerKI {
 		case 3:
 		case 4:
 		default:
-			 return new KillKI(name, new GlobalKI());
+			 return new KillKI(name, globalKi);
 		}
 	}
 }
