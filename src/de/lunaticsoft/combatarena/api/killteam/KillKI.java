@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Random;
 
 import map.fastmap.LinkedTile;
-import map.memory.map.MemorizedMap;
+import memory.map.MemorizedMap;
 
 import com.jme.math.FastMath;
 import com.jme.math.Vector3f;
@@ -185,6 +185,8 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 	@Override
 	public void die() {
+		
+		
 		// GOAP STUFF
 		globalKI.getBlackBoard().tanksAlive -= 1; // tell the GlobalKI about death of tank
 	}

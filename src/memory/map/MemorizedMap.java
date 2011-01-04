@@ -1,4 +1,4 @@
-package map.memory.map;
+package memory.map;
 
 import java.awt.Point;
 import java.util.List;
@@ -9,8 +9,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import map.fastmap.FastRoutableWorldMap;
 import map.fastmap.LinkedTile;
 import map.maplayer.MapLayer;
-import map.memory.pathcalulation.AStarPathCalculator;
-import map.memory.pathcalulation.Path;
+import memory.pathcalulation.AStarPathCalculator;
+import memory.pathcalulation.Path;
 
 import com.jme.math.Vector3f;
 

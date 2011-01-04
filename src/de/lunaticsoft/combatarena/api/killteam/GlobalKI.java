@@ -1,6 +1,7 @@
 package de.lunaticsoft.combatarena.api.killteam;
 
-import map.memory.map.MemorizedMap;
+import memory.map.MemorizedMap;
+import memory.objectStorage.ObjectStorage;
 import goap.agent.GlobalKIAgent;
 import goap.agent.GlobalKIBlackboard;
 import goap.goap.Action;
@@ -25,6 +26,7 @@ public class GlobalKI  extends GlobalKIAgent implements IGOAPListener {
 	private String name = "GlobaleKI";
 	private IWorldInstance world;	
 	private MemorizedMap map;
+	private ObjectStorage objectStorage;
 	
 	public GlobalKI() {
 		blackboard.name = name;
@@ -59,5 +61,9 @@ public class GlobalKI  extends GlobalKIAgent implements IGOAPListener {
 	
 	public MemorizedMap getWorldMap(){
 		return map;
+	}
+	
+	public ObjectStorage getObjectStorage() {
+		return this.objectStorage;
 	}
 }

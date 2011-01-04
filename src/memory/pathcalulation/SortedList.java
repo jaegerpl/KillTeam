@@ -1,4 +1,4 @@
-package map.memory.pathcalulation;
+package memory.pathcalulation;
 
 import java.util.Iterator;
 import java.util.PriorityQueue;
