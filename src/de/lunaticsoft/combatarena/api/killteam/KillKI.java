@@ -202,11 +202,18 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 			
 			switch(wO.getType()){
 				case Competitor:
-					System.out.println("Feind entdeckt");
+					if(wO.getColor() != this.color){
+						System.out.println("Feind entdeckt");
+					}
+					break;
 				case Hangar:
-					System.out.println("Hangar entdeckt");
+					if(wO.getColor() != this.color){
+						System.out.println("feindlichen Hangar entdeckt");
+					}
+					break;
 				case Item:
-					System.out.println("Item entdeckt");
+						System.out.println("Item entdeckt");
+					break;
 				default: 
 					System.out.println("Kein WO");
 			}
