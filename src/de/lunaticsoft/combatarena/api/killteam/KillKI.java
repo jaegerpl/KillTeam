@@ -39,6 +39,7 @@ import map.fastmap.LinkedTile;
 import memory.map.MemorizedMap;
 
 import com.jme.math.FastMath;
+import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
 
 import de.lunaticsoft.combatarena.api.enumn.EColors;
@@ -294,6 +295,29 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 			this.direction  = this.direction.negate();
 
 		
+	}
+	
+	/**
+	 * Turns the direction of the tank by the given degree alpha.
+	 * If alpha is positive the tank turns left, tank turns right for negative alpha.
+	 * 
+	 * @param alpha the degree by which the tank turns its direction.
+	 */
+	public void turn(double alpha){
+		Vector3f dir = world.getMyDirection();
+		Vector3f newdir = new Vector3f();
+		
+		// Drehmatrix um die y-Achse (wikipedia)
+		Matrix3f mat = new Matrix3f(
+				(float)Math.cos(alpha),      0f, (float)Math.sin(alpha),
+				0f,                          1f, 0f,
+				(float)(-1*Math.sin(alpha)), 0f, (float)Math.cos(alpha)
+		);
+
+		// Vektor mit Drehmatrix drehen
+		newdir = mat.mult(dir, newdir);
+		
+		world.move(newdir);
 	}
 
 
