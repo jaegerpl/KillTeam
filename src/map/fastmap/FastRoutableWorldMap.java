@@ -55,17 +55,22 @@ public class FastRoutableWorldMap{
 	}
 
 	private LinkedTile createUnexploredTileAtPosition(Point tilePosition) {
-		LinkedTile unexploredTile = new LinkedTile(tilePosition, false, false, new Vector3f(0,0,0), false);
-		map.put(tilePosition, unexploredTile);
+		LinkedTile unexploredTile = new LinkedTile(tilePosition, false, true, new Vector3f(0,0,0), false);
+		addTile(unexploredTile);
 		unexploredTiles.put(tilePosition, unexploredTile);
 		return unexploredTile;
 	}
 	
 	public void exploreTile(LinkedTile tile, boolean isWater, boolean isPassable, Vector3f normalVector) {
+//System.out.println("Tile erkundet: " + tile.mapIndex + " Passierbar: " + isPassable);		
 		tile.exploreTile(isWater, isPassable, normalVector);
 		if(unexploredTiles.containsKey(tile.getMapIndex())) {
 			unexploredTiles.remove(tile.getMapIndex());
 		}
+	}
+	
+	public void markTileAsOutOfMap(LinkedTile tile) {
+		
 	}
 	
 	synchronized public LinkedTile getTileAtMapIndex(Point point){
@@ -141,6 +146,7 @@ public class FastRoutableWorldMap{
 				map.get(pos).exploreTile(tile.isWater(), tile.isPassable(), tile.getNormalVector());
 			}
 		}
+//System.out.println("Tile Hinzugefügt: " + tile.mapIndex + " Passierbar: " + tile.isPassable);		
 		Point neighbourNorth = new Point(pos.x, pos.y+1);
 		Point neighbourSouth = new Point(pos.x, pos.y-1);
 		Point neighbourEast = new Point(pos.x-1, pos.y);
@@ -153,41 +159,65 @@ public class FastRoutableWorldMap{
 		LinkedTile tmpTile = map.get(neighbourNorth);
 		if(null != tmpTile) {
 			tmpTile.addNeighbour(tile, LinkedTile.DIRECTION_SOUTH);
+			if(tmpTile.isOutOfMap) {
+				tile.isPassable = false;
+			}
 		}
 		
 		tmpTile = map.get(neighbourSouth);
 		if(null != tmpTile) {
 			tmpTile.addNeighbour(tile, LinkedTile.DIRECTION_NORTH);
+			if(tmpTile.isOutOfMap) {
+				tile.isPassable = false;
+			}
 		}
 		
 		tmpTile = map.get(neighbourEast);
 		if(null != tmpTile) {
 			tmpTile.addNeighbour(tile, LinkedTile.DIRECTION_WEST);
+			if(tmpTile.isOutOfMap) {
+				tile.isPassable = false;
+			}
 		}
 		
 		tmpTile = map.get(neighbourWest);
 		if(null != tmpTile) {
 			tmpTile.addNeighbour(tile, LinkedTile.DIRECTION_EAST);
+			if(tmpTile.isOutOfMap) {
+				tile.isPassable = false;
+			}
 		}
 		
 		tmpTile = map.get(neighbourNortheast);
 		if(null != tmpTile) {
 			tmpTile.addNeighbour(tile, LinkedTile.DIRECTION_SOUTHWEST);
+			if(tmpTile.isOutOfMap) {
+				tile.isPassable = false;
+			}
 		}
 		
 		tmpTile = map.get(neighbourNorthwest);
 		if(null != tmpTile) {
 			tmpTile.addNeighbour(tile, LinkedTile.DIRECTION_SOUTHEAST);
+			if(tmpTile.isOutOfMap) {
+				tile.isPassable = false;
+			}
 		}
 		
 		tmpTile = map.get(neighbourSoutheast);
 		if(null != tmpTile) {
 			tmpTile.addNeighbour(tile, LinkedTile.DIRECTION_NORTHWEST);
+			if(tmpTile.isOutOfMap) {
+				tile.isPassable = false;
+			}
 		}
 		
 		tmpTile = map.get(neighbourSouthwest);
 		if(null != tmpTile) {
 			tmpTile.addNeighbour(tile, LinkedTile.DIRECTION_NORTHEAST);
+			if(tmpTile.isOutOfMap) {
+				tile.isPassable = false;
+			}
 		}
 		
 		map.put(tile.mapIndex, tile);
@@ -195,6 +225,13 @@ public class FastRoutableWorldMap{
 	
 	public Map<Point, LinkedTile> getUnexploredTiles() {
 		return unexploredTiles;
+	}
+	
+	public boolean tileIsInViewRange(Vector3f myPosition, Vector3f viewDirection, LinkedTile tile) {
+		if(50 >= myPosition.add(viewDirection.normalize().mult(30)).distance(tile.getTileCenterCoordinates())) {
+			return true;
+		}
+		return false;
 	}
 	
 	//===================================================
@@ -230,7 +267,7 @@ public class FastRoutableWorldMap{
 	 * @return the world coordinates of the Tile center
 	 */
 	public static Vector3f getTileCenterCoordinates(Point position){
-		return new Vector3f(position.x*tilesize+tilesize/2,0,position.y*tilesize+tilesize/2);
+		return new Vector3f((position.x - 1)*tilesize + tilesize/2, 0, (position.y - 1)*tilesize + tilesize/2);
 	}
 
 	

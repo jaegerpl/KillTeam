@@ -60,7 +60,8 @@ public class AStarPathCalculator {
 			cost = 1.4f;
 		}
 		if(!toCoord.isPassable() || toCoord.isWater()) {
-			cost = 10000000000000000000000000f;
+			cost = Float.POSITIVE_INFINITY;
+			
 		}
 		return cost;
 	}
@@ -70,6 +71,10 @@ public class AStarPathCalculator {
 		Iterator<PathCalculatorNode> it = neighbours.iterator();
 		while(it.hasNext()) {
 			PathCalculatorNode currentNode = it.next();
+			LinkedTile neighbourTile = currentNode.getCoordinate();
+			if(!neighbourTile.isPassable() || neighbourTile.isWater()) {
+				continue;
+			}
 			if(!closedList.contains(currentNode)) {
 				
 			}

@@ -61,6 +61,10 @@ public class MemorizedMap {
 		worldMap.exploreTile(tile, isWater, isPassable, normalVector);
 	}
 	
+	public void markTileAsOutOfMap(LinkedTile tile) {
+		worldMap.markTileAsOutOfMap(tile);
+	}
+	
 	
 	public void addTile(LinkedTile tile){
 		worldMap.addTile(tile);
@@ -108,6 +112,10 @@ public class MemorizedMap {
 	public int getApproxDistance(Point x, Point y){
 		AStarPathCalculator astar = new AStarPathCalculator(this);
 		return astar.calculateApproximatedDistance(x, y);
+	}
+	
+	public boolean tileIsInViewRange(Vector3f myPosition, Vector3f viewDirection, LinkedTile tile) {
+		return worldMap.tileIsInViewRange(myPosition, viewDirection, tile);
 	}
 
 }
