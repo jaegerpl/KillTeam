@@ -12,11 +12,13 @@ import de.lunaticsoft.combatarena.api.enumn.EColors;
 
 public class ObjectStorage {
 
+	Map<String, MemorizedWorldObject> knownObjects;
 	Map<Point, MemorizedWorldObject> items;
 	Map<EColors, Map<Point, MemorizedWorldObject>> hangars;
 	Map<EColors, Map<Point, MemorizedWorldObject>> tanks;
 
 	public ObjectStorage() {
+		knownObjects = new HashMap<String, MemorizedWorldObject>();
 		items = new HashMap<Point, MemorizedWorldObject>();
 		hangars = new HashMap<EColors, Map<Point,MemorizedWorldObject>>();
 		tanks = new HashMap<EColors, Map<Point,MemorizedWorldObject>>();
@@ -27,32 +29,40 @@ public class ObjectStorage {
 	}
 	
 	public void storeObject(Vector3f position, MemorizedWorldObject object) {
-		Point objectPosition = FastRoutableWorldMap.coordinates2MapIndex(position);
-		switch(object.getType()) {
-			case Competitor:
-				tanks.get(object.getColor()).put(objectPosition, object);
-				break;
-			case Hangar:
-				hangars.get(object.getColor()).put(objectPosition, object);
-				break;
-			case Item:
-				items.put(objectPosition, object);
-				break;
+		String uniqueIdentifier = object.getUniqueIdentifier();
+		if(!knownObjects.containsKey(uniqueIdentifier)){
+			Point objectPosition = FastRoutableWorldMap.coordinates2MapIndex(position);
+			switch(object.getType()) {
+				case Competitor:
+					tanks.get(object.getColor()).put(objectPosition, object);
+					break;
+				case Hangar:
+					hangars.get(object.getColor()).put(objectPosition, object);
+					break;
+				case Item:
+					items.put(objectPosition, object);
+					break;
+			}
+			knownObjects.put(uniqueIdentifier, object);
 		}
 	}
 	
 	public void removeObject(Vector3f position, MemorizedWorldObject object) {
-		Point objectPosition = FastRoutableWorldMap.coordinates2MapIndex(position);
-		switch(object.getType()) {
-			case Competitor:
-				tanks.get(object.getColor()).remove(objectPosition);
-				break;
-			case Hangar:
-				hangars.get(object.getColor()).remove(objectPosition);
-				break;
-			case Item:
-				items.remove(objectPosition);
-				break;
+		String uniqueIdentifier = object.getUniqueIdentifier();
+		if(knownObjects.containsKey(uniqueIdentifier)) {
+			Point objectPosition = FastRoutableWorldMap.coordinates2MapIndex(position);
+			switch(object.getType()) {
+				case Competitor:
+					tanks.get(object.getColor()).remove(objectPosition);
+					break;
+				case Hangar:
+					hangars.get(object.getColor()).remove(objectPosition);
+					break;
+				case Item:
+					items.remove(objectPosition);
+					break;
+			}
+			knownObjects.remove(uniqueIdentifier);
 		}
 	}
 	

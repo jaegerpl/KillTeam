@@ -37,15 +37,19 @@ import java.util.Random;
 
 import map.fastmap.LinkedTile;
 import memory.map.MemorizedMap;
+import memory.objectStorage.MemorizedWorldObject;
+import memory.objectStorage.ObjectStorage;
 
 import com.jme.math.FastMath;
 import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
 
 import de.lunaticsoft.combatarena.api.enumn.EColors;
+import de.lunaticsoft.combatarena.api.enumn.EObjectTypes;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
+import de.lunaticsoft.combatarena.objects.WorldObject;
 
 public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
@@ -74,6 +78,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	private GlobalKI globalKI;
 	private Map<Point, Boolean> localMap = new HashMap<Point, Boolean>();
 	private MemorizedMap memoryMap;
+	private ObjectStorage objectStorage = new ObjectStorage();
 
 	public KillKI(String name, GlobalKI globalKI) {
 		System.out.println("KillKI "+name+" gestartet");
@@ -187,7 +192,8 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	@Override
 	public void die() {
 		
-		
+		WorldObject wO = new WorldObject(null, color, this.pos, EObjectTypes.Item);
+		this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
 		// GOAP STUFF
 		globalKI.getBlackBoard().tanksAlive -= 1; // tell the GlobalKI about death of tank
 	}
@@ -206,15 +212,18 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 			switch(wO.getType()){
 				case Competitor:
 					if(wO.getColor() != this.color){
+						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
 						System.out.println("Feind entdeckt");
 					}
 					break;
 				case Hangar:
 					if(wO.getColor() != this.color){
+						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
 						System.out.println("feindlichen Hangar entdeckt");
 					}
 					break;
 				case Item:
+						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
 						System.out.println("Item entdeckt");
 					break;
 				default: 
