@@ -1,11 +1,11 @@
-package map.memory.pathcalulation;
+package memory.pathcalulation;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import map.fastmap.LinkedTile;
-import map.memory.map.MemorizedMap;
+import memory.map.MemorizedMap;
 
 
 public class Path<T extends LinkedTile> implements Iterable<T>{

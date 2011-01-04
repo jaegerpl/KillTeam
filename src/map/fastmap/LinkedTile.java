@@ -4,7 +4,7 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 
-import map.memory.pathcalulation.IPathNode;
+import memory.pathcalulation.IPathNode;
 
 import com.jme.math.Vector3f;
 

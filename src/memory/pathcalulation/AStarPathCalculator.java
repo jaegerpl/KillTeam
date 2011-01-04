@@ -1,4 +1,4 @@
-package map.memory.pathcalulation;
+package memory.pathcalulation;
 
 import java.awt.Point;
 import java.util.ArrayList;
