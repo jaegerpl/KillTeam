@@ -489,5 +489,17 @@ System.out.println("PassableTest: " +  world.isPassable(moveTarget.getTileCenter
 		world.move(newdir);
 	}
 
+	@Override
+	public IWorldInstance getWorld() {
+		// TODO Auto-generated method stub
+		return world;
+	}
+
+	@Override
+	public GlobalKI getGlobalKi() {
+		// TODO Auto-generated method stub
+		return globalKI;
+	}
+
 
 }
