@@ -172,10 +172,11 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		if(startPos.distance(world.getMyPosition()) > 15)
 			imHangar = false;
 		
-		if(lastPos == null){
-			direction = new Vector3f(FastMath.rand.nextInt(200),0, FastMath.rand.nextInt(200));
-		}
-		else if(!imHangar){
+		//if(lastPos == null){
+		//	direction = new Vector3f(FastMath.rand.nextInt(200),0, FastMath.rand.nextInt(200));
+		//}
+		//else 
+			if(!imHangar){
 			
 			if(lastPos != null && lastPos.distance(world.getMyPosition()) < 0.06f){
 				//System.out.println("STUCK");
