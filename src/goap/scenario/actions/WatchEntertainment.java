@@ -27,8 +27,9 @@ public class WatchEntertainment extends Action{
 	private GoapActionSystem as;
 	
 	public WatchEntertainment(GoapActionSystem as, String name, float cost) {
-		super(name, cost);
-		
+
+	    super(1, null, null,null );
+
 		this.as = as;
 //		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.Entertained, true, PropertyType.Boolean));
 //		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.AtDestination, true, PropertyType.Boolean));

@@ -12,6 +12,8 @@
 
 package goap.scenario.actions;
 
+import java.util.ArrayList;
+
 import goap.goap.Action;
 import goap.goap.PropertyType;
 import goap.goap.TankWorldProperty;
@@ -35,13 +37,15 @@ public class GotoLocation extends Action{
 	protected GoapActionSystem as;
 
 	public GotoLocation(GoapActionSystem as, String name, float cost) {
-		super(name, cost);
+	    super(1, null, null,null );
+
 
 		this.as = as;
 		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.AtDestination,
 				true, PropertyType.Boolean));
 		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.HasDestination,
 				true, PropertyType.Boolean));
+		
 	}
 
 	public void performAction() {

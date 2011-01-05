@@ -16,6 +16,8 @@ import goap.pathfinding.NavigationMap;
 
 import java.util.ArrayList;
 
+import map.fastmap.LinkedTile;
+
 
 import com.jme.math.Vector3f;
 
@@ -51,6 +53,7 @@ public class TankBlackboard {
 	public boolean underAttack;
 	public AttackState attacking = AttackState.nothing;
 	public boolean hasDestination;
+	public LinkedTile tile;
 	public boolean atDestination;
 	public Vector3f currentPosition;
 	public Vector3f direction;

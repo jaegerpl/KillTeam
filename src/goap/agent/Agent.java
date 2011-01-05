@@ -11,6 +11,9 @@
  */
 package goap.agent;
 
+import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
+import de.lunaticsoft.combatarena.api.killteam.GlobalKI;
+
 /**
  * Base class for all Agents based on the C4 Architecture
  * @author Klinge
@@ -40,6 +43,9 @@ public abstract class Agent{
 		return blackboard;
 	}
 	
+	public abstract IWorldInstance getWorld();
+	
+	public abstract GlobalKI getGlobalKi();
 	/**
 	 * Updates the agents memory and sensory system
 	 */

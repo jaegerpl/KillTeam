@@ -24,14 +24,8 @@ public class LinkedTile implements IPathNode {
 	protected int precisionLevel;
 	
 	public boolean isWater;
-	@Override
-	public String toString() {
-		return "LinkedTile [linkedTiles=" + linkedTiles + ", precisionLevel="
-				+ precisionLevel + ", isWater=" + isWater + ", isPassable="
-				+ isPassable + ", normalVector=" + normalVector + ", mapIndex="
-				+ mapIndex + ", tileCenterCoordinates=" + tileCenterCoordinates
-				+ ", isExplored=" + isExplored + "]";
-	}
+
+
 
 	public boolean isPassable;
 	protected Vector3f normalVector;
