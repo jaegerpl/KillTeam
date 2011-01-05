@@ -19,6 +19,8 @@ import java.util.ArrayList;
 
 import com.jme.math.Vector3f;
 
+import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
+
 /**
  * Class which holds all data that should be shared between different modules
  * @author Klinge
@@ -54,4 +56,8 @@ public class TankBlackboard {
 	public boolean atDestination;
 	public Vector3f currentPosition;
 	public Vector3f direction;
+	
+	public IWorldObject spottedToolBox = null; // IWorldObject of type Item
+	
+	public boolean inHangar = false;
 }

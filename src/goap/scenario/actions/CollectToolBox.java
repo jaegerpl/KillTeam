@@ -12,6 +12,8 @@
 
 package goap.scenario.actions;
 
+import java.util.ArrayList;
+
 import goap.goap.Action;
 import goap.goap.PropertyType;
 import goap.goap.TankWorldProperty;
@@ -19,49 +21,47 @@ import goap.goap.WorldStateSymbol;
 import goap.scenario.GoapActionSystem;
 
 /**
- * Action to move the tank to a specified location in the map.
+ * Action to collect a ToolBox. The tanks blackboard has a reference to the spotted toolbox, 
+ * to check if the toolbox at the specific position has been removed by someone.
  * 
  * preCond
- *  - inHangar = false
- *  - hasDestination = true
- *  Effect
- *  - atDestination
- *  - hasDestination = false
- *  
+ * - toolBoxSpotted = true
+ * Effect
+ * - toolBoxSpotted = false ( man muss irgendwie die Location der ToolBox da noch mit reinbringen)
+ * 
  * @author Pascal Jaeger
  *
  */
-public class GoToLocation extends Action{
+public class CollectToolBox extends Action{
 
 	protected GoapActionSystem as;
 
-	public GoToLocation(GoapActionSystem as, String name, float cost) {
+	public CollectToolBox(GoapActionSystem as, String name, float cost) {
 	    super(1, null, null,null );
 
 
 		this.as = as;
-		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.HasDestination, false, PropertyType.Boolean));
-		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.AtDestination, true, PropertyType.Boolean));
-		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.HasDestination, true, PropertyType.Boolean));
-		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.InHangar, true, PropertyType.Boolean));
+		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.ToolBoxSpotted,
+				false, PropertyType.Boolean));
+		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.HasDestination,
+				true, PropertyType.Boolean));
 		
 	}
 
 	public void performAction() {
-		// movement goes here
+	
 	}
 
 	public boolean isFinished() {
-		if(as.getBlackboard().hasDestination == true && as.getBlackboard().atDestination == true){
-			return true;
-		}
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean isValid() {
-		// Gruende, warum diese Aktion nicht mehr ausgeführt werden koennte?
-		return true;
+		if(as.getBlackboard().spottedToolBox != null){
+			return true;
+		}
+		return false;
 	}
 
 	@Override

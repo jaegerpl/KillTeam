@@ -6,10 +6,6 @@ import goap.goap.Action;
 import goap.goap.Goal;
 import goap.goap.IGOAPListener;
 import goap.pathfinding.NavigationMap;
-import goap.scenario.actions.WatchEntertainment;
-import goap.scenario.goals.Explore;
-import goap.scenario.sensors.ActionSensor;
-import goap.scenario.sensors.FoodSensor;
 
 import java.util.List;
 import java.util.Random;
@@ -21,6 +17,9 @@ import com.jme.scene.Spatial;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.MaterialState;
+
+import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
+import de.lunaticsoft.combatarena.api.killteam.GlobalKI;
 
 /*
  * Copyright (C) 2009 Arne Klingenberg
@@ -70,10 +69,6 @@ public class Pedestrian extends Agent implements IGOAPListener{
 
 //		private AppearanceController ac;
 //		((GoapActionSystem)actionSystem).addGOAPListener(ac);
-
-		
-		sensorySystem.addSensor(new FoodSensor(this));
-		sensorySystem.addSensor(new ActionSensor(this));
 		
 		createNavLocations();
 		
@@ -103,11 +98,11 @@ public class Pedestrian extends Agent implements IGOAPListener{
 	
 	
 	private void generateGoals(){
-		((GoapActionSystem)actionSystem).addGoal(new Explore("Explore",0.6f, (GoapActionSystem) actionSystem));
+//		((GoapActionSystem)actionSystem).addGoal(new Explore("Explore",0.6f, (GoapActionSystem) actionSystem));
 	}
 	
 	private void generateActions(){			
-		((GoapActionSystem)actionSystem).addAction(new WatchEntertainment((GoapActionSystem) this.actionSystem,"WatchEntertianment",1.0f));
+//		((GoapActionSystem)actionSystem).addAction(new WatchEntertainment((GoapActionSystem) this.actionSystem,"WatchEntertianment",1.0f));
 	}
 	
     private void createNavLocations(){
@@ -227,6 +222,18 @@ public class Pedestrian extends Agent implements IGOAPListener{
 		if(oldGoal != null){
 			// TODO
 		}
+	}
+
+	@Override
+	public GlobalKI getGlobalKi() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IWorldInstance getWorld() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 //	public void setBordeom(float value)

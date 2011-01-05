@@ -373,6 +373,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		// GOAP STUFF
 		globalKI.getBlackBoard().tanksAlive += 1;// tell GlobalKI about rebirth of tank
 		blackboard.direction = direction;
+		blackboard.inHangar = true;
 	}
 
 	public String getName() {
@@ -460,6 +461,18 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		newdir = mat.mult(dir, newdir);
 		
 		world.move(newdir);
+	}
+
+	@Override
+	public GlobalKI getGlobalKi() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IWorldInstance getWorld() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 

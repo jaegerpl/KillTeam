@@ -21,7 +21,6 @@ import de.lunaticsoft.combatarena.api.killteam.GlobalKI;
  */
 public abstract class Agent{
 	
-	protected SensorySystem sensorySystem;
 	protected WorkingMemory memory;
 	protected TankBlackboard blackboard;
 	protected IActionSystem actionSystem;
@@ -29,7 +28,6 @@ public abstract class Agent{
 	public Agent()
 	{
 		memory = new WorkingMemory();
-		sensorySystem = new SensorySystem(memory);
 		blackboard = new TankBlackboard();
 		
 	}
@@ -50,7 +48,6 @@ public abstract class Agent{
 	 * Updates the agents memory and sensory system
 	 */
 	public void update(){
-		sensorySystem.update();
 		memory.update();
 		//actionSystem.selectAction();
 	}
