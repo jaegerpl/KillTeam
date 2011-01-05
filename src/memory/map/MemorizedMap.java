@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import map.fastmap.FastRoutableWorldMap;
@@ -68,6 +69,19 @@ public class MemorizedMap {
 	
 	public void addTile(LinkedTile tile){
 		worldMap.addTile(tile);
+	}
+	
+	public TreeMap<Integer, LinkedTile> getUnexploredTilesSortedByDistance(Vector3f position) {
+		TreeMap<Integer, LinkedTile> sortedTiles = new TreeMap<Integer, LinkedTile>();
+		
+		Point myPosition = worldMap.getTileAtCoordinate(position).getMapIndex();
+		Map<Point, LinkedTile> unexploredTiles = worldMap.getUnexploredTiles();
+		
+		for(LinkedTile tile : unexploredTiles.values()) {
+			sortedTiles.put(pathCalculator.calculateApproximatedDistance(myPosition, tile.getMapIndex()), tile);
+		}
+		
+		return sortedTiles;
 	}
 	
 	public LinkedTile getNearestUnexploredTile(Vector3f position) {

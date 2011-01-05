@@ -13,14 +13,14 @@
 package goap.goap;
 
 /**
- * The world properties represent all properties GlobalKI's world may have
- * @author Pascal Jaeger
+ * The world properties represent all properties a specific world may have
+ * @author Klinge
  */
 public enum GlobalKIWorldProperty {
-	HangarUnderAttack, 		// Hangar wird angegriffen
-	MapExplored, 			// gibt an ob eine Karte vollstaendig aufgaut wurde
-	TankUnderAttack, 		// zeigt an, dass ein Tank angegriffen wird
-	EnemieHangarSpotted, 	// zaehlt wieiviele Hangars gefunden wurden
-	EnemieHangarsDestroyed 	// zŠhlt wieviele Hangars zerstoert wurden
+	HangarUnderAttack, // Hangar wird angegriffen
+	MapExplored, // gibt an ob eine Karte vollstï¿½ndig aufgaut wurde
+	TankUnderAttack, // zeigt an, dass ein Tank angegriffen wird
+	EnemieHangarSpotted, // zï¿½hlt wieiviele Hangars gefunden wurden
+	EnemieHangarsDestroyed // zï¿½hlt wieviele Hangars zerstï¿½rt wurden
 }
 			

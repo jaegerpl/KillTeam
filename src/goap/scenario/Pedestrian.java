@@ -22,9 +22,6 @@ import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.MaterialState;
 
-import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
-import de.lunaticsoft.combatarena.api.killteam.GlobalKI;
-
 /*
  * Copyright (C) 2009 Arne Klingenberg
  * E-Mail: klingenberg.a@googlemail.com
@@ -37,7 +34,7 @@ import de.lunaticsoft.combatarena.api.killteam.GlobalKI;
  * this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-public  class Pedestrian extends Agent implements IGOAPListener{
+public class Pedestrian extends Agent implements IGOAPListener{
 
 	private Box box;
 	private Sphere visualRange;
@@ -230,18 +227,6 @@ public  class Pedestrian extends Agent implements IGOAPListener{
 		if(oldGoal != null){
 			// TODO
 		}
-	}
-
-	@Override
-	public IWorldInstance getWorld() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public GlobalKI getGlobalKi() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 	
 //	public void setBordeom(float value)

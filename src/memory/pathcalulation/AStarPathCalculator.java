@@ -21,7 +21,9 @@ public class AStarPathCalculator {
 	public Path<LinkedTile> calculatePath(LinkedTile start, LinkedTile destination) {
 		SortedList<PathCalculatorNode> openList = new SortedList<PathCalculatorNode>();
 		ArrayList<PathCalculatorNode> closedList = new ArrayList<PathCalculatorNode>();
+		ArrayList<Point> visited = new ArrayList<Point>();
 		
+		visited.add(start.getMapIndex());
 		openList.add(new PathCalculatorNode(start, calculateApproximatedDistance(start, destination), 0));
 		
 		do {
@@ -30,7 +32,7 @@ public class AStarPathCalculator {
 				//Pfad gefunden
 				return extractPath(currentNode);
 			}
-			expandNode(currentNode, openList, closedList);
+			expandNode(currentNode, openList, closedList, visited);
 			closedList.add(currentNode);
 			
 		} while(0 < openList.size());
@@ -66,15 +68,16 @@ public class AStarPathCalculator {
 		return cost;
 	}
 	
-	protected void expandNode(PathCalculatorNode predesessor, SortedList<PathCalculatorNode> openList, List<PathCalculatorNode> closedList) {
+	protected void expandNode(PathCalculatorNode predesessor, SortedList<PathCalculatorNode> openList, List<PathCalculatorNode> closedList, List<Point> visitedList) {
 		List<PathCalculatorNode> neighbours = getNeighbourNodes(predesessor);
 		Iterator<PathCalculatorNode> it = neighbours.iterator();
 		while(it.hasNext()) {
 			PathCalculatorNode currentNode = it.next();
 			LinkedTile neighbourTile = currentNode.getCoordinate();
-			if(!neighbourTile.isPassable() || neighbourTile.isWater()) {
+			if(!neighbourTile.isPassable() || neighbourTile.isWater() || visitedList.contains(neighbourTile.getMapIndex())) {
 				continue;
 			}
+			visitedList.add(neighbourTile.getMapIndex());
 			if(!closedList.contains(currentNode)) {
 				
 			}

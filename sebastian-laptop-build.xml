@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+
+<project name="TankArena-KI" default="build" basedir=".">
+
+	<property name="external_distribution" value="true" />
+
+
+	<property name="build.dir" value="${basedir}/bin" />
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="build.lib" value="${basedir}/lib" />
+	<property name="common.build.dir" value="${basedir}/../TankArena/bin" />
+	<property name="common.src.dir" value="${basedir}/../TankArena/src" />
+	<property name="deploy.dir" value="${basedir}/../TankArena/KIjars" />
+
+	<path id="project.classpath">
+		<fileset dir="${build.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+		<pathelement path="${build.dir}" />
+	</path>
+
+	<path id="common.project.classpath">
+		<fileset dir="${common.build.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+		<pathelement path="${common.build.dir}" />
+	</path>
+
+	<!-- ================================= 
+          target: compile              
+         ================================= -->
+	<target name="compile">
+		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="on">
+			<classpath refid="project.classpath" />
+		</javac>
+		<javac srcdir="${common.src.dir}" destdir="${common.build.dir}" debug="on">
+			<classpath refid="common.project.classpath" />
+		</javac>
+	</target>
+
+	<!-- ================================= 
+          target: clean              
+         ================================= -->
+	<target name="clean" description="delete all derived objects">
+
+	</target>
+
+	<!-- ================================= 
+          target: dist-jar              
+         ================================= -->
+	<target name="distjar" depends="clean,compile" description="Create a jar">
+		<jar destfile="${deploy.dir}/killteam.jar" includes="**/*.{class|xml}">
+			<fileset dir="${build.dir}" />
+		</jar>
+	</target>
+
+	<!-- ================================= 
+          target: build              
+         ================================= -->
+	<target name="build" depends="distjar" description="Will create a dristributable jar">
+
+	</target>
+</project>
