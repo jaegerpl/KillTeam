@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 
 import map.fastmap.FastRoutableWorldMap;
 import map.fastmap.LinkedTile;
@@ -73,7 +74,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	private boolean imHangar = true;
 	Path<LinkedTile> path = null;
 
-	private boolean stop = false;
+	private boolean pathReset = false;
 	
 	
 	// my variables
@@ -91,7 +92,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	private ObjectStorage objectStorage = new ObjectStorage();
 
 	public KillKI(String name, GlobalKI globalKI) {
-		System.out.println("KillKI "+name+" gestartet");
+		//System.out.println("KillKI "+name+" gestartet");
 		this.name = name;
 		
 		this.memoryMap = globalKI.getWorldMap();
@@ -128,10 +129,15 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		
 		LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
 
-		//Prï¿½fen ob durch neue Erkundung das Zwischenziel nicht mehr betretbar ist
-		if(null != moveTarget && !moveTarget.isPassable()) {
-			path = null;
-			moveTarget = null;
+		//Prüfen ob durch neue Erkundung das Zwischenziel nicht mehr betretbar ist
+		if(null != moveTarget && (!moveTarget.isPassable() || !myPosTile.isPassable())) {
+			if(!pathReset) {
+				path = null;
+				moveTarget = null;
+				pathReset = true;
+			}
+		} else {
+			pathReset = false;
 		}
 		
 		
@@ -155,14 +161,9 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	}
 	
 	private Vector3f rotateVector(Vector3f vec, float phi){
-		Vector3f result = vec.clone();
-		//result.x = FastMath.cos((float) (FastMath.atan2(vec.z, vec.x)+phi));
-	//	result.z = FastMath.sin((float) (FastMath.atan2(vec.z, vec.x)+phi));
-		
-		result.x =vec.x * FastMath.cos(FastMath.DEG_TO_RAD*phi) - vec.z*FastMath.sin(FastMath.DEG_TO_RAD*phi);
-		
-		result.z =vec.z * FastMath.cos(FastMath.DEG_TO_RAD*phi) + vec.x*FastMath.sin(FastMath.DEG_TO_RAD*phi);
-		
+		Vector3f result = vec.clone();		
+		result.x =vec.x * FastMath.cos(FastMath.DEG_TO_RAD*phi) - vec.z*FastMath.sin(FastMath.DEG_TO_RAD*phi);		
+		result.z =vec.z * FastMath.cos(FastMath.DEG_TO_RAD*phi) + vec.x*FastMath.sin(FastMath.DEG_TO_RAD*phi);	
 		return result;
 	}
 	
@@ -175,103 +176,65 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 			direction = new Vector3f(FastMath.rand.nextInt(200),0, FastMath.rand.nextInt(200));
 		}
 		else if(!imHangar){
+			
+			if(lastPos != null && lastPos.distance(world.getMyPosition()) < 0.06f){
+				//System.out.println("STUCK");
+			}
+			
 			LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
-			//System.out.println("Wï¿½rde mich gern bewegen");
+			//System.out.println("Würde mich gern bewegen");
 			
 			if(null != path && !path.isEmpty()) {
 				//System.out.println("Path ist nicht NULL!");
 				if(myPosTile.equals(moveTarget)) {
-					System.out.println("Zwischenziel erreicht");
+					//System.out.println("Zwischenziel erreicht");
 					moveTarget = path.getNextWaypoint();
-/*System.out.println();
-System.out.println("Aktuelle Position: " + myPosTile);
-System.out.println("Neues Zwischenziel: " + moveTarget);
-System.out.println("PassableTest: " +  world.isPassable(moveTarget.getTileCenterCoordinates()));*/
 				}
 			} else {
 				//Neuen Pfad berechnen
-				System.out.println("Neuen Pfad berechnen.");
+				//System.out.println("Neuen Pfad berechnen.");
 				//LinkedTile targetTile = memoryMap.getNearestUnexploredTile(pos);
 				Vector3f targetPos = this.pos.add(direction.normalize().mult(60));
 				LinkedTile targetTile = memoryMap.getTileAtCoordinate(targetPos);
-				if(targetTile.isPassable()) {
-					path = memoryMap.calculatePath(myPosTile, targetTile);
-					if(path.isEmpty()) {
+				if(!targetTile.isExplored()){
+					if(targetTile.isPassable()) {
+						path = memoryMap.calculatePath(myPosTile, targetTile);
+						if(path.isEmpty()) {
+							this.direction = rotateVector(this.direction, 10);
+							moveTarget = null;
+						} else {
+	//System.out.println("########### Pfad gefunden ###########");
+							moveTarget = path.getNextWaypoint();
+	//System.out.println("Meine Position: " + myPosTile.getMapIndex());
+	//System.out.println("Pfad: " + path);
+						}
+					} else {
+						//Rotieren und weitersuchen
 						this.direction = rotateVector(this.direction, 10);
 						moveTarget = null;
-					} else {
-					//	System.out.println("########### Pfad gefunden ###########");
-						moveTarget = path.getNextWaypoint();
-					//	System.out.println("Pfad: " + path);
 					}
 				} else {
-					//Rotieren und weitersuchen
-					this.direction = rotateVector(this.direction, 10);
-					moveTarget = null;
+					TreeMap<Integer, LinkedTile> sortedTiles = memoryMap.getUnexploredTilesSortedByDistance(pos);
+					for(LinkedTile tile : sortedTiles.values()) {
+						path = memoryMap.calculatePath(myPosTile, tile);
+						if(!path.isEmpty()) {
+							moveTarget = path.getNextWaypoint();
+							break;
+						}
+					}
 				}
 			}
 			
-			/*
-			//neues ziel berechnen wenn ziel erreicht wurde
 			
-			
-			//nï¿½chsten Wegpunkt als Ziel anvisieren
-			if(myPosTile.equals(moveTarget) || moveTarget == null || path.isEmpty())
-			{
-				//neues Ziel berechnen
-				if(path.isEmpty()){
-					Vector3f eov = new Vector3f();
-					
-					eov = world.getMyPosition().clone().add(direction.clone().normalize().mult(20));
-					LinkedTile targetTile = this.globalKI.getWorldMap().getTileAtCoordinate(eov);
-					if(!targetTile.isPassable()) {
-						targetTile = memoryMap.getNearestUnexploredTile(pos);
-					}
-					path = memoryMap.calculatePath(myPosTile, targetTile);
-					if(path.isEmpty()) {
-						//Kein Pfad in aktueller Richtung gefunden
-						direction = rotateVector(this.direction, 45);
-						eov = world.getMyPosition().clone().add(direction.clone().normalize().mult(40));
-						targetTile = this.globalKI.getWorldMap().getTileAtCoordinate(eov);
-					}*/
-					
-					/*while(path.isEmpty() || !targetTile.isPassable() || !targetTile.isExplored()){
-						System.out.println("Berechne nï¿½chstes Ziel, eov:"+eov);
-						direction = rotateVector(direction,10);
-						eov = world.getMyPosition().clone().add(direction.clone().normalize().mult(20));
-					//	System.out.println("vor drehen: "+direction);
-					//	System.out.println("nach drehen: "+rotateVector(direction, 360));
-						this.
-						//TODO pfad nur berechnen wenn tile passable und explored ist
-						path = this.globalKI.getWorldMap().calculatePath(this.globalKI.getWorldMap().getTileAtCoordinate(world.getMyPosition()), this.globalKI.getWorldMap().getTileAtCoordinate(eov));
-						
-						System.out.println("is eov passable: "+this.globalKI.getWorldMap().getTileAtCoordinate(eov).isPassable());
-						System.out.println("empty: "+path.isEmpty());
-
-					}*/
-		/*			System.out.println("Wegpunkte: "+path.waypointCount());
-				}
-				System.out.println("Wegpunkt erreicht, lese nï¿½chsten Wegpunkt, Wegpunkte im Pfad"+path.waypointCount());
-				moveTarget = path.getNextWaypoint();
-			}*/
 			 
-		}
-		else if(lastPos.distance(world.getMyPosition()) < 0.06f){
-			//world.isWater(world.getMyPosition().add(world.getMyDirection().normalize().mult(3)));
-			System.out.println("STUCK");
-			//System.out.println("olddirection: "+direction);
-			//direction = rotateVector(direction, 45);
-			//System.out.println("newdirection: "+direction);
-		}
-		lastPos = world.getMyPosition();
-			
-		
+		}	
+		lastPos = world.getMyPosition();		
 	}
 	
 
 	@Override
 	public void setWorldInstance(IWorldInstance world) {
-		System.out.println("Panzer "+name+" hat World Instanz bekommen.");
+		//System.out.println("Panzer "+name+" hat World Instanz bekommen.");
 		this.world = world;
 		globalKI.setWorldInstance(world);
 	}
@@ -321,7 +284,7 @@ System.out.println("PassableTest: " +  world.isPassable(moveTarget.getTileCenter
 		world.shoot(direction, speed, 30);
 
 		// ACHTUNG: Keine Ausgaben in der Abgabe (VorfÃ¼hrung)! "Logger" benutzen
-		System.out.println("================\r\n" + out + "\r\n================");
+		//System.out.println("================\r\n" + out + "\r\n================");
 	}
 
 	@Override
@@ -360,10 +323,10 @@ System.out.println("PassableTest: " +  world.isPassable(moveTarget.getTileCenter
 				case Competitor:
 					if(wO.getColor() != this.color){
 						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
-						System.out.println("Panzer gefunden: " + wO.hashCode());
+						//System.out.println("Panzer gefunden: " + wO.hashCode());
 						ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
 						world.shoot(target.direction, target.force, target.angle);
-						System.out.println("Feind entdeckt");
+						//System.out.println("Feind entdeckt");
 					}
 					break;
 				case Hangar:
@@ -371,15 +334,15 @@ System.out.println("PassableTest: " +  world.isPassable(moveTarget.getTileCenter
 						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
 						ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
 						world.shoot(target.direction, target.force, target.angle);
-						System.out.println("feindlichen Hangar entdeckt");
+						//System.out.println("feindlichen Hangar entdeckt");
 					}
 					break;
 				case Item:
 						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
-						System.out.println("Item entdeckt");
+						//System.out.println("Item entdeckt");
 					break;
 				default: 
-					System.out.println("Kein WO");
+					//System.out.println("Kein WO");
 			}
 		}
 		
@@ -390,14 +353,13 @@ System.out.println("PassableTest: " +  world.isPassable(moveTarget.getTileCenter
 	@Override
 	public void spawn() {
 		startPos = world.getMyPosition();
-		System.out.println("StartPos: "+startPos);
+		//System.out.println("StartPos: "+startPos);
 		direction = world.getMyDirection();
 		goalPosition = startPos.add(new Vector3f(1,0,1));
 		goalPosition.x = (int)goalPosition.x;
 		goalPosition.z = (int)goalPosition.z;
 //		goalPosition = new Vector3f(300f,18f,300f);
-		stop = false;
-		System.out.println("goalPosition: "+goalPosition);
+		//System.out.println("goalPosition: "+goalPosition);
 		
 		// GOAP STUFF
 		globalKI.getBlackBoard().tanksAlive += 1;// tell GlobalKI about rebirth of tank
@@ -438,9 +400,6 @@ System.out.println("PassableTest: " +  world.isPassable(moveTarget.getTileCenter
 		for(LinkedTile tile : tiles){
 			boolean isWater = false;
 			boolean isPassable  = true;
-//if(tile.getMapIndex().x == 1 && tile.getMapIndex().y == 14) {
-//	System.out.println("Debug mich");
-//}
 			Vector3f terrain = world.getTerrainNormal(tile.getTileCenterCoordinates());
 			if(terrain != null){
 				if(!world.isPassable(tile.getTileCenterCoordinates())){
@@ -456,12 +415,17 @@ System.out.println("PassableTest: " +  world.isPassable(moveTarget.getTileCenter
 			} else {
 				if(memoryMap.tileIsInViewRange(pos, world.getMyDirection(), tile)) {
 					//NULL obwohl in Sichtweite
-					memoryMap.exploreTile(tile, false, false, new Vector3f(0,0,0));
+					//memoryMap.exploreTile(tile, false, false, new Vector3f(0,0,0));
+					memoryMap.markTileAsOutOfMap(tile);
 				}
 			}
 		}
-		if(tileWithWater)
-			this.direction  = this.direction.negate();
+		//Direkt voraus gucken
+		Vector3f voraus = pos.add(world.getMyDirection().normalize().mult(2));
+		if(!world.isPassable(voraus)) {
+			LinkedTile tileVoraus = memoryMap.getTileAtCoordinate(voraus);
+			memoryMap.exploreTile(tileVoraus, tileVoraus.isWater(), false, tileVoraus.getNormalVector());
+		}
 
 		
 	}
