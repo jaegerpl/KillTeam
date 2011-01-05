@@ -346,7 +346,8 @@ System.out.println("PassableTest: " +  world.isPassable(moveTarget.getTileCenter
 	}
 
 	@Override
-	public void perceive(ArrayList<IWorldObject> worldObjects) {	
+	public void perceive(ArrayList<IWorldObject> worldObjects) {
+		boolean hangarDiscovered = true;
 		
 		// move WorldObjects into WorkingMemory
 		for (IWorldObject wO : worldObjects) {
@@ -372,6 +373,8 @@ System.out.println("PassableTest: " +  world.isPassable(moveTarget.getTileCenter
 						ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
 						world.shoot(target.direction, target.force, target.angle);
 						System.out.println("feindlichen Hangar entdeckt");
+						this.stop = true;
+						
 					}
 					break;
 				case Item:
@@ -380,6 +383,12 @@ System.out.println("PassableTest: " +  world.isPassable(moveTarget.getTileCenter
 					break;
 				default: 
 					System.out.println("Kein WO");
+			}
+			
+			if(hangarDiscovered){
+				this.stop = true;
+			}else{
+				this.stop = false;
 			}
 		}
 		
