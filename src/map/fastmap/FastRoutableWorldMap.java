@@ -70,7 +70,7 @@ public class FastRoutableWorldMap{
 	}
 	
 	public void markTileAsOutOfMap(LinkedTile tile) {
-		
+		tile.markAsOutOfMap();
 	}
 	
 	synchronized public LinkedTile getTileAtMapIndex(Point point){
@@ -162,6 +162,7 @@ public class FastRoutableWorldMap{
 			if(tmpTile.isOutOfMap) {
 				tile.isPassable = false;
 			}
+			tile.addNeighbour(tmpTile, LinkedTile.DIRECTION_NORTH);
 		}
 		
 		tmpTile = map.get(neighbourSouth);
@@ -170,6 +171,7 @@ public class FastRoutableWorldMap{
 			if(tmpTile.isOutOfMap) {
 				tile.isPassable = false;
 			}
+			tile.addNeighbour(tmpTile, LinkedTile.DIRECTION_SOUTH);
 		}
 		
 		tmpTile = map.get(neighbourEast);
@@ -178,6 +180,7 @@ public class FastRoutableWorldMap{
 			if(tmpTile.isOutOfMap) {
 				tile.isPassable = false;
 			}
+			tile.addNeighbour(tmpTile, LinkedTile.DIRECTION_EAST);
 		}
 		
 		tmpTile = map.get(neighbourWest);
@@ -186,6 +189,7 @@ public class FastRoutableWorldMap{
 			if(tmpTile.isOutOfMap) {
 				tile.isPassable = false;
 			}
+			tile.addNeighbour(tmpTile, LinkedTile.DIRECTION_WEST);
 		}
 		
 		tmpTile = map.get(neighbourNortheast);
@@ -194,6 +198,7 @@ public class FastRoutableWorldMap{
 			if(tmpTile.isOutOfMap) {
 				tile.isPassable = false;
 			}
+			tile.addNeighbour(tmpTile, LinkedTile.DIRECTION_NORTHEAST);
 		}
 		
 		tmpTile = map.get(neighbourNorthwest);
@@ -202,6 +207,7 @@ public class FastRoutableWorldMap{
 			if(tmpTile.isOutOfMap) {
 				tile.isPassable = false;
 			}
+			tile.addNeighbour(tmpTile, LinkedTile.DIRECTION_NORTHWEST);
 		}
 		
 		tmpTile = map.get(neighbourSoutheast);
@@ -210,6 +216,7 @@ public class FastRoutableWorldMap{
 			if(tmpTile.isOutOfMap) {
 				tile.isPassable = false;
 			}
+			tile.addNeighbour(tmpTile, LinkedTile.DIRECTION_SOUTHEAST);
 		}
 		
 		tmpTile = map.get(neighbourSouthwest);
@@ -218,6 +225,7 @@ public class FastRoutableWorldMap{
 			if(tmpTile.isOutOfMap) {
 				tile.isPassable = false;
 			}
+			tile.addNeighbour(tmpTile, LinkedTile.DIRECTION_SOUTHWEST);
 		}
 		
 		map.put(tile.mapIndex, tile);
@@ -228,7 +236,7 @@ public class FastRoutableWorldMap{
 	}
 	
 	public boolean tileIsInViewRange(Vector3f myPosition, Vector3f viewDirection, LinkedTile tile) {
-		if(50 >= myPosition.add(viewDirection.normalize().mult(30)).distance(tile.getTileCenterCoordinates())) {
+		if(50 > myPosition.add(viewDirection.normalize().mult(30)).distance(tile.getTileCenterCoordinates())) {
 			return true;
 		}
 		return false;

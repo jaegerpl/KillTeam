@@ -28,7 +28,7 @@ public class LoadPlayerKI implements ILoadPlayerKI {
 	GlobalKI globalKi = new GlobalKI();
 
 	public IPlayer getKI(int index, String name) {
-		System.out.println(index);
+		//System.out.println(index);
 		switch (index) {
 		case 0:
 		case 1: 
