@@ -39,6 +39,7 @@ public class LinkedTile implements IPathNode {
 	protected Vector3f tileCenterCoordinates;
 	
 	protected boolean isExplored;
+	protected boolean isOutOfMap = false;
 	
 	public LinkedTile(Point position, boolean isWater, boolean isPassable,
 			Vector3f normalVector, boolean isExplored) {
@@ -140,5 +141,23 @@ public class LinkedTile implements IPathNode {
 		
 		this.isExplored = true;
 	}
+	
+	protected void markAsOutOfMap() {
+		this.isWater = false;
+		this.isPassable = false;
+		this.normalVector = new Vector3f(0,0,0);	
+		this.isExplored = true;
+		this.isOutOfMap = true;
+		//Nachbarn sind nicht betretbar
+		for(LinkedTile neighbour : linkedTiles.values()) {
+			neighbour.isPassable = false;
+		}
+	}
 
+	@Override
+	public String toString() {
+		return "[" + this.mapIndex.x + "," + this.mapIndex.y + "] Passierbar:" + isPassable;
+	}
+
+	
 }

@@ -33,28 +33,45 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
+import map.fastmap.FastRoutableWorldMap;
 import map.fastmap.LinkedTile;
+import memory.map.MemorizedMap;
+import memory.objectStorage.MemorizedWorldObject;
+import memory.objectStorage.ObjectStorage;
 import memory.pathcalulation.Path;
 
+import battle.Battle;
+import battle.ShootTarget;
+
 import com.jme.math.FastMath;
+import com.jme.math.Matrix3f;
+import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 
 import de.lunaticsoft.combatarena.api.enumn.EColors;
+import de.lunaticsoft.combatarena.api.enumn.EObjectTypes;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
+import de.lunaticsoft.combatarena.objects.WorldObject;
 
 public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 	private IWorldInstance world;
 	private Vector3f direction; // tanks direction
-	private Vector3f lastPos;		// tank position, last update
+	private Vector3f pos;		// takns last updated position
 	private Vector3f goalPosition; // tanks goal its heading to
-	private LinkedTile moveTarget;
-	private boolean imHangar = true; 
+
+	private Vector3f lastPos = null;
+	private float lastDistance = 0;
+	private EColors color;
 	private String name;
-	Path<LinkedTile> path = new Path();;
+	
+	private LinkedTile moveTarget;
+	private boolean imHangar = true;
+	Path<LinkedTile> path = null;
 
 	private boolean stop = false;
 	
@@ -63,22 +80,27 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	private Vector3f startPos;
 	
 	
+	private static Random r = new Random();
 		
 	
 	// GOAP STUFF
 	private final GoapController gc = new GoapController((GoapActionSystem)actionSystem);
 	private GlobalKI globalKI;
 	private Map<Point, Boolean> localMap = new HashMap<Point, Boolean>();
-	private EColors color;
+	private MemorizedMap memoryMap;
+	private ObjectStorage objectStorage = new ObjectStorage();
 
 	public KillKI(String name, GlobalKI globalKI) {
+		System.out.println("KillKI "+name+" gestartet");
 		this.name = name;
 		
-		// GOAP STUFF
+		this.memoryMap = globalKI.getWorldMap();
 		this.globalKI = globalKI;
+		// GOAP STUFF
+		/*this.globalKI = globalKI;
 		blackboard.name = name; // just for debugging
 		actionSystem = new GoapActionSystem(this, blackboard,memory);	
-		((GoapActionSystem)actionSystem).addGOAPListener(this);
+		((GoapActionSystem)actionSystem).addGOAPListener(this);*/
 
 		
 //		generateActions();
@@ -99,19 +121,37 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		//System.out.println("GoalPosition ="+goalPosition);
 		
 		// current position
-		
+		pos = world.getMyPosition();
 		
 		//scan unknown terrain
 		scanTerrain();
-		explore();
+		
+		LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
+
+		//Prï¿½fen ob durch neue Erkundung das Zwischenziel nicht mehr betretbar ist
+		if(null != moveTarget && !moveTarget.isPassable()) {
+			path = null;
+			moveTarget = null;
+		}
+		
+		
+		if(null == moveTarget || moveTarget.equals(myPosTile)) {
+			explore();
+		}
 		
 		
 		if(imHangar || moveTarget == null)
 			world.move(direction);
 		else if(moveTarget != null){
-			System.out.println("bewege nach karte");
-			world.move(moveTarget.getTileCenterCoordinates().subtract(world.getMyPosition()));
-		}
+			//System.out.println("bewege nach karte");
+			//System.out.println("");
+			//System.out.println("Panzer bei: " + pos + "(" + myPosTile + ")");
+			//System.out.println("Ziel bei: " + moveTarget.getTileCenterCoordinates() + "(" + moveTarget + ")");
+			Vector3f newDirection = moveTarget.getTileCenterCoordinates().subtract(pos);
+			//System.out.println("Bewege Richtung " + newDirection);
+			//System.out.println("");
+			world.move(newDirection);
+		}		
 	}
 	
 	private Vector3f rotateVector(Vector3f vec, float phi){
@@ -135,69 +175,103 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 			direction = new Vector3f(FastMath.rand.nextInt(200),0, FastMath.rand.nextInt(200));
 		}
 		else if(!imHangar){
-			System.out.println("hangar verlassen");
+			LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
+			//System.out.println("Wï¿½rde mich gern bewegen");
+			
+			if(null != path && !path.isEmpty()) {
+				//System.out.println("Path ist nicht NULL!");
+				if(myPosTile.equals(moveTarget)) {
+					System.out.println("Zwischenziel erreicht");
+					moveTarget = path.getNextWaypoint();
+/*System.out.println();
+System.out.println("Aktuelle Position: " + myPosTile);
+System.out.println("Neues Zwischenziel: " + moveTarget);
+System.out.println("PassableTest: " +  world.isPassable(moveTarget.getTileCenterCoordinates()));*/
+				}
+			} else {
+				//Neuen Pfad berechnen
+				System.out.println("Neuen Pfad berechnen.");
+				//LinkedTile targetTile = memoryMap.getNearestUnexploredTile(pos);
+				Vector3f targetPos = this.pos.add(direction.normalize().mult(60));
+				LinkedTile targetTile = memoryMap.getTileAtCoordinate(targetPos);
+				if(targetTile.isPassable()) {
+					path = memoryMap.calculatePath(myPosTile, targetTile);
+					if(path.isEmpty()) {
+						this.direction = rotateVector(this.direction, 10);
+						moveTarget = null;
+					} else {
+					//	System.out.println("########### Pfad gefunden ###########");
+						moveTarget = path.getNextWaypoint();
+					//	System.out.println("Pfad: " + path);
+					}
+				} else {
+					//Rotieren und weitersuchen
+					this.direction = rotateVector(this.direction, 10);
+					moveTarget = null;
+				}
+			}
+			
+			/*
 			//neues ziel berechnen wenn ziel erreicht wurde
 			
-			//neues Ziel berechnen
-			float drehung = 10;
-			float bereitsGedreht = 0;
-			if(path.isEmpty()){
-				Vector3f eov = world.getMyPosition().clone().add(direction.clone().normalize().mult(30));
-				
-				while(path.isEmpty() || (!this.globalKI.getWorldMap().getTileAtCoordinate(eov).isPassable() ||! this.globalKI.getWorldMap().getTileAtCoordinate(eov).isExplored())){
-					if(bereitsGedreht >= 360){
-						System.out.println("KEIN NEUER PFAD");
-						world.move(world.getMyPosition().add(rotateVector(direction, 45).normalize()));
-						moveTarget = null;
-						break;
-						
-					}
-					System.out.println("Berechne nächstes Ziel, eov:"+eov);
-					eov = world.getMyPosition().clone().add(direction.clone().normalize().mult(30));
 			
-					//TODO pfad nur berechnen wenn tile passable und explored ist
-					path = this.globalKI.getWorldMap().calculatePath(this.globalKI.getWorldMap().getTileAtCoordinate(world.getMyPosition()), this.globalKI.getWorldMap().getTileAtCoordinate(eov));
-					direction = rotateVector(direction, bereitsGedreht + drehung );
-				//	world.move(world.getMyPosition().add(direction.clone().normalize().mult(2)));
-					System.out.println("is eov passable: "+this.globalKI.getWorldMap().getTileAtCoordinate(eov).isPassable);
-					System.out.println("empty: "+path.isEmpty());
-					bereitsGedreht += drehung;
-				}
-				
-			}
-			//nächsten Wegpunkt als Ziel anvisieren
-			
-			System.out.println("Myposition tile: "+this.globalKI.getWorldMap().getTileAtCoordinate(world.getMyPosition()));
-			System.out.println("target tile: "+moveTarget);
-			System.out.println("world.pos: "+world.getMyPosition());
-			if(moveTarget != null)
-				System.out.println("world.move target: "+ moveTarget.getTileCenterCoordinates());
-		//	if(this.globalKI.getWorldMap().getTileAtCoordinate(world.getMyPosition()).equals(moveTarget) || moveTarget == null)
-			if(moveTarget != null && (world.getMyPosition().distance(moveTarget.getTileCenterCoordinates())< 0.1f))
+			//nï¿½chsten Wegpunkt als Ziel anvisieren
+			if(myPosTile.equals(moveTarget) || moveTarget == null || path.isEmpty())
 			{
-				System.out.println("Wegpunkt erreicht, lese nächsten Wegpunkt, Wegpunkte im Pfad "+path.waypointCount());
+				//neues Ziel berechnen
+				if(path.isEmpty()){
+					Vector3f eov = new Vector3f();
+					
+					eov = world.getMyPosition().clone().add(direction.clone().normalize().mult(20));
+					LinkedTile targetTile = this.globalKI.getWorldMap().getTileAtCoordinate(eov);
+					if(!targetTile.isPassable()) {
+						targetTile = memoryMap.getNearestUnexploredTile(pos);
+					}
+					path = memoryMap.calculatePath(myPosTile, targetTile);
+					if(path.isEmpty()) {
+						//Kein Pfad in aktueller Richtung gefunden
+						direction = rotateVector(this.direction, 45);
+						eov = world.getMyPosition().clone().add(direction.clone().normalize().mult(40));
+						targetTile = this.globalKI.getWorldMap().getTileAtCoordinate(eov);
+					}*/
+					
+					/*while(path.isEmpty() || !targetTile.isPassable() || !targetTile.isExplored()){
+						System.out.println("Berechne nï¿½chstes Ziel, eov:"+eov);
+						direction = rotateVector(direction,10);
+						eov = world.getMyPosition().clone().add(direction.clone().normalize().mult(20));
+					//	System.out.println("vor drehen: "+direction);
+					//	System.out.println("nach drehen: "+rotateVector(direction, 360));
+						this.
+						//TODO pfad nur berechnen wenn tile passable und explored ist
+						path = this.globalKI.getWorldMap().calculatePath(this.globalKI.getWorldMap().getTileAtCoordinate(world.getMyPosition()), this.globalKI.getWorldMap().getTileAtCoordinate(eov));
+						
+						System.out.println("is eov passable: "+this.globalKI.getWorldMap().getTileAtCoordinate(eov).isPassable());
+						System.out.println("empty: "+path.isEmpty());
+
+					}*/
+		/*			System.out.println("Wegpunkte: "+path.waypointCount());
+				}
+				System.out.println("Wegpunkt erreicht, lese nï¿½chsten Wegpunkt, Wegpunkte im Pfad"+path.waypointCount());
 				moveTarget = path.getNextWaypoint();
-			}
+			}*/
+			 
 		}
-		else if(imHangar && lastPos.distance(world.getMyPosition()) < 0.06f){
+		else if(lastPos.distance(world.getMyPosition()) < 0.06f){
 			//world.isWater(world.getMyPosition().add(world.getMyDirection().normalize().mult(3)));
 			System.out.println("STUCK");
-			System.out.println("olddirection: "+direction);
-			direction = rotateVector(direction, 45);
-			System.out.println("newdirection: "+direction);
+			//System.out.println("olddirection: "+direction);
+			//direction = rotateVector(direction, 45);
+			//System.out.println("newdirection: "+direction);
 		}
 		lastPos = world.getMyPosition();
 			
 		
 	}
-		
-		
-	
-	
 	
 
 	@Override
 	public void setWorldInstance(IWorldInstance world) {
+		System.out.println("Panzer "+name+" hat World Instanz bekommen.");
 		this.world = world;
 		globalKI.setWorldInstance(world);
 	}
@@ -235,7 +309,6 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 	@Override
 	public void attacked(IWorldObject competitor) {
-		/*
 		Vector3f enemy = competitor.getPosition();
 		String out = "Attacked by position " + enemy;
 		Vector3f direction = world.getMyPosition().clone().subtract(enemy.clone()).negate();
@@ -249,7 +322,6 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 		// ACHTUNG: Keine Ausgaben in der Abgabe (VorfÃ¼hrung)! "Logger" benutzen
 		System.out.println("================\r\n" + out + "\r\n================");
-		*/
 	}
 
 	@Override
@@ -266,12 +338,16 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 	@Override
 	public void die() {
+		
+		WorldObject wO = new WorldObject(null, color, this.pos, EObjectTypes.Item);
+		this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
 		// GOAP STUFF
 		globalKI.getBlackBoard().tanksAlive -= 1; // tell the GlobalKI about death of tank
 	}
 
 	@Override
 	public void perceive(ArrayList<IWorldObject> worldObjects) {	
+		
 		// move WorldObjects into WorkingMemory
 		for (IWorldObject wO : worldObjects) {
 			// confidence of memoryObjects will decrease over time
@@ -279,22 +355,49 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 																			wO.getColor()), 
 																			wO.getPosition());
 			memory.addMemory(memo);
+			
+			switch(wO.getType()){
+				case Competitor:
+					if(wO.getColor() != this.color){
+						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
+						System.out.println("Panzer gefunden: " + wO.hashCode());
+						ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
+						world.shoot(target.direction, target.force, target.angle);
+						System.out.println("Feind entdeckt");
+					}
+					break;
+				case Hangar:
+					if(wO.getColor() != this.color){
+						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
+						ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
+						world.shoot(target.direction, target.force, target.angle);
+						System.out.println("feindlichen Hangar entdeckt");
+					}
+					break;
+				case Item:
+						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
+						System.out.println("Item entdeckt");
+					break;
+				default: 
+					System.out.println("Kein WO");
+			}
 		}
 		
 		//ShootTarget target = Battle.getShootTarget(worldObject.getPosition(), world.getMyPosition());
-		//world.shoot(target.direction, target.force, target.angle);
-		
+		//world.shoot(target.direction, target.force, target.angle);*/		
 	}
 
 	@Override
 	public void spawn() {
 		startPos = world.getMyPosition();
+		System.out.println("StartPos: "+startPos);
 		direction = world.getMyDirection();
 		goalPosition = startPos.add(new Vector3f(1,0,1));
 		goalPosition.x = (int)goalPosition.x;
 		goalPosition.z = (int)goalPosition.z;
 //		goalPosition = new Vector3f(300f,18f,300f);
 		stop = false;
+		System.out.println("goalPosition: "+goalPosition);
 		
 		// GOAP STUFF
 		globalKI.getBlackBoard().tanksAlive += 1;// tell GlobalKI about rebirth of tank
@@ -331,34 +434,59 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	
 	private void scanTerrain(){
 		boolean tileWithWater = false;
-		List<LinkedTile> tiles = this.globalKI.getWorldMap().getEmptyTilesPossiblyInViewRange(world.getMyPosition());
+		List<LinkedTile> tiles = this.globalKI.getWorldMap().getEmptyTilesPossiblyInViewRange(this.pos);
 		for(LinkedTile tile : tiles){
 			boolean isWater = false;
 			boolean isPassable  = true;
-			
+//if(tile.getMapIndex().x == 1 && tile.getMapIndex().y == 14) {
+//	System.out.println("Debug mich");
+//}
 			Vector3f terrain = world.getTerrainNormal(tile.getTileCenterCoordinates());
 			if(terrain != null){
 				if(!world.isPassable(tile.getTileCenterCoordinates())){
-					//System.out.println("nicht passierbar "+ tile.tileCenterCoordinates);
 					isPassable = false;
 				}
-				
+
 				if(world.isWater(tile.getTileCenterCoordinates())){
 					isWater = true;
-					//System.out.println("wasser");
 					tileWithWater = true;
 				}
 				
-				tile.exploreTile(isWater, isPassable, terrain);
-					
-				//this.map.addTile(new LinkedTile(FastRoutableWorldMap.coordinates2MapIndex(tile.getTileCenterCoordinates()),
-				//		isWater, isPassable, terrain, true));
+				memoryMap.exploreTile(tile, isWater, isPassable, terrain);
+			} else {
+				if(memoryMap.tileIsInViewRange(pos, world.getMyDirection(), tile)) {
+					//NULL obwohl in Sichtweite
+					memoryMap.exploreTile(tile, false, false, new Vector3f(0,0,0));
+				}
 			}
 		}
-		//if(tileWithWater)
-			//this.direction  = this.direction.negate();
+		if(tileWithWater)
+			this.direction  = this.direction.negate();
 
 		
+	}
+	
+	/**
+	 * Turns the direction of the tank by the given degree alpha.
+	 * If alpha is positive the tank turns left, tank turns right for negative alpha.
+	 * 
+	 * @param alpha the degree by which the tank turns its direction.
+	 */
+	public void turn(double alpha){
+		Vector3f dir = world.getMyDirection();
+		Vector3f newdir = new Vector3f();
+		
+		// Drehmatrix um die y-Achse (wikipedia)
+		Matrix3f mat = new Matrix3f(
+				(float)Math.cos(alpha),      0f, (float)Math.sin(alpha),
+				0f,                          1f, 0f,
+				(float)(-1*Math.sin(alpha)), 0f, (float)Math.cos(alpha)
+		);
+
+		// Vektor mit Drehmatrix drehen
+		newdir = mat.mult(dir, newdir);
+		
+		world.move(newdir);
 	}
 
 

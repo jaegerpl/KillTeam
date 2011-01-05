@@ -13,13 +13,14 @@
 package goap.goap;
 
 /**
- * The world properties represent all properties a specific world may have
- * @author Klinge
+ * The world properties represent all properties the tank's world may have
+ * @author Pascal Jaeger
  */
 public enum TankWorldProperty {
-		TankSpotted, // ein Tank ist �ber perceive reingekommen 
-		HangarSpotted, // ein Hangar ist �ber perceive reingekommen
-		ShotAtTank, // Schuss auf Tank abgegeben
-		AtDestination, // Tank hat bestimmte Position erreicht
-		HasDestination // Tank hat ein bestimmtes Ziel
+		TankSpotted, 	// ein Tank ist �ber perceive reingekommen 
+		HangarSpotted, 	// ein Hangar ist �ber perceive reingekommen
+		ShotAtTank, 	// Schuss auf Tank abgegeben
+		AtDestination, 	// Tank hat bestimmte Position erreicht
+		HasDestination, // Tank hat ein bestimmtes Ziel
+		UnderAttack 	// Tank has been shot at in the last some seconds.
 }

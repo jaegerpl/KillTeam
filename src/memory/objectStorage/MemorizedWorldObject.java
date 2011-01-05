@@ -11,12 +11,18 @@ public class MemorizedWorldObject {
 	protected EObjectTypes type;
 	protected Vector3f position;
 	protected String uniqueIdentifier;
+	
+	private int durability;
 
 	public MemorizedWorldObject(IWorldObject worldObject) {
 		this.color = worldObject.getColor();
 		this.position = worldObject.getPosition();
 		this.type = worldObject.getType();
-		this.uniqueIdentifier = "#" + color + "#" + type + "#" + worldObject.hashCode() + "#" + worldObject.toString();
+		
+		if(this.type == EObjectTypes.Competitor)
+			this.durability = 5000;
+		else
+			this.durability = 0;
 	}
 
 	public EColors getColor() {
@@ -31,7 +37,11 @@ public class MemorizedWorldObject {
 		return this.type;
 	}
 	
-	public String getUniqueIdentifier() {
-		return this.uniqueIdentifier;
+	public int getDurability(){
+		return this.durability;
+	}
+	
+	public void decreaseDurability(int value){
+		this.durability -= value;
 	}
 }
