@@ -23,10 +23,13 @@ public class LinkedTile implements IPathNode {
 	protected Map<Integer, LinkedTile> linkedTiles;
 	protected int precisionLevel;
 	
-	protected boolean isWater;
-	protected boolean isPassable;
+	public boolean isWater;
+
+
+
+	public boolean isPassable;
 	protected Vector3f normalVector;
-	protected Point mapIndex;
+	public Point mapIndex;
 	protected Vector3f tileCenterCoordinates;
 	
 	protected boolean isExplored;
@@ -125,7 +128,7 @@ public class LinkedTile implements IPathNode {
 		return new LinkedTile(mapIndex, isWater, isPassable, normalVector, linkedTiles, isExplored, precisionLevel);
 	}
 	
-	protected void exploreTile(boolean isWater, boolean isPassable, Vector3f normalVector) {
+	public void exploreTile(boolean isWater, boolean isPassable, Vector3f normalVector) {
 		this.isWater = isWater;
 		this.isPassable = isPassable;
 		this.normalVector = normalVector;

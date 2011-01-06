@@ -19,49 +19,45 @@ import goap.goap.WorldStateSymbol;
 import goap.scenario.GoapActionSystem;
 
 /**
- * Action to move the tank to a specified location in the map.
+ * Action to destroy a tank. Shooting and maybe following the spotted tank.
  * 
  * preCond
- *  - inHangar = false
- *  - hasDestination = true
- *  Effect
- *  - atDestination
- *  - hasDestination = false
- *  
+ * - tankSpotted = true - ist true, wenn ein Tank im Sichtbereich ist.
+ * Effect
+ * - toolBoxSpotted = true - ist true, wenn eine ToolBox im Sichtbereich ist.
+ * 
  * @author Pascal Jaeger
  *
  */
-public class GoToLocation extends Action{
+public class DestroyTank extends Action{
 
 	protected GoapActionSystem as;
 
-	public GoToLocation(GoapActionSystem as, String name, float cost) {
+	public DestroyTank(GoapActionSystem as, String name, float cost) {
 	    super(1, null, null,null );
 
 
 		this.as = as;
-		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.HasDestination, false, PropertyType.Boolean));
-		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.AtDestination, true, PropertyType.Boolean));
-		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.HasDestination, true, PropertyType.Boolean));
-		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.InHangar, true, PropertyType.Boolean));
+		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.ToolBoxSpotted,
+				true, PropertyType.Boolean));
+		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.TankSpotted,
+				true, PropertyType.Boolean));
 		
 	}
 
 	public void performAction() {
-		// movement goes here
+		// Shooting and maybe following the spotted tank is done here.
 	}
 
 	public boolean isFinished() {
-		if(as.getBlackboard().hasDestination == true && as.getBlackboard().atDestination == true){
-			return true;
-		}
-		return false;
+		// finished wenn tank durch eine ToolBox ersetzt wird.
+		// lastPositionOfTank.somewhereNear(spottedToolBox.position)
+		return true;
 	}
 
 	@Override
 	public boolean isValid() {
-		// Gruende, warum diese Aktion nicht mehr ausgeführt werden koennte?
-		return true;
+		return !isFinished();
 	}
 
 	@Override

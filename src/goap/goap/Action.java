@@ -12,6 +12,8 @@
 
 package goap.goap;
 
+import goap.scenario.GoapActionSystem;
+
 import java.util.ArrayList;
 
 /**
@@ -23,24 +25,26 @@ public abstract class Action
     private float cost;
     protected ArrayList<WorldStateSymbol> preCond = new ArrayList<WorldStateSymbol>();
     protected ArrayList<WorldStateSymbol> effect = new ArrayList<WorldStateSymbol>();
-    public String name;
+    public final String name;
+    private final GoapActionSystem gas;
 
     
-    public Action(String name, float cost, ArrayList<WorldStateSymbol> preCond, ArrayList<WorldStateSymbol> effect)
+    /**
+     * @param cost
+     * @param preCond
+     * @param effect
+     */
+    public Action(float cost, ArrayList<WorldStateSymbol> preCond, ArrayList<WorldStateSymbol> effect,GoapActionSystem gas )
     {
+    	this.gas = gas;
         this.cost = cost;
         this.preCond = preCond;
         this.effect = effect;
-        this.name = name;
+        this.name = this.getClass().getSimpleName();
     }
     
-    public Action(String name, float cost)
-    {
-    	this.cost = cost;
-    	this.name = name;
-    }
 
-    /**
+	/**
      * Gets the cost of this action to be performed
      * Actions with lower costs are preferred during planning
      * @return
