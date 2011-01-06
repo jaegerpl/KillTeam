@@ -24,6 +24,7 @@ public enum TankWorldProperty {
 		HasDestination, // Tank hat ein bestimmtes Ziel
 		InHangar,		// gibt an, ob der Tank im Hangar ist (nach einem Spawn)	
 		ToolBoxSpotted,	// gibt an, ob eine ToolBox im Sichtbereich ist.
+		ToolBoxCollected,	// gibt an, dass die gewünschte ToolBox eingesammelt wurde
 		HasFlag, 		// gibt ab, das der Tank die Flag hat
 		FlagSpotted, 	// gibt an, dass eine Flag im Sichtbereich ist
 		SpottedTanksColor // of type EColors

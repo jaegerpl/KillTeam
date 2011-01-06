@@ -27,6 +27,14 @@ import goap.goap.Goal;
 import goap.goap.IGOAPListener;
 import goap.scenario.GoapActionSystem;
 import goap.scenario.GoapController;
+import goap.scenario.actions.CollectFlag;
+import goap.scenario.actions.CollectToolBox;
+import goap.scenario.actions.DestroyHangar;
+import goap.scenario.actions.DestroyTank;
+import goap.scenario.actions.DestroyTankColor;
+import goap.scenario.actions.GoToLocation;
+import goap.scenario.actions.LeaveHangar;
+import goap.scenario.goals.CollectToolBoxGOAL;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -36,19 +44,16 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
-import map.fastmap.FastRoutableWorldMap;
 import map.fastmap.LinkedTile;
 import memory.map.MemorizedMap;
 import memory.objectStorage.MemorizedWorldObject;
 import memory.objectStorage.ObjectStorage;
 import memory.pathcalulation.Path;
-
 import battle.Battle;
 import battle.ShootTarget;
 
 import com.jme.math.FastMath;
 import com.jme.math.Matrix3f;
-import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 
 import de.lunaticsoft.combatarena.api.enumn.EColors;
@@ -288,13 +293,22 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 		// ACHTUNG: Keine Ausgaben in der Abgabe (Vorführung)! "Logger" benutzen
 		//System.out.println("================\r\n" + out + "\r\n================");
+		
+		// GOAP STUFF
+		blackboard.hitsTaken++;
 	}
 
 	@Override
 	public void collected(IWorldObject worldObject) {
 		switch (worldObject.getType()) {
 		case Item:
-			// ITEM COLLECTED
+			if(blackboard.spottedToolBox != null){
+				if(blackboard.spottedToolBox.getPosition() == worldObject.getPosition()){
+					blackboard.spottedToolBox = null;
+					blackboard.toolBoxCollected = true;
+					// TODO update object storage
+				}
+			}
 			break;
 		default:
 			// DO NOTHING
@@ -307,6 +321,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		
 		WorldObject wO = new WorldObject(null, color, this.pos, EObjectTypes.Item);
 		this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
+		
 		// GOAP STUFF
 		globalKI.getBlackBoard().tanksAlive -= 1; // tell the GlobalKI about death of tank
 	}
@@ -391,16 +406,18 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	}
 	
 	private void generateGoals(){
-//		((GoapActionSystem)actionSystem).addGoal(new Explore("Explore",0.6f, (GoapActionSystem) actionSystem));
+		((GoapActionSystem)actionSystem).addGoal(new CollectToolBoxGOAL("CollectToolBoxGOAL",0.1f, (GoapActionSystem) actionSystem));
 	}
 	
 	private void generateActions(){			
-//		((GoapActionSystem)actionSystem).addAction(new GotoLocation((GoapActionSystem) this.actionSystem,"GoToLocation",1.0f));
-//		((GoapActionSystem)actionSystem).addAction(new WatchEntertainment((GoapActionSystem) this.actionSystem,"WatchEntertianment",1.0f));
-	}
-	
-	private void generateRandomDesires(){
-//		((GoapActionSystem)actionSystem).currentWorldState.add(new WorldStateSymbol<Float>(TankWorldProperty.Boredom, r.nextFloat() % 1.0f, PropertyType.Float));
+		((GoapActionSystem)actionSystem).addAction(new CollectFlag((GoapActionSystem) this.actionSystem,"CollectFlag",1.0f));
+		((GoapActionSystem)actionSystem).addAction(new CollectToolBox((GoapActionSystem) this.actionSystem,"CollectToolBox",1.0f));
+		((GoapActionSystem)actionSystem).addAction(new DestroyHangar((GoapActionSystem) this.actionSystem,"DestroyHangar",1.0f));
+		((GoapActionSystem)actionSystem).addAction(new DestroyTank((GoapActionSystem) this.actionSystem,"DestroyTank",1.0f));
+		((GoapActionSystem)actionSystem).addAction(new GoToLocation((GoapActionSystem) this.actionSystem,"GoToLocation",1.0f));
+		((GoapActionSystem)actionSystem).addAction(new LeaveHangar((GoapActionSystem) this.actionSystem,"LeaveHangar",1.0f));
+
+		//DestroyTankColor needs to be added, when we know which colors are in the game => extra method
 	}
 	
 	
@@ -474,6 +491,4 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-
 }

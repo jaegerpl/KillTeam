@@ -11,53 +11,44 @@
  */
 package goap.agent;
 
-import goap.pathfinding.NavNode;
-import goap.pathfinding.NavigationMap;
-
-import java.util.ArrayList;
-
-
 import com.jme.math.Vector3f;
 
+import de.lunaticsoft.combatarena.api.enumn.EColors;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
 
 /**
  * Class which holds all data that should be shared between different modules
- * @author Klinge
+ * 
+ * Holds state information of a tank.
+ * 
+ * @author Pascal Jaeger
  *
  */
 public class TankBlackboard {
 	
-	public enum AttackState{
-		tank, hangar, nothing
-	}
+	public String name; 				// just for debugging
 	
+	// BATTLE STUFF
+	public int hitsTaken;				// counts how often the tank has been shot at (indiciating that fitness of tank is NOT 100%) is set to 0 when collecting a toolbox
+	public IWorldObject spottedTank;	// the tank in view range
+	public IWorldObject spottedHangar;	// the hangar in view range
+	public EColors spottedHangarsColor; // the color the spotted hangar should have
 	
-	public ArrayList<NavNode> path = new ArrayList<NavNode>();
-	public Vector3f foodLocation = null;
-	//public float hunger;		
-	public NavNode destinationNode;
-	public static NavigationMap navMap;
-	public NavNode currentNode;
-	public Vector3f exitLocation = null;
-	public boolean wait = false;
-	public float speed;
-	public Vector3f entertainmentLoc = null;
-	//public float boredom;
-	public Vector3f currentTranslation;
-	//public float exhaustion = 0.0f;	
-	public ArrayList<Vector3f> visitedLocations = new ArrayList<Vector3f>();
+	// TOOLBOX STUFF
+	public IWorldObject spottedToolBox; // IWorldObject of type Item
+	public boolean toolBoxCollected;	// true after picking up the specified toolbox
 	
-	// new stuff
-	public String name; // just for debugging
-	public boolean underAttack;
-	public AttackState attacking = AttackState.nothing;
-	public boolean hasDestination;
-	public boolean atDestination;
-	public Vector3f currentPosition;
-	public Vector3f direction;
+	// CAPTURE THE FLAG STUFF
+	public boolean hasFlag;				// true if tank owns the flag
+	public boolean flagSpotted;			// true if flag is in view range
 	
-	public IWorldObject spottedToolBox = null; // IWorldObject of type Item
-	
-	public boolean inHangar = false;
+	// MOVEMENT STUFF
+	public boolean inHangar = false;	// indicating that tank has respawned and is in the hangar
+	public boolean hasDestination;		// tank has a goal to move to
+	public boolean atDestination;		// tank is at goal position
+	public Vector3f destination;		// the goal position the tank has to move to
+	public Vector3f currentPosition;	// tanks current position
+	public Vector3f direction;			// tanks direction in the world
+
+
 }

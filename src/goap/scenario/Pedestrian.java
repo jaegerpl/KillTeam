@@ -1,7 +1,6 @@
 package goap.scenario;
 
 import goap.agent.Agent;
-import goap.agent.MemoryObject;
 import goap.goap.Action;
 import goap.goap.Goal;
 import goap.goap.IGOAPListener;
@@ -46,10 +45,7 @@ public class Pedestrian extends Agent implements IGOAPListener{
 	public double time, startTime;
 	
 
-	public Pedestrian(float x, float y, Node node, NavigationMap navMap) {
-		
-		blackboard.navMap = navMap;
-		
+	public Pedestrian(float x, float y, Node node, NavigationMap navMap) {		
 		
 		name = "player" + number++;
 		blackboard.name = name; // just for debugging
@@ -165,8 +161,6 @@ public class Pedestrian extends Agent implements IGOAPListener{
 //		mc.remove();
 		box.removeFromParent();
 		visualRange.removeFromParent();
-		blackboard.currentNode.blocked = false;
-		BaseGame.pedestrians.remove(this);
 	}
 	
 	public void setMaterial(MaterialState ms)
@@ -184,9 +178,7 @@ public class Pedestrian extends Agent implements IGOAPListener{
 	{
 		String s = "Name: " + name + "\n"
 		+ "Goal: " + ((GoapActionSystem)actionSystem).getCurrentGoal() + "\n"
-		+ "Action: " + ((GoapActionSystem)actionSystem).getCurrentAction() + "\n"
-		+ "CurrentNode: " + blackboard.currentNode + "\n"
-		+ "DestinationNode: " + blackboard.destinationNode + "\n";
+		+ "Action: " + ((GoapActionSystem)actionSystem).getCurrentAction() + "\n";
 		
 		return s;
 	}
@@ -235,19 +227,4 @@ public class Pedestrian extends Agent implements IGOAPListener{
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-//	public void setBordeom(float value)
-//	{
-//		((GoapActionSystem)actionSystem).currentWorldState.setValue(TankWorldProperty.Boredom, value);
-//	}
-//	
-//	public void setExhaustion(float value)
-//	{
-//		((GoapActionSystem)actionSystem).currentWorldState.setValue(TankWorldProperty.Exhaustion, value);
-//	}
-//	
-//	public void setHunger(float value)
-//	{
-//		((GoapActionSystem)actionSystem).currentWorldState.setValue(TankWorldProperty.Hunger, value);
-//	}
 }
