@@ -62,6 +62,7 @@ import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
 import de.lunaticsoft.combatarena.objects.WorldObject;
+import debug.MapServer;
 
 public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
@@ -102,6 +103,9 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		
 		this.memoryMap = globalKI.getWorldMap();
 		this.globalKI = globalKI;
+		
+		Thread t = new Thread(new MapServer(this.memoryMap));
+		t.start();
 		// GOAP STUFF
 		/*this.globalKI = globalKI;
 		blackboard.name = name; // just for debugging
