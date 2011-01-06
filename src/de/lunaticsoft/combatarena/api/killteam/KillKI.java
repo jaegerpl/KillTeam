@@ -36,19 +36,16 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
-import map.fastmap.FastRoutableWorldMap;
 import map.fastmap.LinkedTile;
 import memory.map.MemorizedMap;
 import memory.objectStorage.MemorizedWorldObject;
 import memory.objectStorage.ObjectStorage;
 import memory.pathcalulation.Path;
-
 import battle.Battle;
 import battle.ShootTarget;
 
 import com.jme.math.FastMath;
 import com.jme.math.Matrix3f;
-import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 
 import de.lunaticsoft.combatarena.api.enumn.EColors;
@@ -57,6 +54,7 @@ import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
 import de.lunaticsoft.combatarena.objects.WorldObject;
+import debug.MapServer;
 
 public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
@@ -90,13 +88,14 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	private Map<Point, Boolean> localMap = new HashMap<Point, Boolean>();
 	private MemorizedMap memoryMap;
 	private ObjectStorage objectStorage = new ObjectStorage();
-
+	
 	public KillKI(String name, GlobalKI globalKI) {
 		//System.out.println("KillKI "+name+" gestartet");
 		this.name = name;
 		
 		this.memoryMap = globalKI.getWorldMap();
 		this.globalKI = globalKI;
+		
 		// GOAP STUFF
 		/*this.globalKI = globalKI;
 		blackboard.name = name; // just for debugging
@@ -311,53 +310,57 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		globalKI.getBlackBoard().tanksAlive -= 1; // tell the GlobalKI about death of tank
 	}
 
-	@Override
-	public void perceive(ArrayList<IWorldObject> worldObjects) {	
-		boolean hangarDiscovered = false;
-		
-		// move WorldObjects into WorkingMemory
-		for (IWorldObject wO : worldObjects) {
-			// confidence of memoryObjects will decrease over time
-			MemoryObject memo = new MemoryObject(1.0f, new MemoryObjectType(wO.getType(), 
-																			wO.getColor()), 
-																			wO.getPosition());
-			memory.addMemory(memo);
-			
-			switch(wO.getType()){
-				case Competitor:
-					if(wO.getColor() != this.color){
-						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
-						//System.out.println("Panzer gefunden: " + wO.hashCode());
-						ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
-						world.shoot(target.direction, target.force, target.angle);
-						//System.out.println("Feind entdeckt");
-					}
-					break;
-				case Hangar:
-					if(wO.getColor() != this.color){
-						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
-						ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
-						world.shoot(target.direction, target.force, target.angle);
-						//System.out.println("feindlichen Hangar entdeckt");
-						hangarDiscovered = true;
-					}
-					break;
-				case Item:
-						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
-						//System.out.println("Item entdeckt");
-					break;
-				default: 
-					//System.out.println("Kein WO");
-			}
-		}
-		if(hangarDiscovered)
-			stop = true;
-		else
-			stop = false;
-		
-		//ShootTarget target = Battle.getShootTarget(worldObject.getPosition(), world.getMyPosition());
-		//world.shoot(target.direction, target.force, target.angle);*/		
-	}
+	public void perceive(ArrayList<IWorldObject> worldObjects) {
+	       IWorldObject target = null;
+
+	       // move WorldObjects into WorkingMemory
+	       for (IWorldObject wO : worldObjects) {
+	           // confidence of memoryObjects will decrease over time
+	           MemoryObject memo = new MemoryObject(1.0f, new MemoryObjectType(wO.getType(),
+	                                                                           wO.getColor()),
+	                                                                           wO.getPosition());
+	           memory.addMemory(memo);
+
+	           switch(wO.getType()){
+	               case Competitor:
+	                   if(wO.getColor() != this.color){
+	                       this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
+	                       //System.out.println("Panzer gefunden: " + wO.hashCode());
+	                       //ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
+	                       //world.shoot(target.direction, target.force, target.angle);
+	                       //System.out.println("Feind entdeckt");
+	                       if(target == null) {
+	                           target = wO;
+	                       }
+	                   }
+	                   break;
+	               case Hangar:
+	                   if(wO.getColor() != this.color){
+	                       this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
+	                       //ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
+	                       //world.shoot(target.direction, target.force, target.angle);
+	                       //System.out.println("feindlichen Hangar entdeckt");
+	                       if(target == null || target.getType() == EObjectTypes.Competitor) {
+	                           target = wO;
+	                       }
+	                   }
+	                   break;
+	               case Item:
+	                       this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
+	                       //System.out.println("Item entdeckt");
+	                   break;
+	               default:
+	                   //System.out.println("Kein WO");
+	           }
+	       }
+
+	       if(target != null){
+	       ShootTarget shootTarget = Battle.getShootTarget(target.getPosition(), this.pos);
+	       world.shoot(shootTarget.direction, shootTarget.force, shootTarget.angle);
+	       }
+	       //ShootTarget target = Battle.getShootTarget(worldObject.getPosition(), world.getMyPosition());
+	       //world.shoot(target.direction, target.force, target.angle);*/
+	   }
 
 	@Override
 	public void spawn() {
@@ -431,11 +434,17 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		}
 		//Direkt voraus gucken
 		Vector3f voraus = pos.add(world.getMyDirection().normalize().mult(2));
-		if(!world.isPassable(voraus)) {
-			LinkedTile tileVoraus = memoryMap.getTileAtCoordinate(voraus);
-			memoryMap.exploreTile(tileVoraus, tileVoraus.isWater(), false, tileVoraus.getNormalVector());
+		if(memoryMap.positionIsInViewRange(pos, direction, voraus)) {
+			if(null == world.getTerrainNormal(voraus)){
+				LinkedTile tileVoraus = memoryMap.getTileAtCoordinate(voraus);
+				
+				memoryMap.markTileAsOutOfMap(tileVoraus);
+			}
+			else if(!world.isPassable(voraus)) {
+				LinkedTile tileVoraus = memoryMap.getTileAtCoordinate(voraus);
+				memoryMap.exploreTile(tileVoraus, tileVoraus.isWater(), false, tileVoraus.getNormalVector());
+			}
 		}
-
 		
 	}
 	

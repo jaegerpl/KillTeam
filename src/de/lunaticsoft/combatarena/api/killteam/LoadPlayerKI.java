@@ -21,13 +21,20 @@ package de.lunaticsoft.combatarena.api.killteam;
 
 import de.lunaticsoft.combatarena.api.interfaces.ILoadPlayerKI;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
+import debug.MapServer;
 
 
 public class LoadPlayerKI implements ILoadPlayerKI {
 	
 	GlobalKI globalKi = new GlobalKI();
+	
 
 	public IPlayer getKI(int index, String name) {
+		MapServer srv = new MapServer(globalKi.getWorldMap());
+
+		Thread t = new Thread(srv);
+		t.start();
+		
 		//System.out.println(index);
 		switch (index) {
 		case 0:

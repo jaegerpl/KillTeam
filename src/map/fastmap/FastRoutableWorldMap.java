@@ -146,7 +146,7 @@ public class FastRoutableWorldMap{
 				map.get(pos).exploreTile(tile.isWater(), tile.isPassable(), tile.getNormalVector());
 			}
 		}
-//System.out.println("Tile Hinzugefügt: " + tile.mapIndex + " Passierbar: " + tile.isPassable);		
+//System.out.println("Tile Hinzugefï¿½gt: " + tile.mapIndex + " Passierbar: " + tile.isPassable);		
 		Point neighbourNorth = new Point(pos.x, pos.y+1);
 		Point neighbourSouth = new Point(pos.x, pos.y-1);
 		Point neighbourEast = new Point(pos.x-1, pos.y);
@@ -242,6 +242,13 @@ public class FastRoutableWorldMap{
 		return false;
 	}
 	
+	public boolean positionIsInViewRange(Vector3f myPosition, Vector3f viewDirection, Vector3f position) {
+		if(50 > myPosition.add(viewDirection.normalize().mult(30)).distance(position)) {
+			return true;
+		}
+		return false;
+	}
+	
 	//===================================================
 	// STATIC METHODS
 	//===================================================
@@ -278,6 +285,8 @@ public class FastRoutableWorldMap{
 		return new Vector3f((position.x - 1)*tilesize + tilesize/2, 0, (position.y - 1)*tilesize + tilesize/2);
 	}
 
-	
+	public Map<Point,LinkedTile> getMap(){
+		return this.map;
+	}
 
 }
