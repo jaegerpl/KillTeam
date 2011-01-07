@@ -32,7 +32,7 @@ import goap.scenario.actions.CollectToolBox;
 import goap.scenario.actions.DestroyHangar;
 import goap.scenario.actions.DestroyTank;
 import goap.scenario.actions.DestroyTankColor;
-import goap.scenario.actions.GoToLocation;
+//import goap.scenario.actions.GoToLocation;
 import goap.scenario.actions.LeaveHangar;
 import goap.scenario.goals.CollectToolBoxGOAL;
 
@@ -95,7 +95,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	private GlobalKI globalKI;
 	private Map<Point, Boolean> localMap = new HashMap<Point, Boolean>();
 	private MemorizedMap memoryMap;
-	private ObjectStorage objectStorage = new ObjectStorage();
+	private ObjectStorage objectStorage;
 
 	public KillKI(String name, GlobalKI globalKI) {
 		//System.out.println("KillKI "+name+" gestartet");
@@ -103,9 +103,8 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		
 		this.memoryMap = globalKI.getWorldMap();
 		this.globalKI = globalKI;
+		this.objectStorage = globalKI.getObjectStorage();
 		
-		Thread t = new Thread(new MapServer(this.memoryMap));
-		t.start();
 		// GOAP STUFF
 		/*this.globalKI = globalKI;
 		blackboard.name = name; // just for debugging
@@ -418,7 +417,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		((GoapActionSystem)actionSystem).addAction(new CollectToolBox((GoapActionSystem) this.actionSystem,"CollectToolBox",1.0f));
 		((GoapActionSystem)actionSystem).addAction(new DestroyHangar((GoapActionSystem) this.actionSystem,"DestroyHangar",1.0f));
 		((GoapActionSystem)actionSystem).addAction(new DestroyTank((GoapActionSystem) this.actionSystem,"DestroyTank",1.0f));
-		((GoapActionSystem)actionSystem).addAction(new GoToLocation((GoapActionSystem) this.actionSystem,"GoToLocation",1.0f));
+	//	((GoapActionSystem)actionSystem).addAction(new GoToLocation((GoapActionSystem) this.actionSystem,"GoToLocation",1.0f));
 		((GoapActionSystem)actionSystem).addAction(new LeaveHangar((GoapActionSystem) this.actionSystem,"LeaveHangar",1.0f));
 
 		//DestroyTankColor needs to be added, when we know which colors are in the game => extra method

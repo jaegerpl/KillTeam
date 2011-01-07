@@ -30,10 +30,6 @@ public class LoadPlayerKI implements ILoadPlayerKI {
 	
 
 	public IPlayer getKI(int index, String name) {
-		MapServer srv = new MapServer(globalKi.getWorldMap());
-
-		Thread t = new Thread(srv);
-		t.start();
 		
 		//System.out.println(index);
 		switch (index) {

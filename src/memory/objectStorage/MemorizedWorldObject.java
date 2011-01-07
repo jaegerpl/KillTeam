@@ -37,11 +37,11 @@ public class MemorizedWorldObject {
 		return this.type;
 	}
 	
-	public int getDurability(){
+	synchronized public int getDurability(){
 		return this.durability;
 	}
 	
-	public void decreaseDurability(int value){
+	synchronized public void decreaseDurability(int value){
 		this.durability -= value;
 	}
 }

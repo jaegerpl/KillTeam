@@ -30,7 +30,7 @@ import goap.scenario.GoapActionSystem;
  *  
  * @author Pascal Jaeger
  *
- */
+ *//*
 public class GoToLocation extends Action{
 
 	protected GoapActionSystem as;
@@ -60,7 +60,7 @@ public class GoToLocation extends Action{
 
 	@Override
 	public boolean isValid() {
-		// Gruende, warum diese Aktion nicht mehr ausgefŸhrt werden koennte?
+		// Gruende, warum diese Aktion nicht mehr ausgefï¿½hrt werden koennte?
 		return true;
 	}
 
@@ -68,4 +68,4 @@ public class GoToLocation extends Action{
 	public boolean contextPreconditionsMet() {
 		return true;
 	}
-}
+}*/
