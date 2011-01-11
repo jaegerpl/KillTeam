@@ -249,12 +249,6 @@ if(tilePosition.x > 60 || tilePosition.y > 60) {
 		return false;
 	}
 	
-	public boolean positionIsInViewRange(Vector3f myPosition, Vector3f viewDirection, Vector3f position) {
-		if(50 > myPosition.add(viewDirection.normalize().mult(30)).distance(position)) {
-			return true;
-		}
-		return false;
-	}
 	
 	//===================================================
 	// STATIC METHODS

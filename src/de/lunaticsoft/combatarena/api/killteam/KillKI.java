@@ -70,7 +70,7 @@ import de.lunaticsoft.combatarena.api.killteam.globalKI.StatusType;
 import de.lunaticsoft.combatarena.objects.WorldObject;
 import debug.MapServer;
 
-public class KillKI implements IGOAPListener, IPlayer {
+public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 	private IWorldInstance world;
 	private Vector3f direction; // tanks direction
@@ -103,7 +103,7 @@ public class KillKI implements IGOAPListener, IPlayer {
 		
 	
 	// GOAP STUFF
-	//private final GoapController gc = new GoapController((GoapActionSystem)actionSystem);
+	private final GoapController gc = new GoapController((GoapActionSystem)actionSystem);
 	private GlobalKI globalKI;
 	private Map<Point, Boolean> localMap = new HashMap<Point, Boolean>();
 	private MemorizedMap memoryMap;
@@ -400,7 +400,7 @@ public class KillKI implements IGOAPListener, IPlayer {
 			MemoryObject memo = new MemoryObject(1.0f, new MemoryObjectType(wO.getType(), 
 																			wO.getColor()), 
 																			wO.getPosition());
-			//memory.addMemory(memo);
+			memory.addMemory(memo);
 			
 			switch(wO.getType()){
 				case Competitor:
@@ -451,7 +451,7 @@ public class KillKI implements IGOAPListener, IPlayer {
 		
 		// GOAP STUFF
 		globalKI.registerTank(this); 				// register tank in globalKI
-		//blackboard.direction = direction;
+		blackboard.direction = direction;
 		blackboard.inHangar = true;
 	}
 
