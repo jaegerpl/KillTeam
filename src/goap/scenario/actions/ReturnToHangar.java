@@ -19,7 +19,8 @@ import goap.goap.WorldStateSymbol;
 import goap.scenario.GoapActionSystem;
 
 /**
- * Action to move the tank to a specified location in the map.
+ * Action to move the tank back to the base.
+ * This is necessary during "capture the flag" game
  * 
  * preCond
  *  - inHangar = false
@@ -27,21 +28,23 @@ import goap.scenario.GoapActionSystem;
  *  Effect
  *  - atDestination
  *  - hasDestination = false
+ *  - inHangar
  *  
  * @author Pascal Jaeger
  *
  */
-public class GotoLocation extends Action{
+public class ReturnToHangar extends Action{
 
 	protected GoapActionSystem as;
 
-	public GotoLocation(GoapActionSystem as, String name, float cost) {
+	public ReturnToHangar(GoapActionSystem as, String name, float cost) {
 	    super(1, null, null,null );
 
 
 		this.as = as;
 		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.HasDestination, false, PropertyType.Boolean));
 		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.AtDestination, true, PropertyType.Boolean));
+		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.InHangar, true, PropertyType.Boolean));
 		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.HasDestination, true, PropertyType.Boolean));
 		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.InHangar, false, PropertyType.Boolean));
 		
