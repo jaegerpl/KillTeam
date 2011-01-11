@@ -150,7 +150,7 @@ public class LinkedTile implements IPathNode {
 
 	@Override
 	public String toString() {
-		return "[" + this.mapIndex.x + "," + this.mapIndex.y + "] Passierbar:" + isPassable;
+		return "[" + this.mapIndex.x + "," + this.mapIndex.y + "] Passierbar:" + isPassable + " isWater: " + isWater + " isExplored: " + isExplored + " isOutOfMap: " + isOutOfMap;
 	}
 
 	

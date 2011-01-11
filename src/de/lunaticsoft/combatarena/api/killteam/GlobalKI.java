@@ -8,6 +8,7 @@ import goap.goap.Action;
 import goap.goap.Goal;
 import goap.goap.IGOAPListener;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
+import debug.MapServer;
 
 /**
  * Stellt die gobale KI dar. Hier soll
@@ -31,6 +32,9 @@ public class GlobalKI  extends GlobalKIAgent implements IGOAPListener {
 	public GlobalKI() {
 		blackboard.name = name;
 		map = new MemorizedMap();
+		
+		Thread t = new Thread(new MapServer(this.map));
+		t.start();
 	}
 
 	@Override

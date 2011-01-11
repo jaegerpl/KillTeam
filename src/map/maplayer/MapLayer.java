@@ -1,6 +1,7 @@
 package map.maplayer;
 
 import java.awt.Point;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +15,7 @@ public class MapLayer {
 	int abstractionValue;
 	int abstractionLevel;
 	
-	protected Map<Point,LinkedTile> mapAbstraction = new HashMap<Point, LinkedTile>();
+	protected Map<Point,LinkedTile> mapAbstraction = Collections.synchronizedMap(new HashMap<Point, LinkedTile>());
 
 	public MapLayer() {
 		super();

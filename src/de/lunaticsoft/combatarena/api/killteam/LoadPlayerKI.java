@@ -36,7 +36,7 @@ public class LoadPlayerKI implements ILoadPlayerKI {
 		case 3:
 		case 4:
 		default:
-			 return new KillKI(name, globalKi);
+			 return new KillKI(name+index, globalKi);
 		}
 	}
 }
