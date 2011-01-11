@@ -61,6 +61,8 @@ import de.lunaticsoft.combatarena.api.enumn.EObjectTypes;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.StatusType;
 import de.lunaticsoft.combatarena.objects.WorldObject;
 import debug.MapServer;
 
@@ -77,7 +79,6 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	private String name;
 	
 	private LinkedTile moveTarget;
-	private boolean imHangar = true;
 	Path<LinkedTile> path = null;
 
 	private boolean pathReset = false;
@@ -106,11 +107,10 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		this.objectStorage = globalKI.getObjectStorage();
 		
 		// GOAP STUFF
-		/*this.globalKI = globalKI;
+		/*
 		blackboard.name = name; // just for debugging
 		actionSystem = new GoapActionSystem(this, blackboard,memory);	
 		((GoapActionSystem)actionSystem).addGOAPListener(this);*/
-
 		
 //		generateActions();
 //		generateGoals();
@@ -155,7 +155,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 			}
 			
 			
-			if(imHangar || moveTarget == null)
+			if(blackboard.inHangar || moveTarget == null)
 				world.move(direction);
 			else if(moveTarget != null){
 				//System.out.println("bewege nach karte");
@@ -180,64 +180,61 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 	public void explore(){
 		//GOAP.getExploreDirection();
 		if(startPos.distance(world.getMyPosition()) > 15)
-			imHangar = false;
+			blackboard.inHangar = false;
 		
 		//if(lastPos == null){
 		//	direction = new Vector3f(FastMath.rand.nextInt(200),0, FastMath.rand.nextInt(200));
 		//}
 		//else 
-			if(!imHangar){
+			if(!blackboard.inHangar){
 			
-			if(lastPos != null && lastPos.distance(world.getMyPosition()) < 0.06f){
-				//System.out.println("STUCK");
-			}
-			
-			LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
-			//System.out.println("W�rde mich gern bewegen");
-			
-			if(null != path && !path.isEmpty()) {
-				//System.out.println("Path ist nicht NULL!");
-				if(myPosTile.equals(moveTarget)) {
-					//System.out.println("Zwischenziel erreicht");
-					moveTarget = path.getNextWaypoint();
+				if(lastPos != null && lastPos.distance(world.getMyPosition()) < 0.06f){
+					//System.out.println("STUCK");
 				}
-			} else {
-				//Neuen Pfad berechnen
-				//System.out.println("Neuen Pfad berechnen.");
-				//LinkedTile targetTile = memoryMap.getNearestUnexploredTile(pos);
-				Vector3f targetPos = this.pos.add(direction.normalize().mult(60));
-				LinkedTile targetTile = memoryMap.getTileAtCoordinate(targetPos);
-				if(!targetTile.isExplored()){
-					if(targetTile.isPassable()) {
-						path = memoryMap.calculatePath(myPosTile, targetTile);
-						if(path.isEmpty()) {
-							this.direction = rotateVector(this.direction, 10);
-							moveTarget = null;
-						} else {
-	//System.out.println("########### Pfad gefunden ###########");
-							moveTarget = path.getNextWaypoint();
-	//System.out.println("Meine Position: " + myPosTile.getMapIndex());
-	//System.out.println("Pfad: " + path);
-						}
-					} else {
-						//Rotieren und weitersuchen
-						this.direction = rotateVector(this.direction, 10);
-						moveTarget = null;
+			
+				LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
+				//System.out.println("W�rde mich gern bewegen");
+				
+				if(null != path && !path.isEmpty()) {
+					//System.out.println("Path ist nicht NULL!");
+					if(myPosTile.equals(moveTarget)) {
+						//System.out.println("Zwischenziel erreicht");
+						moveTarget = path.getNextWaypoint();
 					}
 				} else {
-					TreeMap<Integer, LinkedTile> sortedTiles = memoryMap.getUnexploredTilesSortedByDistance(pos);
-					for(LinkedTile tile : sortedTiles.values()) {
-						path = memoryMap.calculatePath(myPosTile, tile);
-						if(!path.isEmpty()) {
-							moveTarget = path.getNextWaypoint();
-							break;
+					//Neuen Pfad berechnen
+					//System.out.println("Neuen Pfad berechnen.");
+					//LinkedTile targetTile = memoryMap.getNearestUnexploredTile(pos);
+					Vector3f targetPos = this.pos.add(direction.normalize().mult(60));
+					LinkedTile targetTile = memoryMap.getTileAtCoordinate(targetPos);
+					if(!targetTile.isExplored()){
+						if(targetTile.isPassable()) {
+							path = memoryMap.calculatePath(myPosTile, targetTile);
+							if(path.isEmpty()) {
+								this.direction = rotateVector(this.direction, 10);
+								moveTarget = null;
+							} else {
+		//System.out.println("########### Pfad gefunden ###########");
+								moveTarget = path.getNextWaypoint();
+		//System.out.println("Meine Position: " + myPosTile.getMapIndex());
+		//System.out.println("Pfad: " + path);
+							}
+						} else {
+							//Rotieren und weitersuchen
+							this.direction = rotateVector(this.direction, 10);
+							moveTarget = null;
+						}
+					} else {
+						TreeMap<Integer, LinkedTile> sortedTiles = memoryMap.getUnexploredTilesSortedByDistance(pos);
+						for(LinkedTile tile : sortedTiles.values()) {
+							path = memoryMap.calculatePath(myPosTile, tile);
+							if(!path.isEmpty()) {
+								moveTarget = path.getNextWaypoint();
+								break;
+							}
 						}
 					}
-				}
-			}
-			
-			
-			 
+				}	
 		}	
 		lastPos = world.getMyPosition();		
 	}
@@ -245,7 +242,6 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 	@Override
 	public void setWorldInstance(IWorldInstance world) {
-		//System.out.println("Panzer "+name+" hat World Instanz bekommen.");
 		this.world = world;
 		globalKI.setWorldInstance(world);
 	}
@@ -293,9 +289,6 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 		out += "\r\nSpeed " + speed;
 		world.shoot(direction, speed, 30);
-
-		// ACHTUNG: Keine Ausgaben in der Abgabe (Vorführung)! "Logger" benutzen
-		//System.out.println("================\r\n" + out + "\r\n================");
 		
 		// GOAP STUFF
 		blackboard.hitsTaken++;
@@ -326,7 +319,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
 		
 		// GOAP STUFF
-		globalKI.getBlackBoard().tanksAlive -= 1; // tell the GlobalKI about death of tank
+		globalKI.removeTank(this);					// deregister tank in globalKI
 	}
 
 	@Override
@@ -389,7 +382,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		//System.out.println("goalPosition: "+goalPosition);
 		
 		// GOAP STUFF
-		globalKI.getBlackBoard().tanksAlive += 1;// tell GlobalKI about rebirth of tank
+		globalKI.registerTank(this); 				// register tank in globalKI
 		blackboard.direction = direction;
 		blackboard.inHangar = true;
 	}
@@ -400,12 +393,14 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 	@Override
 	public void actionChangedEvent(Object sender, Action oldAction,	Action newAction) {
-		// TODO Auto-generated method stub		
+		// we are going to tell the globalki about our status change
+		globalKI.tankStatusChanged(this, newAction, StatusType.Action);
 	}
 
 	@Override
 	public void goalChangedEvent(Object sender, Goal oldGoal, Goal newGoal) {
-		// TODO Auto-generated method stub		
+		// we are going to tell the globalki about our status change	
+		globalKI.tankStatusChanged(this, newGoal, StatusType.Goal);
 	}
 	
 	private void generateGoals(){
@@ -455,43 +450,16 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		if(!world.isPassable(voraus)) {
 			LinkedTile tileVoraus = memoryMap.getTileAtCoordinate(voraus);
 			memoryMap.exploreTile(tileVoraus, tileVoraus.isWater(), false, tileVoraus.getNormalVector());
-		}
-
-		
-	}
-	
-	/**
-	 * Turns the direction of the tank by the given degree alpha.
-	 * If alpha is positive the tank turns left, tank turns right for negative alpha.
-	 * 
-	 * @param alpha the degree by which the tank turns its direction.
-	 */
-	public void turn(double alpha){
-		Vector3f dir = world.getMyDirection();
-		Vector3f newdir = new Vector3f();
-		
-		// Drehmatrix um die y-Achse (wikipedia)
-		Matrix3f mat = new Matrix3f(
-				(float)Math.cos(alpha),      0f, (float)Math.sin(alpha),
-				0f,                          1f, 0f,
-				(float)(-1*Math.sin(alpha)), 0f, (float)Math.cos(alpha)
-		);
-
-		// Vektor mit Drehmatrix drehen
-		newdir = mat.mult(dir, newdir);
-		
-		world.move(newdir);
+		}	
 	}
 
 	@Override
 	public GlobalKI getGlobalKi() {
-		// TODO Auto-generated method stub
-		return null;
+		return globalKI;
 	}
 
 	@Override
 	public IWorldInstance getWorld() {
-		// TODO Auto-generated method stub
-		return null;
+		return world;
 	}
 }

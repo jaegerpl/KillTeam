@@ -21,6 +21,7 @@ package de.lunaticsoft.combatarena.api.killteam;
 
 import de.lunaticsoft.combatarena.api.interfaces.ILoadPlayerKI;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
 import debug.MapServer;
 
 

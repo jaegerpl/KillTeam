@@ -6,7 +6,7 @@ import goap.scenario.GoapActionSystem;
 import java.util.ArrayList;
 
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
-import de.lunaticsoft.combatarena.api.killteam.GlobalKI;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
 import map.fastmap.LinkedTile;
 
 

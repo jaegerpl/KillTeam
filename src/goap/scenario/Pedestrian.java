@@ -18,7 +18,7 @@ import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.MaterialState;
 
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
-import de.lunaticsoft.combatarena.api.killteam.GlobalKI;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
 
 /*
  * Copyright (C) 2009 Arne Klingenberg

@@ -30,12 +30,12 @@ import goap.scenario.GoapActionSystem;
  *  
  * @author Pascal Jaeger
  *
- *//*
-public class GoToLocation extends Action{
+ */
+public class GotoLocation extends Action{
 
 	protected GoapActionSystem as;
 
-	public GoToLocation(GoapActionSystem as, String name, float cost) {
+	public GotoLocation(GoapActionSystem as, String name, float cost) {
 	    super(1, null, null,null );
 
 
@@ -68,4 +68,4 @@ public class GoToLocation extends Action{
 	public boolean contextPreconditionsMet() {
 		return true;
 	}
-}*/
+}

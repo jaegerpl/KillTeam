@@ -12,7 +12,7 @@
 package goap.agent;
 
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
-import de.lunaticsoft.combatarena.api.killteam.GlobalKI;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
 
 /**
  * Base class for all Agents based on the C4 Architecture
