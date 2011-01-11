@@ -88,6 +88,10 @@ public class LinkedTile implements IPathNode {
 	public boolean isPassable() {
 		return isPassable;
 	}
+	
+	public boolean isOutOfMap() {
+		return isOutOfMap;
+	}
 
 	public Vector3f getNormalVector() {
 		return normalVector;

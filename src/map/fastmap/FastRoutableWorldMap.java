@@ -143,7 +143,7 @@ if(tilePosition.x > 60 || tilePosition.y > 60) {
 				map.get(pos).exploreTile(tile.isWater(), tile.isPassable(), tile.getNormalVector());
 			}
 		}
-//System.out.println("Tile Hinzugefügt: " + tile.mapIndex + " Passierbar: " + tile.isPassable);		
+//System.out.println("Tile Hinzugefï¿½gt: " + tile.mapIndex + " Passierbar: " + tile.isPassable);		
 		Point neighbourNorth = new Point(pos.x, pos.y+1);
 		Point neighbourSouth = new Point(pos.x, pos.y-1);
 		Point neighbourEast = new Point(pos.x-1, pos.y);
@@ -244,6 +244,13 @@ if(tilePosition.x > 60 || tilePosition.y > 60) {
 		float foo = myPosition.add(viewDirection.normalize().mult(30)).distance(position);
 		
 		if(40 > myPosition.add(viewDirection.normalize().mult(30)).distance(position)) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean positionIsInViewRange(Vector3f myPosition, Vector3f viewDirection, Vector3f position) {
+		if(50 > myPosition.add(viewDirection.normalize().mult(30)).distance(position)) {
 			return true;
 		}
 		return false;

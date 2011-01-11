@@ -27,6 +27,14 @@ import goap.goap.Goal;
 import goap.goap.IGOAPListener;
 import goap.scenario.GoapActionSystem;
 import goap.scenario.GoapController;
+import goap.scenario.actions.CollectFlag;
+import goap.scenario.actions.CollectToolBox;
+import goap.scenario.actions.DestroyHangar;
+import goap.scenario.actions.DestroyTank;
+import goap.scenario.actions.DestroyTankColor;
+//import goap.scenario.actions.GoToLocation;
+import goap.scenario.actions.LeaveHangar;
+import goap.scenario.goals.CollectToolBoxGOAL;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -44,7 +52,6 @@ import memory.map.MemorizedMap;
 import memory.objectStorage.MemorizedWorldObject;
 import memory.objectStorage.ObjectStorage;
 import memory.pathcalulation.Path;
-
 import battle.Battle;
 import battle.ShootTarget;
 
@@ -58,6 +65,8 @@ import de.lunaticsoft.combatarena.api.enumn.EObjectTypes;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.StatusType;
 import de.lunaticsoft.combatarena.objects.WorldObject;
 import debug.MapServer;
 
@@ -98,7 +107,7 @@ public class KillKI implements IGOAPListener, IPlayer {
 	private GlobalKI globalKI;
 	private Map<Point, Boolean> localMap = new HashMap<Point, Boolean>();
 	private MemorizedMap memoryMap;
-	private ObjectStorage objectStorage = new ObjectStorage();
+	private ObjectStorage objectStorage;
 
 	public KillKI(String name, GlobalKI globalKI) {
 		//System.out.println("KillKI "+name+" gestartet");
@@ -106,16 +115,15 @@ public class KillKI implements IGOAPListener, IPlayer {
 		
 		this.memoryMap = globalKI.getWorldMap();
 		this.globalKI = globalKI;
+		this.objectStorage = globalKI.getObjectStorage();
+		
 		
 		lastPositions = new LinkedBlockingQueue<Vector3f>(2);
-		
-		
 		// GOAP STUFF
-		/*this.globalKI = globalKI;
+		/*
 		blackboard.name = name; // just for debugging
 		actionSystem = new GoapActionSystem(this, blackboard,memory);	
 		((GoapActionSystem)actionSystem).addGOAPListener(this);*/
-
 		
 //		generateActions();
 //		generateGoals();
@@ -168,7 +176,7 @@ public class KillKI implements IGOAPListener, IPlayer {
 			}
 			
 			
-			if(imHangar || moveTarget == null)
+			if(blackboard.inHangar || moveTarget == null)
 				world.move(direction);
 			else if(moveTarget != null){
 				//System.out.println("bewege nach karte");
@@ -239,13 +247,13 @@ public class KillKI implements IGOAPListener, IPlayer {
 	public void explore(){
 		//GOAP.getExploreDirection();
 		if(startPos.distance(world.getMyPosition()) > 15)
-			imHangar = false;
+			blackboard.inHangar = false;
 		
 		//if(lastPos == null){
 		//	direction = new Vector3f(FastMath.rand.nextInt(200),0, FastMath.rand.nextInt(200));
 		//}
 		//else 
-			if(!imHangar){
+			if(!blackboard.inHangar){
 			
 			
 			
@@ -283,21 +291,18 @@ public class KillKI implements IGOAPListener, IPlayer {
 						//Rotieren und weitersuchen
 						this.direction = rotateVector(this.direction, 10);
 						moveTarget = null;
-					}
-				} else {
-					TreeMap<Integer, LinkedTile> sortedTiles = memoryMap.getUnexploredTilesSortedByDistance(pos);
-					for(LinkedTile tile : sortedTiles.values()) {
-						path = memoryMap.calculatePath(myPosTile, tile);
-						if(!path.isEmpty()) {
-							moveTarget = path.getNextWaypoint();
-							break;
+						}
+					} else {
+						TreeMap<Integer, LinkedTile> sortedTiles = memoryMap.getUnexploredTilesSortedByDistance(pos);
+						for(LinkedTile tile : sortedTiles.values()) {
+							path = memoryMap.calculatePath(myPosTile, tile);
+							if(!path.isEmpty()) {
+								moveTarget = path.getNextWaypoint();
+								break;
+							}
 						}
 					}
-				}
-			}
-			
-			
-			 
+				}	
 		}	
 				
 	}
@@ -305,7 +310,6 @@ public class KillKI implements IGOAPListener, IPlayer {
 
 	@Override
 	public void setWorldInstance(IWorldInstance world) {
-		//System.out.println("Panzer "+name+" hat World Instanz bekommen.");
 		this.world = world;
 		globalKI.setWorldInstance(world);
 	}
@@ -353,16 +357,22 @@ public class KillKI implements IGOAPListener, IPlayer {
 
 		out += "\r\nSpeed " + speed;
 		world.shoot(direction, speed, 30);
-
-		// ACHTUNG: Keine Ausgaben in der Abgabe (Vorführung)! "Logger" benutzen
-		//System.out.println("================\r\n" + out + "\r\n================");
+		
+		// GOAP STUFF
+		blackboard.hitsTaken++;
 	}
 
 	@Override
 	public void collected(IWorldObject worldObject) {
 		switch (worldObject.getType()) {
 		case Item:
-			// ITEM COLLECTED
+			if(blackboard.spottedToolBox != null){
+				if(blackboard.spottedToolBox.getPosition() == worldObject.getPosition()){
+					blackboard.spottedToolBox = null;
+					blackboard.toolBoxCollected = true;
+					// TODO update object storage
+				}
+			}
 			break;
 		default:
 			// DO NOTHING
@@ -375,8 +385,9 @@ public class KillKI implements IGOAPListener, IPlayer {
 		
 		WorldObject wO = new WorldObject(null, color, this.pos, EObjectTypes.Item);
 		this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
+		
 		// GOAP STUFF
-		globalKI.getBlackBoard().tanksAlive -= 1; // tell the GlobalKI about death of tank
+		globalKI.removeTank(this);					// deregister tank in globalKI
 	}
 
 	@Override
@@ -439,8 +450,9 @@ public class KillKI implements IGOAPListener, IPlayer {
 		//System.out.println("goalPosition: "+goalPosition);
 		
 		// GOAP STUFF
-		globalKI.getBlackBoard().tanksAlive += 1;// tell GlobalKI about rebirth of tank
+		globalKI.registerTank(this); 				// register tank in globalKI
 		//blackboard.direction = direction;
+		blackboard.inHangar = true;
 	}
 
 	public String getName() {
@@ -449,26 +461,31 @@ public class KillKI implements IGOAPListener, IPlayer {
 
 	@Override
 	public void actionChangedEvent(Object sender, Action oldAction,	Action newAction) {
-		// TODO Auto-generated method stub		
+		// we are going to tell the globalki about our status change
+		globalKI.tankStatusChanged(this, newAction, StatusType.Action);
 	}
 
 	@Override
 	public void goalChangedEvent(Object sender, Goal oldGoal, Goal newGoal) {
-		// TODO Auto-generated method stub		
+		// we are going to tell the globalki about our status change	
+		globalKI.tankStatusChanged(this, newGoal, StatusType.Goal);
 	}
 	
 	private void generateGoals(){
-//		((GoapActionSystem)actionSystem).addGoal(new Explore("Explore",0.6f, (GoapActionSystem) actionSystem));
+		((GoapActionSystem)actionSystem).addGoal(new CollectToolBoxGOAL("CollectToolBoxGOAL",0.1f, (GoapActionSystem) actionSystem));
 	}
 	
 	private void generateActions(){			
-//		((GoapActionSystem)actionSystem).addAction(new GotoLocation((GoapActionSystem) this.actionSystem,"GoToLocation",1.0f));
-//		((GoapActionSystem)actionSystem).addAction(new WatchEntertainment((GoapActionSystem) this.actionSystem,"WatchEntertianment",1.0f));
+		((GoapActionSystem)actionSystem).addAction(new CollectFlag((GoapActionSystem) this.actionSystem,"CollectFlag",1.0f));
+		((GoapActionSystem)actionSystem).addAction(new CollectToolBox((GoapActionSystem) this.actionSystem,"CollectToolBox",1.0f));
+		((GoapActionSystem)actionSystem).addAction(new DestroyHangar((GoapActionSystem) this.actionSystem,"DestroyHangar",1.0f));
+		((GoapActionSystem)actionSystem).addAction(new DestroyTank((GoapActionSystem) this.actionSystem,"DestroyTank",1.0f));
+	//	((GoapActionSystem)actionSystem).addAction(new GoToLocation((GoapActionSystem) this.actionSystem,"GoToLocation",1.0f));
+		((GoapActionSystem)actionSystem).addAction(new LeaveHangar((GoapActionSystem) this.actionSystem,"LeaveHangar",1.0f));
+
+		//DestroyTankColor needs to be added, when we know which colors are in the game => extra method
 	}
 	
-	private void generateRandomDesires(){
-//		((GoapActionSystem)actionSystem).currentWorldState.add(new WorldStateSymbol<Float>(TankWorldProperty.Boredom, r.nextFloat() % 1.0f, PropertyType.Float));
-	}
 	
 	private void scanTile(LinkedTile tile) {
 		if(!tile.isExplored()) {
@@ -532,33 +549,16 @@ if(voraus.x > 10000 || voraus.z > 10000) {
 		if(null != world.getTerrainNormal(voraus) && !world.isPassable(voraus)) {
 			LinkedTile tileVoraus = memoryMap.getTileAtCoordinate(voraus);
 			memoryMap.exploreTile(tileVoraus, tileVoraus.isWater(), false, tileVoraus.getNormalVector());
-		}
-
-		
-	}
-	
-	/**
-	 * Turns the direction of the tank by the given degree alpha.
-	 * If alpha is positive the tank turns left, tank turns right for negative alpha.
-	 * 
-	 * @param alpha the degree by which the tank turns its direction.
-	 */
-	public void turn(double alpha){
-		Vector3f dir = world.getMyDirection();
-		Vector3f newdir = new Vector3f();
-		
-		// Drehmatrix um die y-Achse (wikipedia)
-		Matrix3f mat = new Matrix3f(
-				(float)Math.cos(alpha),      0f, (float)Math.sin(alpha),
-				0f,                          1f, 0f,
-				(float)(-1*Math.sin(alpha)), 0f, (float)Math.cos(alpha)
-		);
-
-		// Vektor mit Drehmatrix drehen
-		newdir = mat.mult(dir, newdir);
-		
-		world.move(newdir);
+		}	
 	}
 
+	@Override
+	public GlobalKI getGlobalKi() {
+		return globalKI;
+	}
 
+	@Override
+	public IWorldInstance getWorld() {
+		return world;
+	}
 }

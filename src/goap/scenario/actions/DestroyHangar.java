@@ -12,6 +12,8 @@
 
 package goap.scenario.actions;
 
+import java.util.ArrayList;
+
 import goap.goap.Action;
 import goap.goap.PropertyType;
 import goap.goap.TankWorldProperty;
@@ -19,49 +21,48 @@ import goap.goap.WorldStateSymbol;
 import goap.scenario.GoapActionSystem;
 
 /**
- * Action to move the tank to a specified location in the map.
+ * Action to shoot at a hangar to destroy it.
+ * Shoot until the hangar is destroyed. Maybe its a good idea to run around the hangar 
+ * in a circle, so competitors can't shoot at the tank too easy.
  * 
  * preCond
- *  - inHangar = false
- *  - hasDestination = true
- *  Effect
- *  - atDestination
- *  - hasDestination = false
- *  
+ * - atDestination = true
+ * Effect
+ * - der Hangar ist nicht mehr im Sichtbereich (schwierig zu formulieren mit Variablen)
+ * 
  * @author Pascal Jaeger
  *
  */
-public class GotoLocation extends Action{
+public class DestroyHangar extends Action{
 
 	protected GoapActionSystem as;
 
-	public GotoLocation(GoapActionSystem as, String name, float cost) {
+	public DestroyHangar(GoapActionSystem as, String name, float cost) {
 	    super(1, null, null,null );
 
 
 		this.as = as;
-		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.HasDestination, false, PropertyType.Boolean));
-		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.AtDestination, true, PropertyType.Boolean));
-		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.HasDestination, true, PropertyType.Boolean));
-		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.InHangar, false, PropertyType.Boolean));
+		// Effekt, der Hangar an der Position taucht nicht mehr in der perceive Methode auf 
+//		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.AtDestination,
+//				true, PropertyType.Boolean));
+		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.AtDestination,
+				true, PropertyType.Boolean));
 		
 	}
 
 	public void performAction() {
-		// movement goes here
+		// shooting at hangar goes here
+		// maybe some running around to 
 	}
 
 	public boolean isFinished() {
-		if(as.getBlackboard().hasDestination == true && as.getBlackboard().atDestination == true){
-			return true;
-		}
-		return false;
+		// finished wenn - siehe Effekt
+		return true;
 	}
 
 	@Override
 	public boolean isValid() {
-		// Gruende, warum diese Aktion nicht mehr ausgef�hrt werden koennte?
-		return true;
+		return !isFinished();
 	}
 
 	@Override

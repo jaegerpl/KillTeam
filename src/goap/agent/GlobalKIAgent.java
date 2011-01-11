@@ -18,7 +18,6 @@ package goap.agent;
  */
 public abstract class GlobalKIAgent{
 	
-	protected SensorySystem sensorySystem;
 	protected WorkingMemory memory;
 	protected GlobalKIBlackboard blackboard;
 	protected IActionSystem actionSystem;
@@ -26,7 +25,6 @@ public abstract class GlobalKIAgent{
 	public GlobalKIAgent()
 	{
 		memory = new WorkingMemory();
-		sensorySystem = new SensorySystem(memory);
 		blackboard = new GlobalKIBlackboard();
 		
 	}
@@ -44,7 +42,6 @@ public abstract class GlobalKIAgent{
 	 * Updates the agents memory and sensory system
 	 */
 	public void update(){
-		sensorySystem.update();
 		memory.update();
 		//actionSystem.selectAction();
 	}

@@ -1,15 +1,10 @@
 package goap.scenario;
 
 import goap.agent.Agent;
-import goap.agent.MemoryObject;
 import goap.goap.Action;
 import goap.goap.Goal;
 import goap.goap.IGOAPListener;
 import goap.pathfinding.NavigationMap;
-import goap.scenario.actions.WatchEntertainment;
-import goap.scenario.goals.Explore;
-import goap.scenario.sensors.ActionSensor;
-import goap.scenario.sensors.FoodSensor;
 
 import java.util.List;
 import java.util.Random;
@@ -21,6 +16,9 @@ import com.jme.scene.Spatial;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.MaterialState;
+
+import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
 
 /*
  * Copyright (C) 2009 Arne Klingenberg
@@ -47,10 +45,7 @@ public class Pedestrian extends Agent implements IGOAPListener{
 	public double time, startTime;
 	
 
-	public Pedestrian(float x, float y, Node node, NavigationMap navMap) {
-		
-		blackboard.navMap = navMap;
-		
+	public Pedestrian(float x, float y, Node node, NavigationMap navMap) {		
 		
 		name = "player" + number++;
 		blackboard.name = name; // just for debugging
@@ -70,10 +65,6 @@ public class Pedestrian extends Agent implements IGOAPListener{
 
 //		private AppearanceController ac;
 //		((GoapActionSystem)actionSystem).addGOAPListener(ac);
-
-		
-		sensorySystem.addSensor(new FoodSensor(this));
-		sensorySystem.addSensor(new ActionSensor(this));
 		
 		createNavLocations();
 		
@@ -103,11 +94,11 @@ public class Pedestrian extends Agent implements IGOAPListener{
 	
 	
 	private void generateGoals(){
-		((GoapActionSystem)actionSystem).addGoal(new Explore("Explore",0.6f, (GoapActionSystem) actionSystem));
+//		((GoapActionSystem)actionSystem).addGoal(new Explore("Explore",0.6f, (GoapActionSystem) actionSystem));
 	}
 	
 	private void generateActions(){			
-		((GoapActionSystem)actionSystem).addAction(new WatchEntertainment((GoapActionSystem) this.actionSystem,"WatchEntertianment",1.0f));
+//		((GoapActionSystem)actionSystem).addAction(new WatchEntertainment((GoapActionSystem) this.actionSystem,"WatchEntertianment",1.0f));
 	}
 	
     private void createNavLocations(){
@@ -170,8 +161,6 @@ public class Pedestrian extends Agent implements IGOAPListener{
 //		mc.remove();
 		box.removeFromParent();
 		visualRange.removeFromParent();
-		blackboard.currentNode.blocked = false;
-		BaseGame.pedestrians.remove(this);
 	}
 	
 	public void setMaterial(MaterialState ms)
@@ -189,9 +178,7 @@ public class Pedestrian extends Agent implements IGOAPListener{
 	{
 		String s = "Name: " + name + "\n"
 		+ "Goal: " + ((GoapActionSystem)actionSystem).getCurrentGoal() + "\n"
-		+ "Action: " + ((GoapActionSystem)actionSystem).getCurrentAction() + "\n"
-		+ "CurrentNode: " + blackboard.currentNode + "\n"
-		+ "DestinationNode: " + blackboard.destinationNode + "\n";
+		+ "Action: " + ((GoapActionSystem)actionSystem).getCurrentAction() + "\n";
 		
 		return s;
 	}
@@ -228,19 +215,16 @@ public class Pedestrian extends Agent implements IGOAPListener{
 			// TODO
 		}
 	}
-	
-//	public void setBordeom(float value)
-//	{
-//		((GoapActionSystem)actionSystem).currentWorldState.setValue(TankWorldProperty.Boredom, value);
-//	}
-//	
-//	public void setExhaustion(float value)
-//	{
-//		((GoapActionSystem)actionSystem).currentWorldState.setValue(TankWorldProperty.Exhaustion, value);
-//	}
-//	
-//	public void setHunger(float value)
-//	{
-//		((GoapActionSystem)actionSystem).currentWorldState.setValue(TankWorldProperty.Hunger, value);
-//	}
+
+	@Override
+	public GlobalKI getGlobalKi() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IWorldInstance getWorld() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

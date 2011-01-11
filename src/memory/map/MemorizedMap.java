@@ -19,7 +19,7 @@ import com.jme.math.Vector3f;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 
 
-public class MemorizedMap {
+public class MemorizedMap{
 	AStarPathCalculator pathCalculator;
 	FastRoutableWorldMap worldMap;
 	
@@ -68,6 +68,7 @@ public class MemorizedMap {
 	}
 	
 	public void markTileAsOutOfMap(LinkedTile tile) {
+		
 		worldMap.markTileAsOutOfMap(tile);
 	}
 	

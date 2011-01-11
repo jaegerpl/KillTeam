@@ -19,40 +19,37 @@ import goap.goap.WorldStateSymbol;
 import goap.scenario.GoapActionSystem;
 
 /**
- * Action to move the tank to a specified location in the map.
+ * Action to leave the hangar
+ * preCond 
+ * - inHangar = true
+ * - hasDestination = true
+ * Effect
+ * - inHangar = false
  * 
- * preCond
- *  - inHangar = false
- *  - hasDestination = true
- *  Effect
- *  - atDestination
- *  - hasDestination = false
- *  
  * @author Pascal Jaeger
  *
  */
-public class GotoLocation extends Action{
+public class LeaveHangar extends Action{
 
 	protected GoapActionSystem as;
 
-	public GotoLocation(GoapActionSystem as, String name, float cost) {
+	public LeaveHangar(GoapActionSystem as, String name, float cost) {
 	    super(1, null, null,null );
 
 
 		this.as = as;
-		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.HasDestination, false, PropertyType.Boolean));
-		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.AtDestination, true, PropertyType.Boolean));
-		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.HasDestination, true, PropertyType.Boolean));
-		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.InHangar, false, PropertyType.Boolean));
+		effect.add(new WorldStateSymbol<Boolean>(TankWorldProperty.InHangar, false, PropertyType.Boolean));
+		preCond.add(new WorldStateSymbol<Boolean>(TankWorldProperty.InHangar, true, PropertyType.Boolean));
 		
 	}
 
 	public void performAction() {
-		// movement goes here
+	  // leaving the hangar is done here.
+	  // set as.getBlackboard().inHangar = false when done
 	}
 
 	public boolean isFinished() {
-		if(as.getBlackboard().hasDestination == true && as.getBlackboard().atDestination == true){
+		if(as.getBlackboard().inHangar == false){
 			return true;
 		}
 		return false;
@@ -60,8 +57,7 @@ public class GotoLocation extends Action{
 
 	@Override
 	public boolean isValid() {
-		// Gruende, warum diese Aktion nicht mehr ausgef�hrt werden koennte?
-		return true;
+		return !isFinished();
 	}
 
 	@Override

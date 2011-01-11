@@ -19,5 +19,5 @@ package goap.goap;
  */
 public enum PropertyType
 {
-	Float, Boolean, NavNode, Vector3f,
+	Float, Boolean, NavNode, Vector3f, EColors,
 }

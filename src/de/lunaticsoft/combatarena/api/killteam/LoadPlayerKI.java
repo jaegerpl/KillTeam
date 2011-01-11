@@ -21,13 +21,17 @@ package de.lunaticsoft.combatarena.api.killteam;
 
 import de.lunaticsoft.combatarena.api.interfaces.ILoadPlayerKI;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
+import debug.MapServer;
 
 
 public class LoadPlayerKI implements ILoadPlayerKI {
 	
 	GlobalKI globalKi = new GlobalKI();
+	
 
 	public IPlayer getKI(int index, String name) {
+		
 		//System.out.println(index);
 		switch (index) {
 		case 0:
