@@ -127,10 +127,19 @@ public class GlobalKI  extends GlobalKIAgent{
 			if(statusItem instanceof Integer){
 				data.attacked = (Integer)statusItem;
 			}
+			break;	
+		case HangarFound:
+			if(statusItem instanceof Vector3f){
+				data.hangarFound = (Vector3f)statusItem;
+			}
 			break;			
+		case FlagSpotted:
+			if(statusItem instanceof Vector3f){
+				data.flagSpotted = (Vector3f)statusItem;
+			}
+			break;
 		default:
 			break;
 		}
-		
 	}
 }

@@ -12,6 +12,8 @@ public enum StatusType {
 	Action, 		// current Action
 	Position, 		// current position
 	Attacked, 		// if tank has been attacked
-	GoalPosition	// the position the tank moves to
+	GoalPosition,	// the position the tank moves to
+	HangarFound,	// indicates that a foreign hangar has been found
+	FlagSpotted		// indicates that the flag has been spotted
 
 }

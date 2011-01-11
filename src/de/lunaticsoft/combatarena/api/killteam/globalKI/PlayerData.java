@@ -21,5 +21,7 @@ public class PlayerData {
 	public Goal oldGoal;
 	public Action action;
 	public Action oldAction;
+	public Vector3f hangarFound;
+	public Vector3f flagSpotted;
 
 }
