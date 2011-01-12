@@ -4,5 +4,5 @@ public enum Task {
 	DEFEND,
 	CTF,
 	RAPEaHANGAR,
-	EXPLORE
+	EXPLORE, GoToBase
 }

@@ -1,6 +1,7 @@
 package de.lunaticsoft.combatarena.api.killteam;
 
 
+
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,12 +18,12 @@ import memory.map.MemorizedMap;
 import memory.objectStorage.MemorizedWorldObject;
 import memory.objectStorage.ObjectStorage;
 import memory.pathcalulation.Path;
+
+
 import battle.Battle;
 import battle.ShootTarget;
 
 import com.jme.math.FastMath;
-import com.jme.math.Matrix3f;
-import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 
 import de.lunaticsoft.combatarena.api.enumn.EColors;
@@ -31,9 +32,7 @@ import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
 import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
-import de.lunaticsoft.combatarena.api.killteam.globalKI.StatusType;
 import de.lunaticsoft.combatarena.objects.WorldObject;
-import debug.MapServer;
 
 public class KillKI implements IPlayer {
 
