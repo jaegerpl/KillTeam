@@ -1,3 +1,4 @@
+package de.lunaticsoft.combatarena.api.killteam;
 //package de.lunaticsoft.combatarena.api.killteam;
 //
 //import goap.agent.Agent;

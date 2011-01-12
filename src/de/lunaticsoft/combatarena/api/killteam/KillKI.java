@@ -47,14 +47,13 @@ public class KillKI implements IPlayer {
     
     private Queue<Vector3f> lastPositions;
     
-    private float lastDistance = 0;
+
     private EColors color;
     private String name;
     
     private LinkedTile moveTarget;
     
     Path<LinkedTile> path = null;
-    LinkedTile lastPathDest = null;
 
     private boolean pathReset = false;
     
@@ -67,15 +66,14 @@ public class KillKI implements IPlayer {
     private Vector3f flagPos;
     private Vector3f flagPosPath; //flaPos für die der Pfad berechnet wurde
     private Task lastTask;
+    private LinkedTile lastPathTarget;
     private ArrayList<IWorldObject> perceivedObjects;
     
-    private static Random r = new Random();
     
         
     
     // GOAP STUFF
     private GlobalKI globalKI;
-    private Map<Point, Boolean> localMap = new HashMap<Point, Boolean>();
     private MemorizedMap memoryMap;
     private ObjectStorage objectStorage;
     protected TankBlackboard blackboard;
@@ -87,6 +85,8 @@ public class KillKI implements IPlayer {
     private boolean iHaveTheFlag = false;
     private boolean flagCollectet = false;
 
+    private java.util.Random rand;
+	private LinkedTile myPosTile;
     public KillKI(String name, GlobalKI globalKI, Task task) {
         //System.out.println("KillKI "+name+" gestartet");
         this.blackboard = new TankBlackboard();
@@ -99,6 +99,7 @@ public class KillKI implements IPlayer {
         
         lastPositions = new LinkedBlockingQueue<Vector3f>(2);
         this.blackboard.curTask = task;
+        rand = new java.util.Random();
     }
 
     @Override
@@ -189,32 +190,18 @@ public void goToHangar(){
         if(!calibrated) {
             calibrate();
         }
-        evalNextTask(); //update Mission/Task of the tank
-        if(!stop){          
+        evalNextTask(); //update Mission/Task of the tank       
             // current position
             pos = world.getMyPosition();
             currentDirection = world.getMyDirection();
+            myPosTile = memoryMap.getTileAtCoordinate(pos);
             
             //scan unknown terrain
             scanTerrain();
             
-    
-            if(stuck()) {
-                System.out.println(name + " steckt fest. Sein Ziel ist " + moveTarget + 
-                        "und er befindet sich an Position " + memoryMap.getTileAtCoordinate(pos));
-                int faktor = 1;
-                if(Math.random() > 0.5){
-                    faktor = -1;
-                }
-                int offset = (int)Math.random()*20;
-                int alpha = 180+(faktor*offset);
-                Vector3f unstuckDirection = rotateVector(world.getMyDirection(), alpha);
-                moveDirection = unstuckDirection;
-            }
-            
-            LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
             //Pruefen ob durch neue Erkundung das Zwischenziel nicht mehr betretbar ist
             if(null != moveTarget && (!moveTarget.isPassable() || !myPosTile.isPassable()) || lastTask != blackboard.curTask) {
+            	world.stop();
                 if(!pathReset) {
                     path = null;
                     moveTarget = null;
@@ -224,10 +211,10 @@ public void goToHangar(){
                 pathReset = false;
             }
             
-            
-            if( moveTarget == null || moveTarget.equals(myPosTile)) {
                 if(this.blackboard.curTask == Task.DEFEND)
                     defend();
+                else if(iHaveTheFlag && flagCollectet)
+                    goToTarget(memoryMap.getTileAtCoordinate(startPos));
                 else if(this.blackboard.curTask == Task.EXPLORE)
                     explore();
                 else if(this.blackboard.curTask == Task.CTF)
@@ -235,38 +222,37 @@ public void goToHangar(){
                     if(flagPos != flagPosPath)
                         pathReset = true;
                         goToTarget(memoryMap.getTileAtCoordinate(flagPos));
-                        
                 }
                     else if(this.blackboard.curTask == Task.RAPEaHANGAR)
                         rapeHangar();
-                    else if(iHaveTheFlag && flagCollectet)
-                        goToTarget(memoryMap.getTileAtCoordinate(startPos));
-            }
             
-            if(blackboard.inHangar || moveTarget == null)
-                world.move(spwanDirection);
-            else if(moveTarget != null){
-                //System.out.println("bewege nach karte");
-                //System.out.println("");
-                //System.out.println("Panzer bei: " + pos + "(" + myPosTile + ")");
-                //System.out.println("Ziel bei: " + moveTarget.getTileCenterCoordinates() + "(" + moveTarget + ")");
+            if(moveTarget != null){
                 Vector3f newDirection = moveTarget.getTileCenterCoordinates().subtract(pos);
-                //System.out.println("Bewege Richtung " + newDirection);
-                //System.out.println("");
                 moveDirection = newDirection;
             }
+            
+            
+            if(stuck()) {
+                System.out.println(name + " steckt fest. Sein Ziel ist " + moveTarget + 
+                        "seine Aufgabe: "+blackboard.curTask+"und er befindet sich an Position " + memoryMap.getTileAtCoordinate(pos)+ " seine aktuellen Wegpunkte: "+path);
+              
+                int offset = rand.nextInt(180);
+                int alpha = 90+offset;
+                Vector3f unstuckDirection = rotateVector(world.getMyDirection(), alpha);
+                moveDirection = unstuckDirection;
+            }
             world.move(moveDirection);
-        }
+        
         lastTask = blackboard.curTask;
      
-    }
+}
     
     private void evalNextTask(){
         if(blackboard.curTask == Task.DEFEND)
             return;
         else if(iHaveTheFlag && flagCollectet)
             blackboard.curTask = Task.GoToBase;
-        /*
+        
         else if(blackboard.curTask == Task.EXPLORE){
             if(CTFmode){
                 if(pathToFlagKnown()){
@@ -274,21 +260,27 @@ public void goToHangar(){
                 }
                     blackboard.curTask = Task.EXPLORE;
             }
-            else
+            else if(!objectStorage.getEnemyHangars().isEmpty()){
+            	blackboard.curTask = Task.RAPEaHANGAR;
+            	
+            }            
             }
-            */
+            
             
         }
-        
-    
-
-    
+ 
     private void goToTarget(LinkedTile target) {
         if(pathReset){
             flagPosPath = flagPos;
             path = memoryMap.calculatePath(memoryMap.getTileAtCoordinate(pos), target);
+            pathReset = false;
         }
-        moveTarget = path.getNextWaypoint();        
+        if(myPosTile.equals(moveTarget))
+        {
+        	moveTarget = path.getNextWaypoint();
+        }
+        if(path.isEmpty())
+        	pathReset=true;
     }
 
     private boolean pathToFlagKnown()
@@ -299,8 +291,21 @@ public void goToHangar(){
     }
     
     private void rapeHangar() {
-        
-        
+    	Map<Point, MemorizedWorldObject> enemyHangars = objectStorage.getEnemyHangars();
+    	
+    	MemorizedWorldObject[] hangars = new MemorizedWorldObject[enemyHangars.values().size()]; 
+    	enemyHangars.values().toArray(hangars);
+    	if(hangars[0] != null){
+    		System.out.println("hangars:"+hangars[0]);
+    		LinkedTile target = memoryMap.getTileAtCoordinate(hangars[0].getPosition());
+    		if(target != lastPathTarget)
+    			pathReset = true;
+    		System.out.println("gehe zu hangar");
+    		goToTarget(target);
+    	
+    	}
+    	else
+    		blackboard.curTask = Task.EXPLORE;  
     }
 
 
@@ -398,8 +403,6 @@ public void goToHangar(){
             
                 moveTarget = path.getNextWaypoint();
             }
-    else
-        System.out.println("abstand zum hangar zu klein");
     }
     
     
@@ -415,7 +418,7 @@ public void goToHangar(){
        //} //else 
             if(!blackboard.inHangar){ Vector3f targetPos = this.pos.add(spwanDirection.normalize().mult(30));
 
-            LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
+            
             //System.out.println("Wï¿½rde mich gern bewegen");
             
             if(null != path && !path.isEmpty()) {
@@ -440,10 +443,8 @@ public void goToHangar(){
                             this.spwanDirection = rotateVector(this.spwanDirection, 10);
                             moveTarget = null;
                         } else {
-    //System.out.println("########### Pfad gefunden ###########");
                             moveTarget = path.getNextWaypoint();
-    //System.out.println("Meine Position: " + myPosTile.getMapIndex());
-    //System.out.println("Pfad: " + path);
+
                         }
                     } else {
                         //Rotieren und weitersuchen
