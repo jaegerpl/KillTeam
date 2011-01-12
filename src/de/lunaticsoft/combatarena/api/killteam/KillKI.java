@@ -68,6 +68,7 @@ public class KillKI implements IPlayer {
 	private String name;
 	
 	private LinkedTile moveTarget;
+	
 	Path<LinkedTile> path = null;
 
 	private boolean pathReset = false;
@@ -90,9 +91,12 @@ public class KillKI implements IPlayer {
 	private MemorizedMap memoryMap;
 	private ObjectStorage objectStorage;
 	protected TankBlackboard blackboard;
+	private float inHangarThreshold = 15;
+	private boolean calcNewDefendPath = true;
 
 	public KillKI(String name, GlobalKI globalKI) {
 		//System.out.println("KillKI "+name+" gestartet");
+		this.blackboard = new TankBlackboard();
 		this.name = name;
 		
 		this.memoryMap = globalKI.getWorldMap();
@@ -143,10 +147,11 @@ public class KillKI implements IPlayer {
 			}
 			
 			
-			if(null == moveTarget || moveTarget.equals(myPosTile)) {
-				explore();
+			if( moveTarget == null || moveTarget.equals(myPosTile)) {
+				System.out.println("defend aufrufen");
+				//explore();
+				defend();
 			}
-			
 			
 			if(blackboard.inHangar || moveTarget == null)
 				world.move(direction);
@@ -224,19 +229,57 @@ public class KillKI implements IPlayer {
 		return stuck;
 	}
 	
-	public void explore(){
-		//GOAP.getExploreDirection();
-		if(startPos.distance(world.getMyPosition()) > 15)
+	public void defend(){
+		if(world.getMyPosition().distance(startPos) > 25){
 			blackboard.inHangar = false;
+		}
+		
+		if(!blackboard.inHangar){
+			if(calcNewDefendPath){
+			float distance = world.getMyPosition().distance(startPos);
+			//float distance = 10;
+			double x = 0d; // real part
+			double z = 0d; // imaginary part
+			
+			path = new Path<LinkedTile>();
+			path.setCircleCourse(true);
+
+				for (int angle = 0; angle < 360; angle += 15) {
+					x = distance * Math.cos(angle);
+					z = distance * Math.sin(angle);
+
+					Vector3f d = startPos.clone();
+					d.x += x;
+					d.z += z;
+
+					path.addWaypoint(memoryMap.getTileAtCoordinate(d));
+					
+				}
+				
+				calcNewDefendPath = false;
+			}
+			
+				moveTarget = path.getNextWaypoint();
+			}
+	else
+		System.out.println("abstand zum hangar zu klein");
+	}
+	
+	
+	
+	
+	public void explore(){
+		if(startPos.distance(world.getMyPosition()) > inHangarThreshold )
+			blackboard.inHangar = false;
+		//GOAP.getExploreDirection();
 		
 		//if(lastPos == null){
 		//	direction = new Vector3f(FastMath.rand.nextInt(200),0, FastMath.rand.nextInt(200));
 		//}
 		//else 
 			if(!blackboard.inHangar){
-			
-			
-			
+				Vector3f targetPos = this.pos.add(direction.normalize().mult(30));
+
 			LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
 			//System.out.println("W�rde mich gern bewegen");
 			
@@ -250,7 +293,7 @@ public class KillKI implements IPlayer {
 				//Neuen Pfad berechnen
 				//System.out.println("Neuen Pfad berechnen.");
 				//LinkedTile targetTile = memoryMap.getNearestUnexploredTile(pos);
-				Vector3f targetPos = this.pos.add(direction.normalize().mult(60));
+				 targetPos = this.pos.add(direction.normalize().mult(60));
 				if(targetPos.x > 10000 || targetPos.z > 10000) {
 					System.out.println("Alerm!");
 				}

@@ -14,6 +14,12 @@ public class Path<T extends LinkedTile> implements Iterable<T>{
 	protected AStarPathCalculator pathCalculator;
 	protected MemorizedMap map;
 	protected T lastVisitedWaypoint = null;
+	
+	protected boolean isCircleCourse = false;
+
+	public void setCircleCourse(boolean isCircleCourse) {
+		this.isCircleCourse = isCircleCourse;
+	}
 
 	public Path() {
 		waypoints = new ArrayList<T>();
@@ -35,6 +41,15 @@ public class Path<T extends LinkedTile> implements Iterable<T>{
 		waypoints.add(0, waypoint);
 	}
 	
+	public void appendPath(Path<T> path) {
+		if(this.waypoints.size() > 0 && path.waypoints.size() > 0){
+			if(this.waypoints.get(this.waypointCount()-1).equals(path.waypoints.get(0))) {
+				this.waypoints.remove(this.waypointCount()-1);
+			}
+		}
+		this.waypoints.addAll(path.waypoints);
+	}
+	
 	public int waypointCount() {
 		return waypoints.size();
 	}
@@ -50,6 +65,10 @@ public class Path<T extends LinkedTile> implements Iterable<T>{
 			
 			waypoints.remove(0);
 			lastVisitedWaypoint = waypoint;
+			
+			if(isCircleCourse) {
+				this.addWaypoint(waypoint);
+			}
 			return waypoint;
 		}
 		return null;
