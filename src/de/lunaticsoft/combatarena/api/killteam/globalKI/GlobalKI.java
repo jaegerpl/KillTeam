@@ -35,7 +35,7 @@ public class GlobalKI {
 	
 	public GlobalKI() {
 		map = new MemorizedMap();
-		objectStorage = new ObjectStorage();
+		objectStorage = new ObjectStorage(map);
 		players = new HashMap<IPlayer, PlayerData>();
 		
 		MapServer srv = new MapServer(map, this.objectStorage);

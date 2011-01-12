@@ -43,7 +43,7 @@ public class KillKI implements IPlayer {
     private Vector3f pos;       // takns last updated position
     private Vector3f goalPosition; // tanks goal its heading to
     
-    private Vector3f currentDirection;
+    private Vector3f currentDirection; // direction of tank during update()
     
     private Queue<Vector3f> lastPositions;
     
@@ -68,6 +68,7 @@ public class KillKI implements IPlayer {
     private Task lastTask;
     private LinkedTile lastPathTarget;
     private ArrayList<IWorldObject> perceivedObjects;
+    private int WOExistanceUpdate = 0;
     
     
         
@@ -131,60 +132,43 @@ public void goToHangar(){
         }
     }
     
-    // prüfe ob du am Hangar bist und ob er noch existiert
+    // pruefe ob du am Hangar bist und ob er noch existiert
     if(currentTile.equals(targetTile)){
-        checkHangarExistance();
+        checkWorldObjectExistance();
     }
     
 }
 
-    private void checkHangarExistance(){
-        IWorldObject spottedHangar = blackboard.spottedHangar;
-        Map<Point, MemorizedWorldObject> hangars = objectStorage.getEnemyHangarsOfPlayer(spottedHangar.getColor());
-        
-        // tiles auf denen ein hangar sein sollte
-        HashMap<LinkedTile, List<MemorizedWorldObject>> hangarTiles = new HashMap<LinkedTile, List<MemorizedWorldObject>>(); 
-        for(MemorizedWorldObject obj : hangars.values()){
-            LinkedTile tile = memoryMap.getTileAtCoordinate(obj.getPosition());
-            if(hangarTiles.containsKey(tile)){
-                hangarTiles.get(tile).add(obj);
-            } else {
-                hangarTiles.put(tile, new ArrayList<MemorizedWorldObject>());
-                hangarTiles.get(tile).add(obj);
-            }
-        }
-        
+    /**
+     * Ueberprueft die perceivte Realitaet mit der map und
+     * loescht nichtmehr vorhandene Object aus der Map
+     */
+    private void checkWorldObjectExistance(){
         // tiles die der tank sehen kann
         List<LinkedTile> viewTiles = memoryMap.getTilesPossiblyInViewRange(world.getMyPosition());
         
+        
         // entferne hangars, die ich nicht sehen kann
-        HashMap<LinkedTile, List<MemorizedWorldObject>> sureThing = new HashMap<LinkedTile, List<MemorizedWorldObject>>();
-        for(LinkedTile tile : hangarTiles.keySet()){
-            if(viewTiles.contains(tile)){
-                sureThing.put(tile, hangarTiles.get(tile));
-            }
-        }
+        List<MemorizedWorldObject> sureThing = objectStorage.getObjectsAtTiles(viewTiles);
         
         // entferne alle hangars aus sureThing die perceived wurden
         for(IWorldObject obj : perceivedObjects){
             if(obj.getType() == EObjectTypes.Hangar){
-                if(sureThing.values().contains(obj)){
+                if(sureThing.contains(obj)){
                     LinkedTile tile = memoryMap.getTileAtCoordinate(obj.getPosition());
-                    int index = sureThing.get(tile).indexOf(obj);
-                    sureThing.get(tile).remove(index);
+                    sureThing.remove(obj);                 
                 }
             }
         }
         
         // die verbleibenden hangars in sureThing hätten perceived werden sollen, wurden aber nicht
         // lösche sie in ObjectStorage
-        for(List<MemorizedWorldObject> list : sureThing.values()){
-            for(MemorizedWorldObject obj : list){
-                objectStorage.removeObject(obj);
-                globalKI.tankStatusChanged(this, obj, StatusType.HangarRemoved);
-            }
+        for(MemorizedWorldObject obj : sureThing){
+            objectStorage.removeObject(obj);
+            globalKI.tankStatusChanged(this, obj, StatusType.HangarRemoved);
         }
     }
+    
     @Override
     public void update(float interpolation) {
         if(!calibrated) {
@@ -674,16 +658,24 @@ if(tile.mapIndex.x > 60 || tile.mapIndex.y > 60 || tile.mapIndex.x < 0 || tile.m
         }
         //Direkt voraus gucken
         Vector3f voraus = pos.add(world.getMyDirection().normalize().mult(2));
-if(null == voraus) {
-    System.out.println("Voraus ist NULL!!!");
-}
-if(voraus.x > 10000 || voraus.z > 10000) {
-    System.out.println("Alerm!");
-}
+		if(null == voraus) {
+		    System.out.println("Voraus ist NULL!!!");
+		}
+		if(voraus.x > 10000 || voraus.z > 10000) {
+		    System.out.println("Alerm!");
+		}
         if(null != world.getTerrainNormal(voraus) && !world.isPassable(voraus)) {
             LinkedTile tileVoraus = memoryMap.getTileAtCoordinate(voraus);
             memoryMap.exploreTile(tileVoraus, tileVoraus.isWater(), false, tileVoraus.getNormalVector());
-        }   
+        } 
+        
+        if(WOExistanceUpdate == 10){
+        	checkWorldObjectExistance();
+        	WOExistanceUpdate = 0;
+        } else {
+        	WOExistanceUpdate++;
+        }
+        
     }
 
     public GlobalKI getGlobalKi() {

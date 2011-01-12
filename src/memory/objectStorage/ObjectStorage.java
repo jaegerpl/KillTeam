@@ -2,13 +2,14 @@ package memory.objectStorage;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import map.fastmap.FastRoutableWorldMap;
+import map.fastmap.LinkedTile;
+import memory.map.MemorizedMap;
 
 import com.jme.math.Vector3f;
 
@@ -16,13 +17,17 @@ import de.lunaticsoft.combatarena.api.enumn.EColors;
 
 public class ObjectStorage {
 
+	private MemorizedMap map;
 	List<MemorizedWorldObject> knownObjects;
+	Map<LinkedTile, List<MemorizedWorldObject>> objectsMap; 
 	Map<Point, MemorizedWorldObject> items;
 	Map<EColors, Map<Point, MemorizedWorldObject>> hangars;
 	Map<EColors, Map<Point, MemorizedWorldObject>> tanks;
 
-	public ObjectStorage() {
+	public ObjectStorage(MemorizedMap map) {
+		this.map = map;
 		knownObjects = Collections.synchronizedList(new ArrayList<MemorizedWorldObject>());
+		objectsMap = Collections.synchronizedMap(new HashMap<LinkedTile, List<MemorizedWorldObject>>());
 		items = Collections.synchronizedMap(new HashMap<Point, MemorizedWorldObject>());
 		hangars = Collections.synchronizedMap(new HashMap<EColors, Map<Point,MemorizedWorldObject>>());
 		tanks = Collections.synchronizedMap(new HashMap<EColors, Map<Point,MemorizedWorldObject>>());
@@ -50,6 +55,7 @@ public class ObjectStorage {
 				break;
 		}
 		knownObjects.add(object);
+		addToObjectsMap(object);
 	}
 	
 	synchronized public void removeObject(MemorizedWorldObject object) {
@@ -66,6 +72,7 @@ public class ObjectStorage {
 				break;
 		}
 		knownObjects.remove(object);
+		removeFromObjectsMap(object);
 	}
 	
 	synchronized public Map<Point, MemorizedWorldObject> getEnemyTanks() {
@@ -143,4 +150,30 @@ public class ObjectStorage {
 		}	
 	}
 	
+	private void addToObjectsMap(MemorizedWorldObject object){
+		LinkedTile tile = map.getTileAtCoordinate(object.getPosition());
+		if(!objectsMap.containsKey(tile)){
+			objectsMap.put(tile, new ArrayList<MemorizedWorldObject>());
+		}
+		objectsMap.get(tile).add(object);
+	}
+	
+	private void removeFromObjectsMap(MemorizedWorldObject obj){
+		LinkedTile tile = map.getTileAtCoordinate(obj.getPosition());
+		int index = objectsMap.get(tile).indexOf(obj);
+		objectsMap.get(tile).remove(index);
+		if(objectsMap.get(tile).isEmpty()){
+			objectsMap.remove(tile);
+		}
+	}
+	
+	public List<MemorizedWorldObject> getObjectsAtTiles(List<LinkedTile> tiles){
+		ArrayList<MemorizedWorldObject> list = new ArrayList<MemorizedWorldObject>();
+		for(LinkedTile tile : tiles){
+			if(objectsMap.containsKey(tile)){
+				list.addAll(objectsMap.get(tile));
+			}
+		}
+		return list;
+	}
 }
