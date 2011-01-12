@@ -1,9 +1,10 @@
 package memory.map;
 
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -140,6 +141,36 @@ public class MemorizedMap{
 	
 	public boolean positionIsInViewRange(Vector3f myPosition, Vector3f viewDirection, Vector3f position) {
 		return worldMap.positionIsInViewRange(myPosition, viewDirection, position);
+	}
+	
+	
+	public Path<LinkedTile> getCirclePathAroundPos(Vector3f pos){
+		int increment = 40;
+		
+		Path<LinkedTile> circleCource = new Path<LinkedTile>();
+		
+		List<Vector3f> scanPositions = new ArrayList<Vector3f>();
+
+		scanPositions.add(pos.add(new Vector3f(increment, 0, increment)));
+		scanPositions.add(pos.add(new Vector3f(-increment, 0, increment)));
+		scanPositions.add(pos.add(new Vector3f(increment, 0, -increment)));
+		scanPositions.add(pos.add(new Vector3f(-increment, 0, -increment)));
+		
+		
+		Iterator<Vector3f> posIt = scanPositions.iterator();
+		Vector3f lastPosition = posIt.next();
+		Vector3f current;
+		while(posIt.hasNext()) {
+			current = posIt.next();
+			circleCource.appendPath(this.pathCalculator.calculatePath(this.getTileAtCoordinate(lastPosition), this.getTileAtCoordinate(current)));
+			lastPosition = current;
+		}
+		
+		circleCource.setCircleCourse(true);
+		
+		return circleCource;
+		
+		
 	}
 
 }
