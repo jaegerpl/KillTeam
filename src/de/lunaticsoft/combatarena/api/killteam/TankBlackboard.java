@@ -49,6 +49,8 @@ public class TankBlackboard {
 	public Vector3f destination;		// the goal position the tank has to move to
 	public Vector3f currentPosition;	// tanks current position
 	public Vector3f direction;			// tanks direction in the world
+	
+	public Task curTask = Task.EXPLORE;
 
 
 }

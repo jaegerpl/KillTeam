@@ -72,6 +72,7 @@ public class KillKI implements IPlayer {
 	private LinkedTile moveTarget;
 	
 	Path<LinkedTile> path = null;
+	LinkedTile lastPathDest = null;
 
 	private boolean pathReset = false;
 	
@@ -81,9 +82,12 @@ public class KillKI implements IPlayer {
 	int viewRangeOffset = 0;
 	// my variables
 	private Vector3f startPos;
-	
+	private Vector3f flagPos;
+	private Vector3f flagPosPath; //flaPos für die der Pfad berechnet wurde
+	private Task lastTask;
 	
 	private static Random r = new Random();
+	
 		
 	
 	// GOAP STUFF
@@ -94,8 +98,13 @@ public class KillKI implements IPlayer {
 	protected TankBlackboard blackboard;
 	private float inHangarThreshold = 15;
 	private boolean calcNewDefendPath = true;
+	
+	//should be true if we play CTF
+	private boolean CTFmode = false;
+	private boolean iHaveTheFlag = false;
+	private boolean flagCollectet = false;
 
-	public KillKI(String name, GlobalKI globalKI) {
+	public KillKI(String name, GlobalKI globalKI, Task task) {
 		//System.out.println("KillKI "+name+" gestartet");
 		this.blackboard = new TankBlackboard();
 		this.name = name;
@@ -105,7 +114,8 @@ public class KillKI implements IPlayer {
 		this.objectStorage = globalKI.getObjectStorage();
 		
 		
-		lastPositions = new LinkedBlockingQueue<Vector3f>(2);		
+		lastPositions = new LinkedBlockingQueue<Vector3f>(2);
+		this.blackboard.curTask = task;
 	}
 
 	@Override
@@ -118,6 +128,7 @@ public class KillKI implements IPlayer {
 		if(!calibrated) {
 			calibrate();
 		}
+		evalNextTask(); //update Mission/Task of the tank
 		if(!stop){
 			// GOAP STUFF
 			//System.out.println("CurrentPosition ="+world.getMyPosition());
@@ -137,7 +148,7 @@ public class KillKI implements IPlayer {
 			LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
 	
 			//Pruefen ob durch neue Erkundung das Zwischenziel nicht mehr betretbar ist
-			if(null != moveTarget && (!moveTarget.isPassable() || !myPosTile.isPassable())) {
+			if(null != moveTarget && (!moveTarget.isPassable() || !myPosTile.isPassable()) || lastTask != blackboard.curTask) {
 				if(!pathReset) {
 					path = null;
 					moveTarget = null;
@@ -149,9 +160,21 @@ public class KillKI implements IPlayer {
 			
 			
 			if( moveTarget == null || moveTarget.equals(myPosTile)) {
-				System.out.println("defend aufrufen");
-				//explore();
-				defend();
+				if(this.blackboard.curTask == Task.DEFEND)
+					defend();
+				else if(this.blackboard.curTask == Task.EXPLORE)
+					explore();
+				else if(this.blackboard.curTask == Task.CTF)
+				{
+					if(flagPos != flagPosPath)
+						pathReset = true;
+						goToTarget(memoryMap.getTileAtCoordinate(flagPos));
+					    
+				}
+					else if(this.blackboard.curTask == Task.RAPEaHANGAR)
+						rapeHangar();
+					else if(iHaveTheFlag && flagCollectet)
+						goToTarget(memoryMap.getTileAtCoordinate(startPos));
 			}
 			
 			if(blackboard.inHangar || moveTarget == null)
@@ -167,8 +190,53 @@ public class KillKI implements IPlayer {
 				world.move(newDirection);
 			}
 		}
+		lastTask = blackboard.curTask;
 	}
 	
+	private void evalNextTask(){
+		if(blackboard.curTask == Task.DEFEND)
+			return;
+		else if(iHaveTheFlag && flagCollectet)
+			blackboard.curTask = Task.GoToBase;
+		/*
+		else if(blackboard.curTask == Task.EXPLORE){
+			if(CTFmode){
+				if(pathToFlagKnown()){
+					blackboard.curTask = Task.CTF;
+				}
+					blackboard.curTask = Task.EXPLORE;
+			}
+			else
+			}
+			*/
+			
+		}
+		
+	
+
+	
+	private void goToTarget(LinkedTile target) {
+		if(pathReset){
+			flagPosPath = flagPos;
+			path = memoryMap.calculatePath(memoryMap.getTileAtCoordinate(pos), target);
+		}
+		moveTarget = path.getNextWaypoint();		
+	}
+
+	private boolean pathToFlagKnown()
+{
+		if(memoryMap.calculatePath(memoryMap.getTileAtCoordinate(pos), memoryMap.getTileAtCoordinate(flagPos)).isEmpty())
+			return false;
+		return true;
+	}
+	
+	private void rapeHangar() {
+		
+		
+	}
+
+
+
 	/**
 	 * Pruefe den Sichtbereich  um daraus den Mittelpunkt und die 
 	 * Position des Tanks zum Mittelpunkt zu berechnen
@@ -444,6 +512,11 @@ public class KillKI implements IPlayer {
 						this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
 						//System.out.println("Item entdeckt");
 					break;
+					/*
+				case Flag:
+					iHaveTheFlag = true;
+					break;
+					*/
 				default: 
 					//System.out.println("Kein WO");
 			}
