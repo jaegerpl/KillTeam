@@ -29,6 +29,7 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Handler;
 
 import map.fastmap.FastRoutableWorldMap;
 import map.fastmap.LinkedTile;
@@ -40,8 +41,6 @@ import battle.Battle;
 import battle.ShootTarget;
 
 import com.jme.math.FastMath;
-import com.jme.math.Matrix3f;
-import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 
 import de.lunaticsoft.combatarena.api.enumn.EColors;
@@ -50,7 +49,6 @@ import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
 import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
-import de.lunaticsoft.combatarena.api.killteam.globalKI.StatusType;
 import de.lunaticsoft.combatarena.objects.WorldObject;
 import debug.MapServer;
 
@@ -70,7 +68,6 @@ public class KillKI implements IPlayer {
 	private String name;
 	
 	private LinkedTile moveTarget;
-	private boolean imHangar = true;
 	Path<LinkedTile> path = null;
 
 	private boolean pathReset = false;
@@ -81,6 +78,7 @@ public class KillKI implements IPlayer {
 	int viewRangeOffset = 0;
 	// my variables
 	private Vector3f startPos;
+	private List<IWorldObject> perceivedObjects;
 	
 	
 	private static Random r = new Random();
@@ -374,6 +372,7 @@ public class KillKI implements IPlayer {
 
 	@Override
 	public void perceive(ArrayList<IWorldObject> worldObjects) {	
+		perceivedObjects = worldObjects;
 		boolean hangarDiscovered = false;
 		
 		// move WorldObjects into WorkingMemory
@@ -439,9 +438,9 @@ public class KillKI implements IPlayer {
 	
 	private void scanTile(LinkedTile tile) {
 		if(!tile.isExplored()) {
-if(tile.mapIndex.x > 60 || tile.mapIndex.y > 60 || tile.mapIndex.x < 0 || tile.mapIndex.y < 0) {
-	System.out.println("Debug mich");
-}
+			if(tile.mapIndex.x > 60 || tile.mapIndex.y > 60 || tile.mapIndex.x < 0 || tile.mapIndex.y < 0) {
+				System.out.println("Debug mich");
+			}
 			boolean isPassable = true;
 			boolean isWater = false;			
 			
@@ -490,23 +489,102 @@ if(tile.mapIndex.x > 60 || tile.mapIndex.y > 60 || tile.mapIndex.x < 0 || tile.m
 		}
 		//Direkt voraus gucken
 		Vector3f voraus = pos.add(world.getMyDirection().normalize().mult(2));
-if(null == voraus) {
-	System.out.println("Voraus ist NULL!!!");
-}
-if(voraus.x > 10000 || voraus.z > 10000) {
-	System.out.println("Alerm!");
-}
+		if(null == voraus) {
+			System.out.println("Voraus ist NULL!!!");
+		}
+		if(voraus.x > 10000 || voraus.z > 10000) {
+			System.out.println("Alerm!");
+		}
 		if(null != world.getTerrainNormal(voraus) && !world.isPassable(voraus)) {
 			LinkedTile tileVoraus = memoryMap.getTileAtCoordinate(voraus);
 			memoryMap.exploreTile(tileVoraus, tileVoraus.isWater(), false, tileVoraus.getNormalVector());
 		}	
 	}
-
-	public GlobalKI getGlobalKi() {
-		return globalKI;
+	
+	/**
+	 * Berechnet einen Weg zum Zielhangar, bewegt den Tank zum Zielhangar
+	 * und aktuallisiert die Hangars in der Karte
+	 */
+	public void goToHangar(){
+		Vector3f goalPos = blackboard.spottedHangar.getPosition();
+		Vector3f myPos = world.getMyPosition();
+		LinkedTile targetTile = memoryMap.getTileAtCoordinate(goalPos);
+		LinkedTile currentTile = memoryMap.getTileAtCoordinate(myPos);
+		
+		// berechne Weg zum Hangar
+		if(path == null){	
+			path = memoryMap.calculatePath(currentTile, targetTile);
+		}
+		
+		// fahre den Pfad entlang
+		if(null != path && !path.isEmpty()) {
+			//System.out.println("Path ist nicht NULL!");
+			if(currentTile.equals(moveTarget)) {
+				//System.out.println("Zwischenziel erreicht");
+				moveTarget = path.getNextWaypoint();
+			}
+		}
+		
+		// prüfe ob du am Hangar bist und ob er noch existiert
+		if(currentTile.equals(targetTile)){
+			checkHangarExistance();
+		}
+		
 	}
 
-	public IWorldInstance getWorld() {
-		return world;
+	/**
+	 * Prueft am Zielort, welche Hangars der Tank sehen sollte und welche er sieht 
+	 * und loescht die Hangars, die nicht mehr da sind.
+	 */
+	private void checkHangarExistance(){
+		IWorldObject spottedHangar = blackboard.spottedHangar;
+		Map<Point, MemorizedWorldObject> hangars = objectStorage.getEnemyHangarsOfPlayer(spottedHangar.getColor());
+		
+		// tiles auf denen ein hangar sein sollte
+		HashMap<LinkedTile, List<MemorizedWorldObject>> hangarTiles = new HashMap<LinkedTile, List<MemorizedWorldObject>>(); 
+		for(MemorizedWorldObject obj : hangars.values()){
+			LinkedTile tile = memoryMap.getTileAtCoordinate(obj.getPosition());
+			if(hangarTiles.containsKey(tile)){
+				hangarTiles.get(tile).add(obj);
+			} else {
+				hangarTiles.put(tile, new ArrayList<MemorizedWorldObject>());
+				hangarTiles.get(tile).add(obj);
+			}
+		}
+		
+		// tiles die der tank sehen kann
+		List<LinkedTile> viewTiles = memoryMap.getTilesPossiblyInViewRange(world.getMyPosition());
+		
+		// entferne hangars, die ich nicht sehen kann
+		HashMap<LinkedTile, List<MemorizedWorldObject>> sureThing = new HashMap<LinkedTile, List<MemorizedWorldObject>>();
+		for(LinkedTile tile : hangarTiles.keySet()){
+			if(viewTiles.contains(tile)){
+				sureThing.put(tile, hangarTiles.get(tile));
+			}
+		}
+		
+		// entferne alle hangars aus sureThing die perceived wurden
+		for(IWorldObject obj : perceivedObjects){
+			if(obj.getType() == EObjectTypes.Hangar){
+				if(sureThing.values().contains(obj)){
+					LinkedTile tile = memoryMap.getTileAtCoordinate(obj.getPosition());
+					int index = sureThing.get(tile).indexOf(obj);
+					sureThing.get(tile).remove(index);
+				}
+			}
+		}
+		
+		// die verbleibenden hangars in sureThing hätten perceived werden sollen, wurden aber nicht
+		// lösche sie in ObjectStorage
+		for(List<MemorizedWorldObject> list : sureThing.values()){
+			for(MemorizedWorldObject obj : list){
+				objectStorage.removeObject(obj);
+				// TODO update in der GlobalKI machen, dass der Hangar weg ist
+			}
+		}
+	}
+	
+	public GlobalKI getGlobalKi() {
+		return globalKI;
 	}
 }
