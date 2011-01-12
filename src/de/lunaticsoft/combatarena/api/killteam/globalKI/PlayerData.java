@@ -1,8 +1,5 @@
 package de.lunaticsoft.combatarena.api.killteam.globalKI;
 
-import goap.goap.Action;
-import goap.goap.Goal;
-
 import com.jme.math.Vector3f;
 
 
@@ -17,10 +14,6 @@ public class PlayerData {
 	public Vector3f lastPosition;
 	public Vector3f GoalPosition;
 	public int attacked;
-	public Goal goal;
-	public Goal oldGoal;
-	public Action action;
-	public Action oldAction;
 	public Vector3f hangarFound;
 	public Vector3f flagSpotted;
 

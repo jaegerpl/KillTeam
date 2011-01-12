@@ -9,7 +9,7 @@
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, see <http://www.gnu.org/licenses/>.
  */
-package goap.agent;
+package de.lunaticsoft.combatarena.api.killteam;
 
 import com.jme.math.Vector3f;
 

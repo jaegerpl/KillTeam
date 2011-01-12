@@ -7,10 +7,6 @@ import com.jme.math.Vector3f;
 
 import memory.map.MemorizedMap;
 import memory.objectStorage.ObjectStorage;
-import goap.agent.GlobalKIAgent;
-import goap.agent.GlobalKIBlackboard;
-import goap.goap.Action;
-import goap.goap.Goal;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import debug.MapServer;
@@ -27,8 +23,9 @@ import debug.MapServer;
  * @author pascal
  *
  */
-public class GlobalKI  extends GlobalKIAgent{
+public class GlobalKI {
 	
+//	private 
 	private String name = "GlobaleKI";
 	private IWorldInstance world;	
 	private MemorizedMap map;
@@ -36,7 +33,6 @@ public class GlobalKI  extends GlobalKIAgent{
 	private Map<IPlayer, PlayerData> players;
 	
 	public GlobalKI() {
-		blackboard.name = name;
 		map = new MemorizedMap();
 		objectStorage = new ObjectStorage();
 		players = new HashMap<IPlayer, PlayerData>();
@@ -46,10 +42,10 @@ public class GlobalKI  extends GlobalKIAgent{
 		Thread t = new Thread(srv);
 		t.start();
 	}
-
-	public GlobalKIBlackboard getBlackBoard(){
-		return blackboard;
-	}
+//
+//	public GlobalKIBlackboard getBlackBoard(){
+//		return blackboard;
+//	}
 
 	/**
 	 * Is called by one of the tanks, since only IPlayer classes get an world reference 
@@ -76,7 +72,6 @@ public class GlobalKI  extends GlobalKIAgent{
 	public void registerTank(IPlayer tank){
 		PlayerData data = new PlayerData();
 		players.put(tank, data);
-		blackboard.tanksAlive++;
 	}
 	
 	/**
@@ -85,7 +80,6 @@ public class GlobalKI  extends GlobalKIAgent{
 	 */
 	public void removeTank(IPlayer tank){
 		players.remove(tank);
-		blackboard.tanksAlive--;
 	}
 	
 	/**
@@ -97,20 +91,6 @@ public class GlobalKI  extends GlobalKIAgent{
 	public void tankStatusChanged(IPlayer tank, Object statusItem, StatusType type){
 		PlayerData data = players.get(tank); 
 		switch (type) {
-		case Goal:
-			if(statusItem instanceof Goal){
-				Goal goal = (Goal)statusItem;
-				data.oldGoal = data.goal;
-				data.goal = goal;
-			}			
-			break;
-		case Action:
-			if(statusItem instanceof Action){
-				Action action = (Action)statusItem;
-				data.oldAction = data.action;
-				data.action = action;
-			}	
-			break;
 		case Position:
 			if(statusItem instanceof Vector3f){
 				Vector3f pos = (Vector3f)statusItem;
