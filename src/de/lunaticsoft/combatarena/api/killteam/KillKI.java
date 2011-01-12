@@ -37,7 +37,8 @@ import de.lunaticsoft.combatarena.objects.WorldObject;
 public class KillKI implements IPlayer {
 
 	private IWorldInstance world;
-	private Vector3f direction; // tanks direction
+	private Vector3f spwanDirection; // tanks direction
+	private Vector3f moveDirection; // tanks direction
 	private Vector3f pos;		// takns last updated position
 	private Vector3f goalPosition; // tanks goal its heading to
 	
@@ -160,11 +161,7 @@ private void checkHangarExistance(){
 			calibrate();
 		}
 		evalNextTask(); //update Mission/Task of the tank
-		if(!stop){
-			// GOAP STUFF
-			//System.out.println("CurrentPosition ="+world.getMyPosition());
-			//System.out.println("GoalPosition ="+goalPosition);
-			
+		if(!stop){			
 			// current position
 			pos = world.getMyPosition();
 			currentDirection = world.getMyDirection();
@@ -180,6 +177,12 @@ private void checkHangarExistance(){
 				if(Math.random() > 0.5){
 					faktor = -1;
 				}
+				int offset = (int)Math.random()*20;
+				int alpha = 180+(faktor*offset);
+				Vector3f unstuckDirection = rotateVector(world.getMyDirection(), alpha);
+				moveDirection = unstuckDirection;
+			}
+			
 			LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
 			//Pruefen ob durch neue Erkundung das Zwischenziel nicht mehr betretbar ist
 			if(null != moveTarget && (!moveTarget.isPassable() || !myPosTile.isPassable()) || lastTask != blackboard.curTask) {
@@ -212,7 +215,7 @@ private void checkHangarExistance(){
 			}
 			
 			if(blackboard.inHangar || moveTarget == null)
-				world.move(direction);
+				world.move(spwanDirection);
 			else if(moveTarget != null){
 				//System.out.println("bewege nach karte");
 				//System.out.println("");
@@ -221,10 +224,12 @@ private void checkHangarExistance(){
 				Vector3f newDirection = moveTarget.getTileCenterCoordinates().subtract(pos);
 				//System.out.println("Bewege Richtung " + newDirection);
 				//System.out.println("");
-				world.move(newDirection);
+				moveDirection = newDirection;
 			}
+			world.move(moveDirection);
 		}
 		lastTask = blackboard.curTask;
+	 
 	}
 	
 	private void evalNextTask(){
@@ -381,7 +386,7 @@ private void checkHangarExistance(){
 		//}
 		//else 
 			if(!blackboard.inHangar){
-				Vector3f targetPos = this.pos.add(direction.normalize().mult(30));
+				Vector3f targetPos = this.pos.add(spwanDirection.normalize().mult(30));
 
 			LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
 			//System.out.println("W�rde mich gern bewegen");
@@ -396,7 +401,7 @@ private void checkHangarExistance(){
 				//Neuen Pfad berechnen
 				//System.out.println("Neuen Pfad berechnen.");
 				//LinkedTile targetTile = memoryMap.getNearestUnexploredTile(pos);
-				 targetPos = this.pos.add(direction.normalize().mult(60));
+				 targetPos = this.pos.add(spwanDirection.normalize().mult(60));
 				if(targetPos.x > 10000 || targetPos.z > 10000) {
 					System.out.println("Alerm!");
 				}
@@ -405,7 +410,7 @@ private void checkHangarExistance(){
 					if(targetTile.isPassable()) {
 						path = memoryMap.calculatePath(myPosTile, targetTile);
 						if(path.isEmpty()) {
-							this.direction = rotateVector(this.direction, 10);
+							this.spwanDirection = rotateVector(this.spwanDirection, 10);
 							moveTarget = null;
 						} else {
 	//System.out.println("########### Pfad gefunden ###########");
@@ -415,7 +420,7 @@ private void checkHangarExistance(){
 						}
 					} else {
 						//Rotieren und weitersuchen
-						this.direction = rotateVector(this.direction, 10);
+						this.spwanDirection = rotateVector(this.spwanDirection, 10);
 						moveTarget = null;
 						}
 					} else {
@@ -568,7 +573,7 @@ private void checkHangarExistance(){
 	public void spawn() {
 		startPos = world.getMyPosition();
 		//System.out.println("StartPos: "+startPos);
-		direction = world.getMyDirection();
+		spwanDirection = world.getMyDirection();
 		goalPosition = startPos.add(new Vector3f(1,0,1));
 		goalPosition.x = (int)goalPosition.x;
 		goalPosition.z = (int)goalPosition.z;
@@ -577,7 +582,7 @@ private void checkHangarExistance(){
 		
 		// GOAP STUFF
 		globalKI.registerTank(this); 				// register tank in globalKI
-		blackboard.direction = direction;
+		blackboard.direction = spwanDirection;
 		blackboard.inHangar = true;
 	}
 
