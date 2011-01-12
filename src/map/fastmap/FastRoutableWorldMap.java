@@ -16,7 +16,7 @@ import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 
 public class FastRoutableWorldMap{
 	
-	public static final int tilesize = 20;
+	public static final int tilesize = 10;
 	
 	// a list of queues for the tanks
 	protected Map<String, Queue<LinkedTile>> queues = Collections.synchronizedMap(new HashMap<String, Queue<LinkedTile>>());
@@ -36,15 +36,6 @@ public class FastRoutableWorldMap{
 		int x = (int)position.x / tilesize;
 		int y = (int)position.z / tilesize;
 		synchronized (map) {
-			/*LinkedTile t = map.get(new Point(x+1,y+1));
-			if(t != null){
-				return t.deepCopy();
-			} else {
-				EmptyLinkedTile et = new EmptyLinkedTile(new Point(x+1,y+1));
-				map.put(new Point(x+1,y+1), et );
-				return et.deepCopy();
-			}*/
-			
 			Point tilePosition = new Point(x+1,y+1);
 			if(map.containsKey(tilePosition)) {
 				return map.get(tilePosition);
@@ -55,6 +46,9 @@ public class FastRoutableWorldMap{
 	}
 
 	private LinkedTile createUnexploredTileAtPosition(Point tilePosition) {
+if(tilePosition.x > 60 || tilePosition.y > 60) {
+	System.out.println("Argh!");
+}
 		LinkedTile unexploredTile = new LinkedTile(tilePosition, false, true, new Vector3f(0,0,0), false);
 		addTile(unexploredTile);
 		unexploredTiles.put(tilePosition, unexploredTile);
@@ -71,6 +65,9 @@ public class FastRoutableWorldMap{
 	
 	public void markTileAsOutOfMap(LinkedTile tile) {
 		tile.markAsOutOfMap();
+		if(unexploredTiles.containsKey(tile.getMapIndex())) {
+			unexploredTiles.remove(tile.getMapIndex());
+		}
 	}
 	
 	synchronized public LinkedTile getTileAtMapIndex(Point point){
@@ -146,7 +143,7 @@ public class FastRoutableWorldMap{
 				map.get(pos).exploreTile(tile.isWater(), tile.isPassable(), tile.getNormalVector());
 			}
 		}
-//System.out.println("Tile Hinzugefügt: " + tile.mapIndex + " Passierbar: " + tile.isPassable);		
+//System.out.println("Tile Hinzugefï¿½gt: " + tile.mapIndex + " Passierbar: " + tile.isPassable);		
 		Point neighbourNorth = new Point(pos.x, pos.y+1);
 		Point neighbourSouth = new Point(pos.x, pos.y-1);
 		Point neighbourEast = new Point(pos.x-1, pos.y);
@@ -236,11 +233,22 @@ public class FastRoutableWorldMap{
 	}
 	
 	public boolean tileIsInViewRange(Vector3f myPosition, Vector3f viewDirection, LinkedTile tile) {
-		if(50 > myPosition.add(viewDirection.normalize().mult(30)).distance(tile.getTileCenterCoordinates())) {
+		return positionIsInViewRange(myPosition, viewDirection, tile.getTileCenterCoordinates());
+	}
+	
+	public boolean positionIsInViewRange(Vector3f myPosition, Vector3f viewDirection, Vector3f position) {
+		Vector3f test = viewDirection.normalize();
+		test = test.mult(30);
+		float bar = test.length();
+		test = myPosition.add(test);
+		float foo = myPosition.add(viewDirection.normalize().mult(30)).distance(position);
+		
+		if(40 > myPosition.add(viewDirection.normalize().mult(30)).distance(position)) {
 			return true;
 		}
 		return false;
 	}
+	
 	
 	//===================================================
 	// STATIC METHODS
@@ -278,6 +286,8 @@ public class FastRoutableWorldMap{
 		return new Vector3f((position.x - 1)*tilesize + tilesize/2, 0, (position.y - 1)*tilesize + tilesize/2);
 	}
 
-	
+	public Map<Point,LinkedTile> getMap(){
+		return this.map;
+	}
 
 }

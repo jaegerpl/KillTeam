@@ -88,6 +88,10 @@ public class LinkedTile implements IPathNode {
 	public boolean isPassable() {
 		return isPassable;
 	}
+	
+	public boolean isOutOfMap() {
+		return isOutOfMap;
+	}
 
 	public Vector3f getNormalVector() {
 		return normalVector;
@@ -150,7 +154,7 @@ public class LinkedTile implements IPathNode {
 
 	@Override
 	public String toString() {
-		return "[" + this.mapIndex.x + "," + this.mapIndex.y + "] Passierbar:" + isPassable;
+		return "[" + this.mapIndex.x + "," + this.mapIndex.y + "] Passierbar:" + isPassable + " isWater: " + isWater + " isExplored: " + isExplored + " isOutOfMap: " + isOutOfMap;
 	}
 
 	

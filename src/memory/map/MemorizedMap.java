@@ -3,6 +3,7 @@ package memory.map;
 import java.awt.Point;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -18,7 +19,7 @@ import com.jme.math.Vector3f;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 
 
-public class MemorizedMap {
+public class MemorizedMap{
 	AStarPathCalculator pathCalculator;
 	FastRoutableWorldMap worldMap;
 	
@@ -29,6 +30,10 @@ public class MemorizedMap {
 		pathCalculator = new AStarPathCalculator(this);
 		worldMap = new FastRoutableWorldMap();
 		layer1 = new MapLayer(worldMap, 1);
+	}
+	
+	public FastRoutableWorldMap getUnderlyingMap(){
+		return worldMap;
 	}
 	
 	public synchronized ConcurrentLinkedQueue<LinkedTile> registerTank(IPlayer tank) {
@@ -48,14 +53,14 @@ public class MemorizedMap {
 	}
 	
 	public synchronized Path<LinkedTile> calculatePath(LinkedTile from, LinkedTile to) {
-		if(lowPrecisionMapLimit < pathCalculator.calculateApproximatedDistance(from, to)) {
+		/*if(lowPrecisionMapLimit < pathCalculator.calculateApproximatedDistance(from, to)) {
 			from = layer1.getCorrespondingTileInThisLayer(from);
 			to = layer1.getCorrespondingTileInThisLayer(to);
 			
 			return pathCalculator.calculatePath(from, to);
-		} else {
+		} else {*/
 			return pathCalculator.calculatePath(from, to);
-		}
+		//}
 	}
 	
 	public void exploreTile(LinkedTile tile, boolean isWater, boolean isPassable, Vector3f normalVector) {
@@ -63,6 +68,7 @@ public class MemorizedMap {
 	}
 	
 	public void markTileAsOutOfMap(LinkedTile tile) {
+		
 		worldMap.markTileAsOutOfMap(tile);
 	}
 	
@@ -130,6 +136,10 @@ public class MemorizedMap {
 	
 	public boolean tileIsInViewRange(Vector3f myPosition, Vector3f viewDirection, LinkedTile tile) {
 		return worldMap.tileIsInViewRange(myPosition, viewDirection, tile);
+	}
+	
+	public boolean positionIsInViewRange(Vector3f myPosition, Vector3f viewDirection, Vector3f position) {
+		return worldMap.positionIsInViewRange(myPosition, viewDirection, position);
 	}
 
 }
