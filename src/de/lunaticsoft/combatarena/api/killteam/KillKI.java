@@ -19,22 +19,6 @@
 
 package de.lunaticsoft.combatarena.api.killteam;
 
-import goap.agent.Agent;
-import goap.agent.MemoryObject;
-import goap.agent.MemoryObjectType;
-import goap.goap.Action;
-import goap.goap.Goal;
-import goap.goap.IGOAPListener;
-import goap.scenario.GoapActionSystem;
-import goap.scenario.GoapController;
-import goap.scenario.actions.CollectFlag;
-import goap.scenario.actions.CollectToolBox;
-import goap.scenario.actions.DestroyHangar;
-import goap.scenario.actions.DestroyTank;
-import goap.scenario.actions.DestroyTankColor;
-//import goap.scenario.actions.GoToLocation;
-import goap.scenario.actions.LeaveHangar;
-import goap.scenario.goals.CollectToolBoxGOAL;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -70,7 +54,7 @@ import de.lunaticsoft.combatarena.api.killteam.globalKI.StatusType;
 import de.lunaticsoft.combatarena.objects.WorldObject;
 import debug.MapServer;
 
-public class KillKI extends Agent implements IGOAPListener, IPlayer {
+public class KillKI implements IPlayer {
 
 	private IWorldInstance world;
 	private Vector3f direction; // tanks direction
@@ -103,11 +87,11 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		
 	
 	// GOAP STUFF
-	private final GoapController gc = new GoapController((GoapActionSystem)actionSystem);
 	private GlobalKI globalKI;
 	private Map<Point, Boolean> localMap = new HashMap<Point, Boolean>();
 	private MemorizedMap memoryMap;
 	private ObjectStorage objectStorage;
+	protected TankBlackboard blackboard;
 
 	public KillKI(String name, GlobalKI globalKI) {
 		//System.out.println("KillKI "+name+" gestartet");
@@ -118,16 +102,7 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		this.objectStorage = globalKI.getObjectStorage();
 		
 		
-		lastPositions = new LinkedBlockingQueue<Vector3f>(2);
-		// GOAP STUFF
-		/*
-		blackboard.name = name; // just for debugging
-		actionSystem = new GoapActionSystem(this, blackboard,memory);	
-		((GoapActionSystem)actionSystem).addGOAPListener(this);*/
-		
-//		generateActions();
-//		generateGoals();
-//		generateRandomDesires();
+		lastPositions = new LinkedBlockingQueue<Vector3f>(2);		
 	}
 
 	@Override
@@ -142,7 +117,6 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		}
 		if(!stop){
 			// GOAP STUFF
-	//		gc.update(interpolation);
 			//System.out.println("CurrentPosition ="+world.getMyPosition());
 			//System.out.println("GoalPosition ="+goalPosition);
 			
@@ -396,11 +370,6 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 		
 		// move WorldObjects into WorkingMemory
 		for (IWorldObject wO : worldObjects) {
-			// confidence of memoryObjects will decrease over time
-			MemoryObject memo = new MemoryObject(1.0f, new MemoryObjectType(wO.getType(), 
-																			wO.getColor()), 
-																			wO.getPosition());
-			memory.addMemory(memo);
 			
 			switch(wO.getType()){
 				case Competitor:
@@ -457,33 +426,6 @@ public class KillKI extends Agent implements IGOAPListener, IPlayer {
 
 	public String getName() {
 		return name;
-	}
-
-	@Override
-	public void actionChangedEvent(Object sender, Action oldAction,	Action newAction) {
-		// we are going to tell the globalki about our status change
-		globalKI.tankStatusChanged(this, newAction, StatusType.Action);
-	}
-
-	@Override
-	public void goalChangedEvent(Object sender, Goal oldGoal, Goal newGoal) {
-		// we are going to tell the globalki about our status change	
-		globalKI.tankStatusChanged(this, newGoal, StatusType.Goal);
-	}
-	
-	private void generateGoals(){
-		((GoapActionSystem)actionSystem).addGoal(new CollectToolBoxGOAL("CollectToolBoxGOAL",0.1f, (GoapActionSystem) actionSystem));
-	}
-	
-	private void generateActions(){			
-		((GoapActionSystem)actionSystem).addAction(new CollectFlag((GoapActionSystem) this.actionSystem,"CollectFlag",1.0f));
-		((GoapActionSystem)actionSystem).addAction(new CollectToolBox((GoapActionSystem) this.actionSystem,"CollectToolBox",1.0f));
-		((GoapActionSystem)actionSystem).addAction(new DestroyHangar((GoapActionSystem) this.actionSystem,"DestroyHangar",1.0f));
-		((GoapActionSystem)actionSystem).addAction(new DestroyTank((GoapActionSystem) this.actionSystem,"DestroyTank",1.0f));
-	//	((GoapActionSystem)actionSystem).addAction(new GoToLocation((GoapActionSystem) this.actionSystem,"GoToLocation",1.0f));
-		((GoapActionSystem)actionSystem).addAction(new LeaveHangar((GoapActionSystem) this.actionSystem,"LeaveHangar",1.0f));
-
-		//DestroyTankColor needs to be added, when we know which colors are in the game => extra method
 	}
 	
 	
@@ -552,12 +494,10 @@ if(voraus.x > 10000 || voraus.z > 10000) {
 		}	
 	}
 
-	@Override
 	public GlobalKI getGlobalKi() {
 		return globalKI;
 	}
 
-	@Override
 	public IWorldInstance getWorld() {
 		return world;
 	}
