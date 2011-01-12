@@ -133,7 +133,7 @@ public class KillKI implements IPlayer {
 			
 			LinkedTile myPosTile = memoryMap.getTileAtCoordinate(pos);
 	
-			//Pr�fen ob durch neue Erkundung das Zwischenziel nicht mehr betretbar ist
+			//Pruefen ob durch neue Erkundung das Zwischenziel nicht mehr betretbar ist
 			if(null != moveTarget && (!moveTarget.isPassable() || !myPosTile.isPassable())) {
 				if(!pathReset) {
 					path = null;
@@ -165,6 +165,10 @@ public class KillKI implements IPlayer {
 		}
 	}
 	
+	/**
+	 * Pruefe den Sichtbereich  um daraus den Mittelpunkt und die 
+	 * Position des Tanks zum Mittelpunkt zu berechnen
+	 */
 	private void calibrate() {
 		Vector3f myPosition = world.getMyPosition();
 		Vector3f myDirection = world.getMyDirection();
@@ -205,6 +209,10 @@ public class KillKI implements IPlayer {
 		return result;
 	}
 	
+	/**
+	 * Prueft, ob sich der Panzer zu wenig bewegt hat.
+	 * @return
+	 */
 	private boolean stuck() {
 		boolean stuck = false;
 		if(lastPositions.size() > 1) {
