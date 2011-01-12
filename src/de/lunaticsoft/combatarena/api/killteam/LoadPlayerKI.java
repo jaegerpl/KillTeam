@@ -22,7 +22,6 @@ package de.lunaticsoft.combatarena.api.killteam;
 import de.lunaticsoft.combatarena.api.interfaces.ILoadPlayerKI;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
-import debug.MapServer;
 
 
 public class LoadPlayerKI implements ILoadPlayerKI {
@@ -35,12 +34,13 @@ public class LoadPlayerKI implements ILoadPlayerKI {
 		//System.out.println(index);
 		switch (index) {
 		case 0:
+			return new KillKI(name+index, globalKi, Task.DEFEND);
 		case 1: 
 		case 2: 
 		case 3:
 		case 4:
 		default:
-			 return new KillKI(name+index, globalKi);
+			 return new KillKI(name+index, globalKi, Task.EXPLORE);
 		}
 	}
 }
