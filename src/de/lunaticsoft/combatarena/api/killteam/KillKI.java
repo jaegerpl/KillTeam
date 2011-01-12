@@ -32,6 +32,7 @@ import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
 import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.StatusType;
 import de.lunaticsoft.combatarena.objects.WorldObject;
 
 public class KillKI implements IPlayer {
@@ -66,6 +67,7 @@ public class KillKI implements IPlayer {
     private Vector3f flagPos;
     private Vector3f flagPosPath; //flaPos für die der Pfad berechnet wurde
     private Task lastTask;
+    private ArrayList<IWorldObject> perceivedObjects;
     
     private static Random r = new Random();
     
@@ -178,7 +180,7 @@ public void goToHangar(){
         for(List<MemorizedWorldObject> list : sureThing.values()){
             for(MemorizedWorldObject obj : list){
                 objectStorage.removeObject(obj);
-                // TODO update in der GlobalKI machen, dass der Hangar weg ist
+                globalKI.tankStatusChanged(this, obj, StatusType.HangarRemoved);
             }
         }
     }
@@ -547,7 +549,8 @@ public void goToHangar(){
     }
 
     @Override
-    public void perceive(ArrayList<IWorldObject> worldObjects) {    
+    public void perceive(ArrayList<IWorldObject> worldObjects) {
+    	perceivedObjects = worldObjects;
         boolean hangarDiscovered = false;
         
         // move WorldObjects into WorkingMemory
@@ -569,6 +572,7 @@ public void goToHangar(){
                         ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
                         world.shoot(target.direction, target.force, target.angle);
                         //System.out.println("feindlichen Hangar entdeckt");
+                        globalKI.tankStatusChanged(this, wO, StatusType.HangarFound);
                         hangarDiscovered = true;
                     }
                     break;

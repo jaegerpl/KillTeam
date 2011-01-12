@@ -6,6 +6,7 @@ import java.util.Map;
 import com.jme.math.Vector3f;
 
 import memory.map.MemorizedMap;
+import memory.objectStorage.MemorizedWorldObject;
 import memory.objectStorage.ObjectStorage;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
@@ -110,6 +111,11 @@ public class GlobalKI {
 			break;	
 		case HangarFound:
 			if(statusItem instanceof Vector3f){
+				data.hangarFound = (Vector3f)statusItem;
+			}
+			break;		
+		case HangarRemoved:
+			if(statusItem instanceof MemorizedWorldObject){
 				data.hangarFound = (Vector3f)statusItem;
 			}
 			break;			

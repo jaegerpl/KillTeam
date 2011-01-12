@@ -14,6 +14,7 @@ public enum StatusType {
 	Attacked, 		// if tank has been attacked
 	GoalPosition,	// the position the tank moves to
 	HangarFound,	// indicates that a foreign hangar has been found
+	HangarRemoved, 	// indicates that a Hangar in the map is no longer existing in the world and was removed in map
 	FlagSpotted		// indicates that the flag has been spotted
 
 }
