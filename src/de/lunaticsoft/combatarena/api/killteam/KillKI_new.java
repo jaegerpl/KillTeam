@@ -131,9 +131,8 @@ public class KillKI_new implements IPlayer {
 
 		// entferne alle Objekte aus mapObjects die perceived wurden
 		for (final IWorldObject obj : perceivedObjects) {
-			if (mapObjects.contains(obj)) {
-				final LinkedTile tile = map.getTileAtCoordinate(obj
-						.getPosition());
+			if (mapObjects.contains(new MemorizedWorldObject(obj))) {
+				final LinkedTile tile = map.getTileAtCoordinate(obj.getPosition());
 				mapObjects.remove(obj);
 			}
 		}
