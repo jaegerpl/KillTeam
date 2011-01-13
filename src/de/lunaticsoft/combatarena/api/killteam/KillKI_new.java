@@ -51,6 +51,8 @@ public class KillKI_new implements IPlayer {
 
 
 	private Vector3f flagPos;
+	
+	private long updateNr;
 
 	// unknown
 	private int viewRangeRadius;
@@ -564,17 +566,13 @@ public class KillKI_new implements IPlayer {
 	 * berechnet pfad zu nächstem hangar in objectStorage objectStorage.getEnemyHangars();
 	 */
 	private void rapeHangar() {
-		
 		final Map<Point, MemorizedWorldObject> enemyHangars = objectStorage
 				.getEnemyHangars();
-
-		final MemorizedWorldObject[] hangars = new MemorizedWorldObject[enemyHangars
-				.values().size()];
-		enemyHangars.values().toArray(hangars);
+		if (enemyHangars.size() >= 1) {
+			final MemorizedWorldObject[] hangars = new MemorizedWorldObject[enemyHangars.values().size()];
+			enemyHangars.values().toArray(hangars);
 		
-		//wenn ein hangar in der map existiert, pfad zu diesem berechnen
-		if (hangars.length >= 1) {
-			
+		//wenn ein hangar in der map existiert, pfad zu diesem berechnen	
 			final LinkedTile target = map.getTileAtCoordinate(hangars[0]
 					.getPosition());
 			if(curPos.distance(target.getTileCenterCoordinates()) <30)
@@ -666,6 +664,7 @@ public class KillKI_new implements IPlayer {
 
 	@Override
 	public void update(final float interpolation) {
+		updateNr++;
 		if (!calibrated) {
 			calibrate();
 		}
