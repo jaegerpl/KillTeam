@@ -71,6 +71,7 @@ public class KillKI_new implements IPlayer {
 	
 	//Random für unstuck in update()
 	private java.util.Random rand;
+	private long stoppedTimeStamp;
 	
 
 	private void evalNextTask() {
@@ -351,8 +352,9 @@ public class KillKI_new implements IPlayer {
 		// pathReset=true
 		if (((moveTarget != null) && !moveTarget.isPassable)
 				|| (moveTarget == null)) {
+			moveTarget = null;
 			pathReset = true;
-			world.stop();
+			
 			return false;
 		}
 		// zum nächsten Ziel bewegen
@@ -574,15 +576,17 @@ public class KillKI_new implements IPlayer {
 		//wenn ein hangar in der map existiert, pfad zu diesem berechnen	
 			final LinkedTile target = map.getTileAtCoordinate(hangars[0]
 					.getPosition());
-			if(curPos.distance(target.getTileCenterCoordinates()) <30)
+			if(curPos.distance(target.getTileCenterCoordinates()) <40)
 			{
 				System.out.println("halte an, befinde mich vor gegnerischem Hangar "+target);
+
+				this.stoppedTimeStamp = updateNr; //würgaround, bis es funktioniert das hangar korrekt als zerstört gemeldet werden
 				//wenn entfernung zum hangar weniger als X beträgt, das moveTarget auf den derzeitigen tile setzen => anhalten	
-				if(!path.isEmpty())
-				{
+	
 					path = new Path<LinkedTile>();
-				}
+
 				moveTarget = curTile; 
+				blackboard.curTask = Task.STOPATHANGAR;
 		}
 			else if (!target.equals(lastPathTarget)) {
 				pathReset = true;
@@ -682,9 +686,18 @@ public class KillKI_new implements IPlayer {
 		} else if (this.blackboard.curTask == Task.CTF) {
 			if (flagPosChanged) {
 				pathReset = true;
+				calcPathTo(map.getTileAtCoordinate(flagPos));
 			}
-			calcPathTo(map.getTileAtCoordinate(flagPos));
-		} else if (this.blackboard.curTask == Task.RAPEaHANGAR) {
+		}
+		else if(this.blackboard.curTask == Task.STOPATHANGAR)
+		{
+			if(updateNr - stoppedTimeStamp > 100)
+				this.blackboard.curTask = Task.EXPLORE;
+		}
+
+
+			
+		 else if (this.blackboard.curTask == Task.RAPEaHANGAR) {
 			rapeHangar();
 		}
 		
