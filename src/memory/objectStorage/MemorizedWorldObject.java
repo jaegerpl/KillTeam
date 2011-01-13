@@ -44,4 +44,17 @@ public class MemorizedWorldObject {
 	synchronized public void decreaseDurability(int value){
 		this.durability -= value;
 	}
+	
+	@Override
+	public boolean equals(Object obj){
+		if(obj instanceof MemorizedWorldObject){
+			MemorizedWorldObject memo = (MemorizedWorldObject)obj;
+			if(memo.type == this.type &&
+			   memo.color == this.color &&
+			   memo.position == this.position){
+				return true;
+			}
+		}
+		return false;
+	}
 }
