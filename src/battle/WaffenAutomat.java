@@ -135,7 +135,7 @@ public class WaffenAutomat implements IWaffenAutomat {
 		return X3;
 	}
 
-	public float getSpeed(float angleDeg, float distance) {
+	public static float getSpeed(float angleDeg, float distance) {
 		// Bogenmaß
 		float angle = angleDeg / FastMath.RAD_TO_DEG;
 		// gravity = 98.1f -> gravity/2 = 49.05f

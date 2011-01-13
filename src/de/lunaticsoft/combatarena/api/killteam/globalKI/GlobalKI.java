@@ -8,9 +8,8 @@ import com.jme.math.Vector3f;
 import memory.map.MemorizedMap;
 import memory.objectStorage.MemorizedWorldObject;
 import memory.objectStorage.ObjectStorage;
-import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
-import de.lunaticsoft.combatarena.api.killteam.KillKI;
+import de.lunaticsoft.combatarena.api.killteam.KillKI_new;
 import debug.MapServer;
 
 /**
@@ -32,12 +31,12 @@ public class GlobalKI {
 	private IWorldInstance world;	
 	private MemorizedMap map;
 	private ObjectStorage objectStorage;
-	private Map<KillKI, PlayerData> players;
+	private Map<KillKI_new, PlayerData> players;
 	
 	public GlobalKI() {
 		map = new MemorizedMap();
 		objectStorage = new ObjectStorage(map, this);
-		players = new HashMap<KillKI, PlayerData>();
+		players = new HashMap<KillKI_new, PlayerData>();
 		
 		MapServer srv = new MapServer(map, this.objectStorage);
 
@@ -50,7 +49,7 @@ public class GlobalKI {
 //	}
 
 	/**
-	 * Is called by one of the tanks, since only IPlayer classes get an world reference 
+	 * Is called by one of the tanks, since only KillKI_new classes get an world reference 
 	 * from the TankArenaServer
 	 * 
 	 * @param world
@@ -71,7 +70,7 @@ public class GlobalKI {
 	 * Registers a tank in global KI after it has spawned and creates the players status object
 	 * @param tank
 	 */
-	public void registerTank(KillKI tank){
+	public void registerTank(KillKI_new tank){
 		PlayerData data = new PlayerData();
 		players.put(tank, data);
 	}
@@ -80,7 +79,7 @@ public class GlobalKI {
 	 * Removes a registered tank when it dies
 	 * @param tank
 	 */
-	public void removeTank(KillKI tank){
+	public void removeTank(KillKI_new tank){
 		players.remove(tank);
 	}
 	
@@ -90,7 +89,7 @@ public class GlobalKI {
 	 * @param tank
 	 * @param statusItem
 	 */
-	public void tankStatusChanged(KillKI tank, Object statusItem, StatusType type){
+	public void tankStatusChanged(KillKI_new tank, Object statusItem, StatusType type){
 		PlayerData data = players.get(tank); 
 		switch (type) {
 		case Position:
@@ -128,7 +127,7 @@ public class GlobalKI {
 	}
 	
 	public void notifyTanks(StatusType type, Object changedObject){
-		for(KillKI tank : players.keySet()){
+		for(KillKI_new tank : players.keySet()){
 			tank.notify(type, changedObject);
 		}
 	}

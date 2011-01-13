@@ -20,6 +20,8 @@ public class Path<T extends LinkedTile> implements Iterable<T>{
 	public void setCircleCourse(boolean isCircleCourse) {
 		this.isCircleCourse = isCircleCourse;
 	}
+	
+
 
 	public Path() {
 		waypoints = new ArrayList<T>();
