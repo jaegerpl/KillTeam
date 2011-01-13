@@ -108,36 +108,30 @@ public class KillKI implements IPlayer {
         this.color = color;
     }
 
-/**
- * Berechnet einen Weg zum Zielhangar, bewegt den Tank zum Zielhangar
- * und aktuallisiert die Hangars in der Karte
- */
-public void goToHangar(){
-    Vector3f goalPos = blackboard.spottedHangar.getPosition();
-    Vector3f myPos = world.getMyPosition();
-    LinkedTile targetTile = memoryMap.getTileAtCoordinate(goalPos);
-    LinkedTile currentTile = memoryMap.getTileAtCoordinate(myPos);
-    
-    // berechne Weg zum Hangar
-    if(path == null){   
-        path = memoryMap.calculatePath(currentTile, targetTile);
-    }
-    
-    // fahre den Pfad entlang
-    if(null != path && !path.isEmpty()) {
-        //System.out.println("Path ist nicht NULL!");
-        if(currentTile.equals(moveTarget)) {
-            //System.out.println("Zwischenziel erreicht");
-            moveTarget = path.getNextWaypoint();
-        }
-    }
-    
-    // pruefe ob du am Hangar bist und ob er noch existiert
-    if(currentTile.equals(targetTile)){
-        checkWorldObjectExistance();
-    }
-    
-}
+	/**
+	 * Berechnet einen Weg zum Zielhangar, bewegt den Tank zum Zielhangar
+	 * und aktuallisiert die Hangars in der Karte
+	 */
+	public void goToHangar(){
+	    Vector3f goalPos = blackboard.spottedHangar.getPosition();
+	    Vector3f myPos = world.getMyPosition();
+	    LinkedTile targetTile = memoryMap.getTileAtCoordinate(goalPos);
+	    LinkedTile currentTile = memoryMap.getTileAtCoordinate(myPos);
+	    
+	    // berechne Weg zum Hangar
+	    if(path == null){   
+	        path = memoryMap.calculatePath(currentTile, targetTile);
+	    }
+	    
+	    // fahre den Pfad entlang
+	    if(null != path && !path.isEmpty()) {
+	        //System.out.println("Path ist nicht NULL!");
+	        if(currentTile.equals(moveTarget)) {
+	            //System.out.println("Zwischenziel erreicht");
+	            moveTarget = path.getNextWaypoint();
+	        }
+	    }    
+	}
 
     /**
      * Ueberprueft die perceivte Realitaet mit der map und
@@ -279,7 +273,7 @@ public void goToHangar(){
     	
     	MemorizedWorldObject[] hangars = new MemorizedWorldObject[enemyHangars.values().size()]; 
     	enemyHangars.values().toArray(hangars);
-    	if(hangars[0] != null){
+    	if(hangars.length >=1 && hangars[0] != null){
     		System.out.println("hangars:"+hangars[0]);
     		LinkedTile target = memoryMap.getTileAtCoordinate(hangars[0].getPosition());
     		if(target != lastPathTarget)
@@ -684,5 +678,23 @@ if(tile.mapIndex.x > 60 || tile.mapIndex.y > 60 || tile.mapIndex.x < 0 || tile.m
 
     public IWorldInstance getWorld() {
         return world;
+    }
+    
+    public void notify(StatusType type, Object obj){
+    	
+    	switch(type){
+        case HangarRemoved:
+        	if(blackboard.curTask == Task.RAPEaHANGAR){
+        		MemorizedWorldObject hangar = (MemorizedWorldObject)obj;
+        		System.out.println("Tank "+name+" was notified about "+type+" at Position "+hangar.getPosition());
+        		if(blackboard.spottedHangar == hangar){
+        			EColors color = hangar.getColor();
+        			Object[] hangars = objectStorage.getEnemyHangarsOfPlayer(color).values().toArray(); 
+        			blackboard.spottedHangar = (MemorizedWorldObject)hangars[0];
+        		}
+        	}
+        	break;
+        default : 
+    	}
     }
 }

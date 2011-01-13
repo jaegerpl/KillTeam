@@ -11,6 +11,8 @@
  */
 package de.lunaticsoft.combatarena.api.killteam;
 
+import memory.objectStorage.MemorizedWorldObject;
+
 import com.jme.math.Vector3f;
 
 import de.lunaticsoft.combatarena.api.enumn.EColors;
@@ -31,7 +33,7 @@ public class TankBlackboard {
 	// BATTLE STUFF
 	public int hitsTaken;				// counts how often the tank has been shot at (indiciating that fitness of tank is NOT 100%) is set to 0 when collecting a toolbox
 	public IWorldObject spottedTank;	// the tank in view range
-	public IWorldObject spottedHangar;	// the hangar in view range
+	public MemorizedWorldObject spottedHangar;	// the hangar in view range
 	public EColors spottedHangarsColor; // the color the spotted hangar should have
 	
 	// TOOLBOX STUFF
