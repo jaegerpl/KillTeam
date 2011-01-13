@@ -34,13 +34,13 @@ public class LoadPlayerKI implements ILoadPlayerKI {
 		//System.out.println(index);
 		switch (index) {
 		case 0:
-			return new KillKI(name+index, globalKi, Task.DEFEND);
+			return new KillKI_new(name+index, globalKi, Task.DEFEND);
 		case 1: 
 		case 2: 
 		case 3:
 		case 4:
 		default:
-			 return new KillKI(name+index, globalKi, Task.EXPLORE);
+			 return new KillKI_new(name+index, globalKi, Task.EXPLORE);
 		}
 	}
 }
