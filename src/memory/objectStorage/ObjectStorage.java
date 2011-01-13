@@ -14,18 +14,22 @@ import memory.map.MemorizedMap;
 import com.jme.math.Vector3f;
 
 import de.lunaticsoft.combatarena.api.enumn.EColors;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.GlobalKI;
+import de.lunaticsoft.combatarena.api.killteam.globalKI.StatusType;
 
 public class ObjectStorage {
 
 	private MemorizedMap map;
+	private GlobalKI globalKI;
 	List<MemorizedWorldObject> knownObjects;
 	Map<LinkedTile, List<MemorizedWorldObject>> objectsMap; 
 	Map<Point, MemorizedWorldObject> items;
 	Map<EColors, Map<Point, MemorizedWorldObject>> hangars;
 	Map<EColors, Map<Point, MemorizedWorldObject>> tanks;
 
-	public ObjectStorage(MemorizedMap map) {
+	public ObjectStorage(MemorizedMap map, GlobalKI globalKI) {
 		this.map = map;
+		this.globalKI = globalKI;
 		knownObjects = Collections.synchronizedList(new ArrayList<MemorizedWorldObject>());
 		objectsMap = Collections.synchronizedMap(new HashMap<LinkedTile, List<MemorizedWorldObject>>());
 		items = Collections.synchronizedMap(new HashMap<Point, MemorizedWorldObject>());
@@ -65,10 +69,19 @@ public class ObjectStorage {
 				tanks.get(object.getColor()).remove(objectPosition);
 				break;
 			case Hangar:
-				hangars.get(object.getColor()).remove(objectPosition);
+				Map<Point, MemorizedWorldObject> hangarMap = hangars.get(object.getColor());
+				if(hangarMap.values().contains(object)){
+					hangars.get(object.getColor()).remove(objectPosition);
+					globalKI.notifyTanks(StatusType.HangarRemoved, object);
+				}
 				break;
 			case Item:
-				items.remove(objectPosition);
+				
+				Map<Point, MemorizedWorldObject> itemMap = hangars.get(object.getColor());
+				if(itemMap.values().contains(object)){
+					items.remove(objectPosition);
+					globalKI.notifyTanks(StatusType.ItemRemoved, object);
+				}
 				break;
 		}
 		knownObjects.remove(object);
@@ -167,6 +180,12 @@ public class ObjectStorage {
 		}
 	}
 	
+	/**
+	 * Returns all  objects placed on the given tiles
+	 * 
+	 * @param tiles
+	 * @return
+	 */
 	public List<MemorizedWorldObject> getObjectsAtTiles(List<LinkedTile> tiles){
 		ArrayList<MemorizedWorldObject> list = new ArrayList<MemorizedWorldObject>();
 		for(LinkedTile tile : tiles){
