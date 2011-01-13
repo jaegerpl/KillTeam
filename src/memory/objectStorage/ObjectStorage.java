@@ -76,7 +76,12 @@ public class ObjectStorage {
 				}
 				break;
 			case Item:
-				items.remove(objectPosition);
+				
+				Map<Point, MemorizedWorldObject> itemMap = hangars.get(object.getColor());
+				if(itemMap.values().contains(object)){
+					items.remove(objectPosition);
+					globalKI.notifyTanks(StatusType.ItemRemoved, object);
+				}
 				break;
 		}
 		knownObjects.remove(object);

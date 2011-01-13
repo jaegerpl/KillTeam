@@ -4,11 +4,9 @@ package de.lunaticsoft.combatarena.api.killteam;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -18,10 +16,8 @@ import memory.map.MemorizedMap;
 import memory.objectStorage.MemorizedWorldObject;
 import memory.objectStorage.ObjectStorage;
 import memory.pathcalulation.Path;
-
-
-import battle.Battle;
-import battle.ShootTarget;
+import battle.IWaffenAutomat;
+import battle.WaffenAutomat;
 
 import com.jme.math.FastMath;
 import com.jme.math.Vector3f;
@@ -88,6 +84,8 @@ public class KillKI implements IPlayer {
 
     private java.util.Random rand;
 	private LinkedTile myPosTile;
+	private IWaffenAutomat waffenAutomat;
+	
     public KillKI(String name, GlobalKI globalKI, Task task) {
         //System.out.println("KillKI "+name+" gestartet");
         this.blackboard = new TankBlackboard();
@@ -141,25 +139,21 @@ public class KillKI implements IPlayer {
         // tiles die der tank sehen kann
         List<LinkedTile> viewTiles = memoryMap.getTilesPossiblyInViewRange(world.getMyPosition().clone());
         
+        // Objekte die laut Map im Sichtbereich sein sollten
+        List<MemorizedWorldObject> mapObjects = objectStorage.getObjectsAtTiles(viewTiles);
         
-        // entferne hangars, die ich nicht sehen kann
-        List<MemorizedWorldObject> sureThing = objectStorage.getObjectsAtTiles(viewTiles);
-        
-        // entferne alle hangars aus sureThing die perceived wurden
+        // entferne alle Objekte aus mapObjects die perceived wurden
         for(IWorldObject obj : perceivedObjects){
-            if(obj.getType() == EObjectTypes.Hangar){
-                if(sureThing.contains(obj)){
-                    LinkedTile tile = memoryMap.getTileAtCoordinate(obj.getPosition());
-                    sureThing.remove(obj);                 
-                }
+            if(mapObjects.contains(obj)){
+                LinkedTile tile = memoryMap.getTileAtCoordinate(obj.getPosition());
+                mapObjects.remove(obj);                 
             }
         }
         
-        // die verbleibenden hangars in sureThing hŠtten perceived werden sollen, wurden aber nicht
-        // lšsche sie in ObjectStorage
-        for(MemorizedWorldObject obj : sureThing){
+        // die verbleibenden Objekte in mapObjects haetten perceived werden sollen, wurden aber nicht
+        // Loesche sie im ObjectStorage
+        for(MemorizedWorldObject obj : mapObjects){
             objectStorage.removeObject(obj);
-            globalKI.tankStatusChanged(this, obj, StatusType.HangarRemoved);
         }
     }
     
@@ -242,10 +236,8 @@ public class KillKI implements IPlayer {
             	blackboard.curTask = Task.RAPEaHANGAR;
             	
             }            
-            }
-            
-            
         }
+    }
  
     private void goToTarget(LinkedTile target) {
         if(pathReset){
@@ -449,6 +441,7 @@ public class KillKI implements IPlayer {
     public void setWorldInstance(IWorldInstance world) {
         this.world = world;
         globalKI.setWorldInstance(world);
+        this.waffenAutomat = new WaffenAutomat(world);
     }
 
     /**
@@ -532,6 +525,23 @@ public class KillKI implements IPlayer {
     	perceivedObjects = worldObjects;
         boolean hangarDiscovered = false;
         
+        
+        IWorldObject o = null;
+        // first shoot other tanks
+		o = getNearestObject(worldObjects, EObjectTypes.Competitor,10);
+		// then aim for hangars
+		if (o == null) {
+			o = getNearestObject(worldObjects, EObjectTypes.Hangar,10);
+		}
+
+		if (o != null) {
+			if ( o.getType() == EObjectTypes.Competitor ) {
+				waffenAutomat.action(o);					
+			} else {
+				world.shoot(o.getPosition(), getSpeed(45, world.getMyPosition().distance(o.getPosition())), 45);
+			}
+		}
+        
         // move WorldObjects into WorkingMemory
         for (IWorldObject wO : worldObjects) {
             
@@ -540,16 +550,16 @@ public class KillKI implements IPlayer {
                     if(wO.getColor() != this.color){
                         this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
                         //System.out.println("Panzer gefunden: " + wO.hashCode());
-                        ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
-                        world.shoot(target.direction, target.force, target.angle);
+//                        ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
+//                        world.shoot(target.direction, target.force, target.angle);
                         //System.out.println("Feind entdeckt");
                     }
                     break;
                 case Hangar:
                     if(wO.getColor() != this.color){
                         this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
-                        ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
-                        world.shoot(target.direction, target.force, target.angle);
+//                        ShootTarget target = Battle.getShootTarget(wO.getPosition(), this.pos);
+//                        world.shoot(target.direction, target.force, target.angle);
                         //System.out.println("feindlichen Hangar entdeckt");
                         globalKI.tankStatusChanged(this, wO, StatusType.HangarFound);
                         hangarDiscovered = true;
@@ -568,13 +578,11 @@ public class KillKI implements IPlayer {
                     //System.out.println("Kein WO");
             }
         }
-        if(hangarDiscovered)
+        if(hangarDiscovered){
             stop = true;
-        else
+        } else {
             stop = false;
-        
-        //ShootTarget target = Battle.getShootTarget(worldObject.getPosition(), world.getMyPosition());
-        //world.shoot(target.direction, target.force, target.angle);*/      
+        }
     }
 
     @Override
@@ -697,4 +705,43 @@ if(tile.mapIndex.x > 60 || tile.mapIndex.y > 60 || tile.mapIndex.x < 0 || tile.m
         default : 
     	}
     }
+    
+	/**
+	 * Returns closest object to tank. 
+	 * A minimum distance can be given, so we do not shoot us self.
+	 * 
+	 * @param objects
+	 * @param type
+	 * @param minDist
+	 * @return
+	 */
+	private IWorldObject getNearestObject(List<IWorldObject> objects, EObjectTypes type, float minDist) {
+		IWorldObject obj = null;
+
+		if (objects != null) {
+			for (IWorldObject o : objects) {
+				// ignore other object types
+				if (!o.getType().equals(type)) {
+					continue;
+				}
+
+				if (o.getColor().equals(color)) {
+					continue;
+				}
+
+				if (obj == null) {
+					obj = o;
+				} else {
+					if (  o.getPosition().distance(world.getMyPosition().clone()) < 
+						obj.getPosition().distance(world.getMyPosition().clone())) {
+						if(o.getPosition().distance(world.getMyPosition().clone()) > minDist){
+							obj = o;
+						}						
+					}
+				}
+			}
+		}
+
+		return obj;
+	}
 }
