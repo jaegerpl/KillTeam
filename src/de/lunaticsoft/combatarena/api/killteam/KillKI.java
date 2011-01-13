@@ -1,4 +1,4 @@
-package de.lunaticsoft.combatarena.api.killteam;
+/*package de.lunaticsoft.combatarena.api.killteam;
 
 
 
@@ -106,10 +106,10 @@ public class KillKI implements IPlayer {
         this.color = color;
     }
 
-	/**
+	*//**
 	 * Berechnet einen Weg zum Zielhangar, bewegt den Tank zum Zielhangar
 	 * und aktuallisiert die Hangars in der Karte
-	 */
+	 *//*
 	public void goToHangar(){
 	    Vector3f goalPos = blackboard.spottedHangar.getPosition();
 	    Vector3f myPos = world.getMyPosition().clone();
@@ -131,10 +131,10 @@ public class KillKI implements IPlayer {
 	    }    
 	}
 
-    /**
+    *//**
      * Ueberprueft die perceivte Realitaet mit der map und
      * loescht nichtmehr vorhandene Object aus der Map
-     */
+     *//*
     private void checkWorldObjectExistance(){
         // tiles die der tank sehen kann
         List<LinkedTile> viewTiles = memoryMap.getTilesPossiblyInViewRange(world.getMyPosition().clone());
@@ -280,10 +280,10 @@ public class KillKI implements IPlayer {
 
 
 
-    /**
+    *//**
      * Pruefe den Sichtbereich  um daraus den Mittelpunkt und die 
      * Position des Tanks zum Mittelpunkt zu berechnen
-     */
+     *//*
     private void calibrate() {
         Vector3f myPosition = world.getMyPosition().clone();
         Vector3f myDirection = world.getMyDirection().clone();
@@ -324,10 +324,10 @@ public class KillKI implements IPlayer {
         return result;
     }
     
-    /**
+    *//**
      * Prueft, ob sich der Panzer zu wenig bewegt hat.
      * @return
-     */
+     *//*
     private boolean stuck() {
         boolean stuck = false;
         if(lastPositions.size() > 1) {
@@ -444,7 +444,7 @@ public class KillKI implements IPlayer {
         this.waffenAutomat = new WaffenAutomat(world);
     }
 
-    /**
+    *//**
      * y = speed * time * sin(angle) - (gravity / 2) * time^2 y -> 0 <br>
      * 0 = speed * time * sin(angle) - (gravity / 2) * time^2<br>
      * <br>
@@ -463,7 +463,7 @@ public class KillKI implements IPlayer {
      * distance = speed * time * cos(angle) <br>
      * umstellen:<br> 
      * speed = distance / (cos(angle) * time)<br>
-     */
+     *//*
     public float getSpeed(float angleDeg, float distance) {
         // Bogenmaß
         float angle = angleDeg / FastMath.RAD_TO_DEG;
@@ -569,11 +569,11 @@ public class KillKI implements IPlayer {
                         this.objectStorage.storeObject(wO.getPosition(), new MemorizedWorldObject(wO));
                         //System.out.println("Item entdeckt");
                     break;
-                    /*
+                    
                 case Flag:
                     iHaveTheFlag = true;
                     break;
-                    */
+                    
                 default: 
                     //System.out.println("Kein WO");
             }
@@ -706,7 +706,7 @@ if(tile.mapIndex.x > 60 || tile.mapIndex.y > 60 || tile.mapIndex.x < 0 || tile.m
     	}
     }
     
-	/**
+	*//**
 	 * Returns closest object to tank. 
 	 * A minimum distance can be given, so we do not shoot us self.
 	 * 
@@ -714,7 +714,7 @@ if(tile.mapIndex.x > 60 || tile.mapIndex.y > 60 || tile.mapIndex.x < 0 || tile.m
 	 * @param type
 	 * @param minDist
 	 * @return
-	 */
+	 *//*
 	private IWorldObject getNearestObject(List<IWorldObject> objects, EObjectTypes type, float minDist) {
 		IWorldObject obj = null;
 
@@ -745,3 +745,4 @@ if(tile.mapIndex.x > 60 || tile.mapIndex.y > 60 || tile.mapIndex.x < 0 || tile.m
 		return obj;
 	}
 }
+*/
