@@ -38,7 +38,7 @@ import de.lunaticsoft.combatarena.objects.WorldObject;
 public class KillKI implements IPlayer {
 
     private IWorldInstance world;
-    private Vector3f spwanDirection; // tanks direction
+    private Vector3f spawnDirection; // tanks direction
     private Vector3f moveDirection; // tanks direction
     private Vector3f pos;       // takns last updated position
     private Vector3f goalPosition; // tanks goal its heading to
@@ -62,7 +62,7 @@ public class KillKI implements IPlayer {
     int viewRangeRadius = 0;
     int viewRangeOffset = 0;
     // my variables
-    private Vector3f startPos;
+    private Vector3f spawnPos;
     private Vector3f flagPos;
     private Vector3f flagPosPath; //flaPos für die der Pfad berechnet wurde
     private Task lastTask;
@@ -78,7 +78,6 @@ public class KillKI implements IPlayer {
     private MemorizedMap memoryMap;
     private ObjectStorage objectStorage;
     protected TankBlackboard blackboard;
-    private float inHangarThreshold = 15;
     private boolean calcNewDefendPath = true;
     
     //should be true if we play CTF
@@ -198,7 +197,7 @@ public void goToHangar(){
                 if(this.blackboard.curTask == Task.DEFEND)
                     defend();
                 else if(iHaveTheFlag && flagCollectet)
-                    goToTarget(memoryMap.getTileAtCoordinate(startPos));
+                    goToTarget(memoryMap.getTileAtCoordinate(spawnPos));
                 else if(this.blackboard.curTask == Task.EXPLORE)
                     explore();
                 else if(this.blackboard.curTask == Task.CTF)
@@ -356,13 +355,13 @@ public void goToHangar(){
     }
     
     public void defend(){
-        if(world.getMyPosition().distance(startPos) > 25){
+        if(world.getMyPosition().distance(spawnPos) > 25){
             blackboard.inHangar = false;
         }
         
         if(!blackboard.inHangar){
             if(calcNewDefendPath){
-            float distance = world.getMyPosition().distance(startPos);
+            float distance = world.getMyPosition().distance(spawnPos);
             //float distance = 10;
             double x = 0d; // real part
             double z = 0d; // imaginary part
@@ -374,7 +373,7 @@ public void goToHangar(){
                     x = distance * Math.cos(angle);
                     z = distance * Math.sin(angle);
 
-                    Vector3f d = startPos.clone();
+                    Vector3f d = spawnPos.clone();
                     d.x += x;
                     d.z += z;
 
@@ -393,48 +392,32 @@ public void goToHangar(){
     
     
     public void explore(){
-        if(startPos.distance(world.getMyPosition()) > inHangarThreshold )
-            blackboard.inHangar = false;
-        //GOAP.getExploreDirection();
-        
-        //if(lastPos == null){
-        //  direction = new Vector3f(FastMath.rand.nextInt(200),0, FastMath.rand.nextInt(200));
-       //} //else 
-            if(!blackboard.inHangar){ Vector3f targetPos = this.pos.add(spwanDirection.normalize().mult(30));
-
-            
-            //System.out.println("Wï¿½rde mich gern bewegen");
-            
+            	Vector3f targetPos = this.pos.add(spawnDirection.normalize().mult(30));
+            	
+            	//nächsten Wegpunkt als Ziel setzen, wenn wir bereits eine Route haben
             if(null != path && !path.isEmpty()) {
-                //System.out.println("Path ist nicht NULL!");
                 if(myPosTile.equals(moveTarget)) {
-                    //System.out.println("Zwischenziel erreicht");
                     moveTarget = path.getNextWaypoint();
                 }
             } else {
-                //Neuen Pfad berechnen
-                //System.out.println("Neuen Pfad berechnen.");
-                //LinkedTile targetTile = memoryMap.getNearestUnexploredTile(pos);
-                 targetPos = this.pos.add(spwanDirection.normalize().mult(60));
-                if(targetPos.x > 10000 || targetPos.z > 10000) {
-                    System.out.println("Alerm!");
-                }
+                 targetPos = this.pos.add(spawnDirection.normalize().mult(60));
+
                 LinkedTile targetTile = memoryMap.getTileAtCoordinate(targetPos);
                 if(!targetTile.isExplored()){
+                	
+                	//wenn das Ziel nicht betretbar ist, die aktuelle richtung ändern und in erneutem durchlauf weitersuchen
                     if(targetTile.isPassable()) {
                         path = memoryMap.calculatePath(myPosTile, targetTile);
                         if(path.isEmpty()) {
-                            this.spwanDirection = rotateVector(this.spwanDirection, 10);
+                            this.spawnDirection = rotateVector(this.spawnDirection, 10);
                             moveTarget = null;
-                        } else {
-                            moveTarget = path.getNextWaypoint();
-
-                        }
+                        } 
                     } else {
                         //Rotieren und weitersuchen
-                        this.spwanDirection = rotateVector(this.spwanDirection, 10);
+                        this.spawnDirection = rotateVector(this.spawnDirection, 10);
                         moveTarget = null;
                         }
+                    //von der map unexplored tile besorge, wenn tile bereits exploriert wurde
                     } else {
                         TreeMap<Integer, LinkedTile> sortedTiles = memoryMap.getUnexploredTilesSortedByDistance(pos);
                         for(LinkedTile tile : sortedTiles.values()) {
@@ -448,7 +431,7 @@ public void goToHangar(){
                 }   
         }   
                 
-    }
+    
     
 
     @Override
@@ -585,10 +568,10 @@ public void goToHangar(){
 
     @Override
     public void spawn() {
-        startPos = world.getMyPosition();
+        spawnPos = world.getMyPosition();
         //System.out.println("StartPos: "+startPos);
-        spwanDirection = world.getMyDirection();
-        goalPosition = startPos.add(new Vector3f(1,0,1));
+        spawnDirection = world.getMyDirection();
+        goalPosition = spawnPos.add(new Vector3f(1,0,1));
         goalPosition.x = (int)goalPosition.x;
         goalPosition.z = (int)goalPosition.z;
 //      goalPosition = new Vector3f(300f,18f,300f);
@@ -596,7 +579,7 @@ public void goToHangar(){
         
         // GOAP STUFF
         globalKI.registerTank(this);                // register tank in globalKI
-        blackboard.direction = spwanDirection;
+        blackboard.direction = spawnDirection;
         blackboard.inHangar = true;
     }
 
