@@ -114,7 +114,7 @@ public class KillKI implements IPlayer {
 	 */
 	public void goToHangar(){
 	    Vector3f goalPos = blackboard.spottedHangar.getPosition();
-	    Vector3f myPos = world.getMyPosition();
+	    Vector3f myPos = world.getMyPosition().clone();
 	    LinkedTile targetTile = memoryMap.getTileAtCoordinate(goalPos);
 	    LinkedTile currentTile = memoryMap.getTileAtCoordinate(myPos);
 	    
@@ -139,7 +139,7 @@ public class KillKI implements IPlayer {
      */
     private void checkWorldObjectExistance(){
         // tiles die der tank sehen kann
-        List<LinkedTile> viewTiles = memoryMap.getTilesPossiblyInViewRange(world.getMyPosition());
+        List<LinkedTile> viewTiles = memoryMap.getTilesPossiblyInViewRange(world.getMyPosition().clone());
         
         
         // entferne hangars, die ich nicht sehen kann
@@ -170,8 +170,8 @@ public class KillKI implements IPlayer {
         }
         evalNextTask(); //update Mission/Task of the tank       
             // current position
-            pos = world.getMyPosition();
-            currentDirection = world.getMyDirection();
+            pos = world.getMyPosition().clone();
+            currentDirection = world.getMyDirection().clone();
             myPosTile = memoryMap.getTileAtCoordinate(pos);
             
             //scan unknown terrain
@@ -216,7 +216,7 @@ public class KillKI implements IPlayer {
               
                 int offset = rand.nextInt(180);
                 int alpha = 90+offset;
-                Vector3f unstuckDirection = rotateVector(world.getMyDirection(), alpha);
+                Vector3f unstuckDirection = rotateVector(world.getMyDirection().clone(), alpha);
                 moveDirection = unstuckDirection;
             }
             world.move(moveDirection);
@@ -293,8 +293,8 @@ public class KillKI implements IPlayer {
      * Position des Tanks zum Mittelpunkt zu berechnen
      */
     private void calibrate() {
-        Vector3f myPosition = world.getMyPosition();
-        Vector3f myDirection = world.getMyDirection();
+        Vector3f myPosition = world.getMyPosition().clone();
+        Vector3f myDirection = world.getMyDirection().clone();
         Vector3f incrementor = myDirection.normalize();
         
         Vector3f currPos = myPosition;
@@ -387,7 +387,7 @@ public class KillKI implements IPlayer {
     
     
     public void explore(){
-        if(startPos.distance(world.getMyPosition()) > inHangarThreshold )
+        if(startPos.distance(world.getMyPosition().clone()) > inHangarThreshold )
             blackboard.inHangar = false;
         //GOAP.getExploreDirection();
         
@@ -651,7 +651,7 @@ if(tile.mapIndex.x > 60 || tile.mapIndex.y > 60 || tile.mapIndex.x < 0 || tile.m
             scanTile(tile);
         }
         //Direkt voraus gucken
-        Vector3f voraus = pos.add(world.getMyDirection().normalize().mult(2));
+        Vector3f voraus = pos.add(world.getMyDirection().clone().normalize().mult(2));
 		if(null == voraus) {
 		    System.out.println("Voraus ist NULL!!!");
 		}
