@@ -665,6 +665,12 @@ public class KillKI_new implements IPlayer {
 			
 	}
 
+	public void goToBase(){
+		if (!map.getTileAtCoordinate(spawnPos).equals(lastPathTarget)) {
+            pathReset = true;
+            calcPathTo(map.getTileAtCoordinate(spawnPos));
+        }
+    }
 	@Override
 	public void update(final float interpolation) {
 		updateNr++;
@@ -679,17 +685,18 @@ public class KillKI_new implements IPlayer {
 		
 		if (this.blackboard.curTask == Task.DEFEND) {
 			defend();
-		} else if (iHaveTheFlag && flagCollectet) {
-			calcPathTo(map.getTileAtCoordinate(spawnPos));
+		} else if (this.blackboard.curTask == Task.GoToBase)
+            goToBase();
 		} else if (this.blackboard.curTask == Task.EXPLORE) {
 			explore();
 		} else if (this.blackboard.curTask == Task.CTF) {
+            //todo zu aufwendig bei jeder kleiner flaggen bewegung pfad neukalkulieren, besser nur jede X zyklen neu generieren
 			if (flagPosChanged) {
 				pathReset = true;
 				calcPathTo(map.getTileAtCoordinate(flagPos));
 			}
 		} else if(this.blackboard.curTask == Task.STOPATHANGAR){
-			if(updateNr - stoppedTimeStamp > 100)
+			if(updateNr - stoppedTimeStamp > 20)
 				this.blackboard.curTask = Task.EXPLORE;
 		} 
 			
