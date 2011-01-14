@@ -4,8 +4,10 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import map.fastmap.FastRoutableWorldMap;
 import map.fastmap.LinkedTile;
@@ -186,13 +188,23 @@ public class ObjectStorage {
 	 * @param tiles
 	 * @return
 	 */
-	public List<MemorizedWorldObject> getObjectsAtTiles(List<LinkedTile> tiles){
+//	public List<MemorizedWorldObject> getObjectsAtTiles(List<LinkedTile> tiles){
+		public Set<MemorizedWorldObject> getObjectsAtTiles(List<LinkedTile> tiles){
 		ArrayList<MemorizedWorldObject> list = new ArrayList<MemorizedWorldObject>();
+		Set<MemorizedWorldObject> set = new HashSet<MemorizedWorldObject>();
+		
 		for(LinkedTile tile : tiles){
 			if(objectsMap.containsKey(tile)){
-				list.addAll(objectsMap.get(tile));
+				List<MemorizedWorldObject> list2 = objectsMap.get(tile);
+					for(MemorizedWorldObject memo : list2){
+//						if(!list.contains(memo)){
+//							list.add(memo);
+//						}
+						set.add(memo);
+				}			
 			}
 		}
-		return list;
+//		return list;
+		return set;
 	}
 }

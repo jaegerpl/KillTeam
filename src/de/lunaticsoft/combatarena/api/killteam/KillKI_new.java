@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -125,18 +126,16 @@ public class KillKI_new implements IPlayer {
 	}
 	private void checkWorldObjectExistance() {
 		// tiles die der tank sehen kann
-		final List<LinkedTile> viewTiles = map
-				.getTilesPossiblyInViewRange(world.getMyPosition().clone());
+		final List<LinkedTile> viewTiles = map.getTilesPossiblyInViewRange(world.getMyPosition().clone());
 
 		// Objekte die laut Map im Sichtbereich sein sollten
-		final List<MemorizedWorldObject> mapObjects = objectStorage
-				.getObjectsAtTiles(viewTiles);
+		final Set<MemorizedWorldObject> mapObjects = objectStorage.getObjectsAtTiles(viewTiles);
 
 		// entferne alle Objekte aus mapObjects die perceived wurden
 		for (final IWorldObject obj : perceivedObjects) {
-			if (mapObjects.contains(new MemorizedWorldObject(obj))) {
-				final LinkedTile tile = map.getTileAtCoordinate(obj.getPosition());
-				mapObjects.remove(obj);
+			MemorizedWorldObject memo = new MemorizedWorldObject(obj);
+			if (mapObjects.contains(memo)) {
+				mapObjects.remove(memo);
 			}
 		}
 
@@ -567,17 +566,14 @@ public class KillKI_new implements IPlayer {
 	 * berechnet pfad zu nächstem hangar in objectStorage objectStorage.getEnemyHangars();
 	 */
 	private void rapeHangar() {
-		final Map<Point, MemorizedWorldObject> enemyHangars = objectStorage
-				.getEnemyHangars();
+		final Map<Point, MemorizedWorldObject> enemyHangars = objectStorage.getEnemyHangars();
 		if (enemyHangars.size() >= 1) {
 			final MemorizedWorldObject[] hangars = new MemorizedWorldObject[enemyHangars.values().size()];
 			enemyHangars.values().toArray(hangars);
 		
-		//wenn ein hangar in der map existiert, pfad zu diesem berechnen	
-			final LinkedTile target = map.getTileAtCoordinate(hangars[0]
-					.getPosition());
-			if(curPos.distance(target.getTileCenterCoordinates()) <40)
-			{
+			//wenn ein hangar in der map existiert, pfad zu diesem berechnen	
+			final LinkedTile target = map.getTileAtCoordinate(hangars[0].getPosition());
+			if(curPos.distance(target.getTileCenterCoordinates()) <40){
 				System.out.println("halte an, befinde mich vor gegnerischem Hangar "+target);
 
 				this.stoppedTimeStamp = updateNr; //würgaround, bis es funktioniert das hangar korrekt als zerstört gemeldet werden
@@ -587,8 +583,7 @@ public class KillKI_new implements IPlayer {
 
 				moveTarget = curTile; 
 				blackboard.curTask = Task.STOPATHANGAR;
-		}
-			else if (!target.equals(lastPathTarget)) {
+		} else if (!target.equals(lastPathTarget)) {
 				pathReset = true;
 				System.out.println("berechne Pfad zu Hangar"+ target);
 				calcPathTo(target);
@@ -688,16 +683,10 @@ public class KillKI_new implements IPlayer {
 				pathReset = true;
 				calcPathTo(map.getTileAtCoordinate(flagPos));
 			}
-		}
-		else if(this.blackboard.curTask == Task.STOPATHANGAR)
-		{
+		} else if(this.blackboard.curTask == Task.STOPATHANGAR){
 			if(updateNr - stoppedTimeStamp > 100)
 				this.blackboard.curTask = Task.EXPLORE;
-		}
-
-
-			
-		 else if (this.blackboard.curTask == Task.RAPEaHANGAR) {
+		} else if (this.blackboard.curTask == Task.RAPEaHANGAR) {
 			rapeHangar();
 		}
 		
