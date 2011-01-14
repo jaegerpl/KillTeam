@@ -60,7 +60,7 @@ public class KillKI implements IPlayer {
     // my variables
     private Vector3f startPos;
     private Vector3f flagPos;
-    private Vector3f flagPosPath; //flaPos für die der Pfad berechnet wurde
+    private Vector3f flagPosPath; //flaPos fÃ¼r die der Pfad berechnet wurde
     private Task lastTask;
     private LinkedTile lastPathTarget;
     private ArrayList<IWorldObject> perceivedObjects;
