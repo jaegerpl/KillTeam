@@ -371,19 +371,19 @@ public class KillKI_new implements IPlayer {
 		perceivedObjects = worldObjects;
 
 		IWorldObject o = null;
-		// first shoot other tanks
-		o = getNearestObject(worldObjects, EObjectTypes.Competitor, 10);
-		// then aim for hangars
+		// first shoot other hangars
+		o = getNearestObject(worldObjects, EObjectTypes.Hangar, 10);
+		// then aim for tanks
 		if (o == null) {
-			o = getNearestObject(worldObjects, EObjectTypes.Hangar, 10);
-		}
+			o = getNearestObject(worldObjects, EObjectTypes.Competitor, 10);
+		}else System.out.println("greife Hangar an");
 
 		if (o != null) {
 			if (o.getType() == EObjectTypes.Competitor) {
 				waffenAutomat.action(o);
 			} else {
 				world.shoot(
-						o.getPosition().negate(),
+						this.curPos.subtract(o.getPosition()).negate(),
 						WaffenAutomat.getSpeed(45,
 								world.getMyPosition().distance(o.getPosition())),
 						45);
