@@ -685,7 +685,7 @@ public class KillKI_new implements IPlayer {
 		
 		if (this.blackboard.curTask == Task.DEFEND) {
 			defend();
-		} else if (this.blackboard.curTask == Task.GoToBase)
+		} else if (this.blackboard.curTask == Task.GoToBase){
             goToBase();
 		} else if (this.blackboard.curTask == Task.EXPLORE) {
 			explore();
