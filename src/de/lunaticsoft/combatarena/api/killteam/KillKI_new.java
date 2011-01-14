@@ -87,7 +87,7 @@ public class KillKI_new implements IPlayer {
 				else
 					blackboard.curTask = Task.EXPLORE;
 			} else if (!objectStorage.getEnemyHangars().isEmpty()) {
-				blackboard.curTask = Task.RAPEaHANGAR;
+				blackboard.curTask = Task.LOOT_AND_BURN_HANGAR;
 
 			}
 		}
@@ -542,7 +542,7 @@ public class KillKI_new implements IPlayer {
 	public void notify(final StatusType type, final Object obj) {
 		switch (type) {
 		case HangarRemoved:
-			if (blackboard.curTask == Task.RAPEaHANGAR) {
+			if (blackboard.curTask == Task.LOOT_AND_BURN_HANGAR) {
 				
 				//todo so überarbeiten, das der task nur geändert wird wenn der aktuelle ziel hangar entfernt wurde:
 				blackboard.curTask = Task.EXPLORE;
@@ -566,7 +566,7 @@ public class KillKI_new implements IPlayer {
 	/**
 	 * berechnet pfad zu nächstem hangar in objectStorage objectStorage.getEnemyHangars();
 	 */
-	private void rapeHangar() {
+	private void lootAndBurnHangar() {
 		final Map<Point, MemorizedWorldObject> enemyHangars = objectStorage
 				.getEnemyHangars();
 		if (enemyHangars.size() >= 1) {
@@ -694,11 +694,9 @@ public class KillKI_new implements IPlayer {
 			if(updateNr - stoppedTimeStamp > 100)
 				this.blackboard.curTask = Task.EXPLORE;
 		}
-
-
 			
-		 else if (this.blackboard.curTask == Task.RAPEaHANGAR) {
-			rapeHangar();
+		 else if (this.blackboard.curTask == Task.LOOT_AND_BURN_HANGAR) {
+			lootAndBurnHangar();
 		}
 		
 		
