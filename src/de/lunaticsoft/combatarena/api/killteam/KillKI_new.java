@@ -48,11 +48,10 @@ public class KillKI_new implements IPlayer {
 	private Path<LinkedTile> path;
 	private LinkedTile moveTarget;
 	private boolean pathReset;
-	private LinkedTile lastPathTarget; //ziel der letzten Routenberechnung
-
+	private LinkedTile lastPathTarget; // ziel der letzten Routenberechnung
 
 	private Vector3f flagPos;
-	
+
 	private long updateNr;
 
 	// unknown
@@ -63,38 +62,39 @@ public class KillKI_new implements IPlayer {
 	private int WOExistanceUpdate = 0;
 	private final Queue<Vector3f> lastPositions;
 
-	
-	//CTF Stuff
-	private boolean iHaveTheFlag = false;
-	private boolean flagCollectet = false;
-	private boolean CTFmode = false; //muss true sein wenn CTF gespielt wird
+	// CTF Stuff
+	private boolean flagCollected = false;
+	private boolean CTFmode = true; // muss true sein wenn CTF gespielt wird
 	private boolean flagPosChanged;
-	
-	//Random f�r unstuck in update()
+
+	// Random f�r unstuck in update()
 	private java.util.Random rand;
 	private long stoppedTimeStamp;
-	
 
 	private void evalNextTask() {
 		if (blackboard.curTask == Task.DEFEND)
 			return;
-		else if (iHaveTheFlag && flagCollectet) {
+		else if (flagCollected) {
 			blackboard.curTask = Task.GoToBase;
-		} else if (blackboard.curTask == Task.EXPLORE) {
-			if (CTFmode) {
+		}
+		else if (flagPos != null) {
 				if (pathToFlagKnown()) {
 					blackboard.curTask = Task.CTF;
-				}
-				else
-					blackboard.curTask = Task.EXPLORE;
+				
 			} else if (!objectStorage.getEnemyHangars().isEmpty()) {
 				blackboard.curTask = Task.LOOT_AND_BURN_HANGAR;
 
 			}
+		} else
+			
+			
+			blackboard.curTask = Task.EXPLORE;
 		}
-	}
+	
+
 	private boolean pathToFlagKnown() {
-		if (map.calculatePath(map.getTileAtCoordinate(curPos), map.getTileAtCoordinate(flagPos)).isEmpty())
+		if (map.calculatePath(map.getTileAtCoordinate(curPos),
+				map.getTileAtCoordinate(flagPos)).isEmpty())
 			return false;
 		return true;
 	}
@@ -110,7 +110,7 @@ public class KillKI_new implements IPlayer {
 		this.path = new Path<LinkedTile>();
 		pathReset = true;
 		calibrated = false;
-		
+
 		lastPositions = new LinkedBlockingQueue<Vector3f>(2);
 		rand = new java.util.Random();
 
@@ -118,18 +118,20 @@ public class KillKI_new implements IPlayer {
 
 	// pr�ft ob Tank sich momentan auf moveTarget befindet
 	private boolean arrivedAtMoveTarget() {
-
 		if ((moveTarget != null) || (curTile != null))
 			return curTile.equals(moveTarget);
 		else
 			return false;
 	}
+
 	private void checkWorldObjectExistance() {
 		// tiles die der tank sehen kann
-		final List<LinkedTile> viewTiles = map.getTilesPossiblyInViewRange(world.getMyPosition().clone());
+		final List<LinkedTile> viewTiles = map
+				.getTilesPossiblyInViewRange(world.getMyPosition().clone());
 
 		// Objekte die laut Map im Sichtbereich sein sollten
-		final Set<MemorizedWorldObject> mapObjects = objectStorage.getObjectsAtTiles(viewTiles);
+		final Set<MemorizedWorldObject> mapObjects = objectStorage
+				.getObjectsAtTiles(viewTiles);
 
 		// entferne alle Objekte aus mapObjects die perceived wurden
 		for (final IWorldObject obj : perceivedObjects) {
@@ -148,12 +150,10 @@ public class KillKI_new implements IPlayer {
 	}
 
 	@Override
-
 	public void attacked(final IWorldObject competitor) {
 		final Vector3f enemy = competitor.getPosition();
 		String out = "Attacked by position " + enemy;
 		waffenAutomat.action(competitor);
-
 
 		// GOAP STUFF
 		blackboard.hitsTaken++;
@@ -229,6 +229,8 @@ public class KillKI_new implements IPlayer {
 				}
 			}
 			break;
+		case Flag:
+			flagCollected = true;
 		default:
 			// DO NOTHING
 			break;
@@ -238,7 +240,7 @@ public class KillKI_new implements IPlayer {
 	@Override
 	public void die() {
 		LinkedTile currentTile = this.map.getTileAtCoordinate(this.curPos);
-		if(currentTile != null && currentTile.isPassable){
+		if (currentTile != null && currentTile.isPassable) {
 			final WorldObject wO = new WorldObject(null, color, curPos,
 					EObjectTypes.Item);
 			this.objectStorage.storeObject(wO.getPosition(),
@@ -329,12 +331,12 @@ public class KillKI_new implements IPlayer {
 
 	/**
 	 * holt das n�chste moveTarget aus der Wegpunkt liste wenn man am wegpunkt
-	 * angekommen ist und f�hrt world.move aus um den Tank zum n�chsten Wegpunkt
-	 * zu f�hren wenn kein g�ltiges Ziel existiert h�lt der Tank
+	 * angekommen ist und f�hrt world.move aus um den Tank zum n�chsten
+	 * Wegpunkt zu f�hren wenn kein g�ltiges Ziel existiert h�lt der Tank
 	 * an(world.stop()) wenn path leer ist wird pathReset = true gesetzt
 	 * 
-	 * @return true wenn der tank momentan ein g�ltiges moveTarget hat wohin er
-	 *         sich bewegt
+	 * @return true wenn der tank momentan ein g�ltiges moveTarget hat wohin
+	 *         er sich bewegt
 	 */
 	private boolean moveToNextWaypoint() {
 		// wenn wir an aktuellen ziel angekommen sind oder keins existiert,
@@ -344,8 +346,7 @@ public class KillKI_new implements IPlayer {
 			// und n�chsten WEgpunkt holen:
 			if (!path.isEmpty()) {
 				moveTarget = path.getNextWaypoint();
-			}
-			else
+			} else
 				world.stop();
 		}
 		// wenn ziel nicht passierbar ist oder kein Ziel existiert,
@@ -354,7 +355,7 @@ public class KillKI_new implements IPlayer {
 				|| (moveTarget == null)) {
 			moveTarget = null;
 			pathReset = true;
-			
+
 			return false;
 		}
 		// zum n�chsten Ziel bewegen
@@ -376,17 +377,16 @@ public class KillKI_new implements IPlayer {
 		// then aim for tanks
 		if (o == null) {
 			o = getNearestObject(worldObjects, EObjectTypes.Competitor, 10);
-		}else System.out.println("greife Hangar an");
+		} else
+			System.out.println("greife Hangar an");
 
 		if (o != null) {
 			if (o.getType() == EObjectTypes.Competitor) {
 				waffenAutomat.action(o);
 			} else {
-				world.shoot(
-						this.curPos.subtract(o.getPosition()).negate(),
-						WaffenAutomat.getSpeed(45,
-								world.getMyPosition().distance(o.getPosition())),
-						45);
+				world.shoot(this.curPos.subtract(o.getPosition()).negate(),
+						WaffenAutomat.getSpeed(45, world.getMyPosition()
+								.distance(o.getPosition())), 45);
 			}
 		}
 
@@ -398,7 +398,7 @@ public class KillKI_new implements IPlayer {
 				if (wO.getColor() != this.color) {
 					this.objectStorage.storeObject(wO.getPosition(),
 							new MemorizedWorldObject(wO));
-		
+
 				}
 				break;
 			case Hangar:
@@ -410,8 +410,9 @@ public class KillKI_new implements IPlayer {
 				}
 				break;
 			case Item:
-				LinkedTile itemTile = this.map.getTileAtCoordinate(wO.getPosition());
-				if(itemTile != null && itemTile.isPassable){
+				LinkedTile itemTile = this.map.getTileAtCoordinate(wO
+						.getPosition());
+				if (itemTile != null && itemTile.isPassable) {
 					this.objectStorage.storeObject(wO.getPosition(),
 							new MemorizedWorldObject(wO));
 				}
@@ -423,7 +424,7 @@ public class KillKI_new implements IPlayer {
 			default:
 			}
 		}
-	
+
 	}
 
 	private Vector3f rotateVector(final Vector3f vec, final float phi) {
@@ -541,16 +542,18 @@ public class KillKI_new implements IPlayer {
 		blackboard.inHangar = true;
 
 	}
-	//??? :)
+
+	// ??? :)
 	public void notify(final StatusType type, final Object obj) {
 		switch (type) {
 		case HangarRemoved:
 			if (blackboard.curTask == Task.LOOT_AND_BURN_HANGAR) {
-				
-				//todo so �berarbeiten, das der task nur ge�ndert wird wenn der aktuelle ziel hangar entfernt wurde:
+
+				// todo so �berarbeiten, das der task nur ge�ndert wird wenn
+				// der aktuelle ziel hangar entfernt wurde:
 				blackboard.curTask = Task.EXPLORE;
-				pathReset =true; //pfad soll neu berechnet werden
-				
+				pathReset = true; // pfad soll neu berechnet werden
+
 				final MemorizedWorldObject hangar = (MemorizedWorldObject) obj;
 				System.out.println("Tank " + name + " was notified about "
 						+ type + " at Position " + hangar.getPosition());
@@ -567,71 +570,85 @@ public class KillKI_new implements IPlayer {
 	}
 
 	/**
-	 * berechnet pfad zu n�chstem hangar in objectStorage objectStorage.getEnemyHangars();
+	 * berechnet pfad zu n�chstem hangar in objectStorage
+	 * objectStorage.getEnemyHangars();
 	 */
 	private void lootAndBurnHangar() {
 		final Map<Point, MemorizedWorldObject> enemyHangars = objectStorage
 				.getEnemyHangars();
 		if (enemyHangars.size() >= 1) {
-			final MemorizedWorldObject[] hangars = new MemorizedWorldObject[enemyHangars.values().size()];
+			final MemorizedWorldObject[] hangars = new MemorizedWorldObject[enemyHangars
+					.values().size()];
 			enemyHangars.values().toArray(hangars);
-		
-			//wenn ein hangar in der map existiert, pfad zu diesem berechnen	
-			final LinkedTile target = map.getTileAtCoordinate(hangars[0].getPosition());
-			if(curPos.distance(target.getTileCenterCoordinates()) <40){
-				System.out.println("halte an, befinde mich vor gegnerischem Hangar "+target);
 
-				this.stoppedTimeStamp = updateNr; //w�rgaround, bis es funktioniert das hangar korrekt als zerst�rt gemeldet werden
-				//wenn entfernung zum hangar weniger als X betr�gt, das moveTarget auf den derzeitigen tile setzen => anhalten	
-	
-					path = new Path<LinkedTile>();
+			// wenn ein hangar in der map existiert, pfad zu diesem berechnen
+			final LinkedTile target = map.getTileAtCoordinate(hangars[0]
+					.getPosition());
+			if (curPos.distance(target.getTileCenterCoordinates()) < 40) {
+				System.out
+						.println("halte an, befinde mich vor gegnerischem Hangar "
+								+ target);
 
-				moveTarget = curTile; 
+				this.stoppedTimeStamp = updateNr; // w�rgaround, bis es
+													// funktioniert das hangar
+													// korrekt als zerst�rt
+													// gemeldet werden
+				// wenn entfernung zum hangar weniger als X betr�gt, das
+				// moveTarget auf den derzeitigen tile setzen => anhalten
+
+				path = new Path<LinkedTile>();
+
+				moveTarget = curTile;
 				blackboard.curTask = Task.STOPATHANGAR;
-		} else if (!target.equals(lastPathTarget)) {
+			} else if (!target.equals(lastPathTarget)) {
 				pathReset = true;
-				System.out.println("berechne Pfad zu Hangar"+ target);
+				System.out.println("berechne Pfad zu Hangar" + target);
 				calcPathTo(target);
 			}
 
-			//wenn kein hangar existiert:
+			// wenn kein hangar existiert:
 		} else {
 
-			System.out.println("kein hangar existiert zu dem ein pfad berechnen kann");
+			System.out
+					.println("kein hangar existiert zu dem ein pfad berechnen kann");
 			pathReset = true;
 			blackboard.curTask = Task.EXPLORE;
 		}
 	}
+
 	private boolean stuck() {
 		boolean stuck = false;
-		
-		//stucken nicht, haben ziel erreicht:
-		if((moveTarget != null && moveTarget.equals(curTile) || moveTarget == null) || moveTarget.getTileCenterCoordinates().distance(curPos) < 3)
+
+		// stucken nicht, haben ziel erreicht:
+		if ((moveTarget != null && moveTarget.equals(curTile) || moveTarget == null)
+				|| moveTarget.getTileCenterCoordinates().distance(curPos) < 3)
 			return false;
 		else if (lastPositions.size() > 1) {
 			final Vector3f comparisonPosition = this.lastPositions.poll();
 
 			if ((comparisonPosition != null)
-					&& (Math.abs(comparisonPosition.distance(curPos)) < 0.015f)) {
+					&& (Math.abs(comparisonPosition.distance(curPos)) < 0.010f)) {
 				stuck = true;
 			}
 		}
 		this.lastPositions.add(curPos);
 		return stuck;
 	}
+
 	/**
-	 * berechnet neuen zirkularen Pfad um Hangar herum, wenn der Tank noch im Hangar steht wird explore genutzt um vom hangar wegzufahren
+	 * berechnet neuen zirkularen Pfad um Hangar herum, wenn der Tank noch im
+	 * Hangar steht wird explore genutzt um vom hangar wegzufahren
 	 * 
 	 */
 
 	public void defend() {
-		//mithilfe explore vom hangar wegfahren :)
-		if (blackboard.inHangar && world.getMyPosition().distance(spawnPos) > 25) {
+		// mithilfe explore vom hangar wegfahren :)
+		if (blackboard.inHangar
+				&& world.getMyPosition().distance(spawnPos) > 25) {
 			blackboard.inHangar = false;
-			pathReset=true;
+			pathReset = true;
 		}
 
-		
 		if (!blackboard.inHangar) {
 			if (pathReset) {
 				final float distance = 25;
@@ -656,21 +673,22 @@ public class KillKI_new implements IPlayer {
 
 				pathReset = false;
 			}
-			
+
 		}
-		//wenn wir uns noch im hangar befinden, rausfahren
-		else{
+		// wenn wir uns noch im hangar befinden, rausfahren
+		else {
 			explore();
 		}
-			
+
 	}
 
-	public void goToBase(){
+	public void goToBase() {
 		if (!map.getTileAtCoordinate(spawnPos).equals(lastPathTarget)) {
-            pathReset = true;
-            calcPathTo(map.getTileAtCoordinate(spawnPos));
-        }
-    }
+			pathReset = true;
+			calcPathTo(map.getTileAtCoordinate(spawnPos));
+		}
+	}
+
 	@Override
 	public void update(final float interpolation) {
 		updateNr++;
@@ -682,30 +700,32 @@ public class KillKI_new implements IPlayer {
 		evalNextTask();
 		curPos = world.getMyPosition();
 		curTile = map.getTileAtCoordinate(curPos);
-		
+
 		if (this.blackboard.curTask == Task.DEFEND) {
 			defend();
-		} else if (this.blackboard.curTask == Task.GoToBase){
-            goToBase();
+		} else if (this.blackboard.curTask == Task.GoToBase) {
+			goToBase();
 		} else if (this.blackboard.curTask == Task.EXPLORE) {
 			explore();
 		} else if (this.blackboard.curTask == Task.CTF) {
-            //todo zu aufwendig bei jeder kleiner flaggen bewegung pfad neukalkulieren, besser nur jede X zyklen neu generieren
+			// todo zu aufwendig bei jeder kleiner flaggen bewegung pfad
+			// neukalkulieren, besser nur jede X zyklen neu generieren
 			if (flagPosChanged) {
 				pathReset = true;
 				calcPathTo(map.getTileAtCoordinate(flagPos));
+				flagPosChanged = false;
 			}
-		} else if(this.blackboard.curTask == Task.STOPATHANGAR){
-			if(updateNr - stoppedTimeStamp > 20)
+		} else if (this.blackboard.curTask == Task.STOPATHANGAR) {
+			if (updateNr - stoppedTimeStamp > 20)
 				this.blackboard.curTask = Task.EXPLORE;
-		} 
-			
-		 else if (this.blackboard.curTask == Task.LOOT_AND_BURN_HANGAR) {
+		}
+
+		else if (this.blackboard.curTask == Task.LOOT_AND_BURN_HANGAR) {
 			lootAndBurnHangar();
 		}
-		
-		
-		//wenn wir feststecken erstmal random bewegen, einen zug + pathreseten:)
+
+		// wenn wir feststecken erstmal random bewegen, einen zug +
+		// pathreseten:)
 		if (stuck()) {
 			System.out.println(name + " steckt fest. Sein Ziel ist "
 					+ moveTarget + "seine Aufgabe: " + blackboard.curTask
@@ -721,9 +741,33 @@ public class KillKI_new implements IPlayer {
 			pathReset = true;
 			world.move(unstuckDirection);
 		}
-		//wenn wir nicht mehr festecken nach den Wegpunkten berechnen
+		// wenn wir nicht mehr festecken nach den Wegpunkten berechnen
 		else
-		
+
 			moveToNextWaypoint();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * de.lunaticsoft.combatarena.api.interfaces.IPlayer#setFlagPos(com.jme.
+	 * math.Vector3f)
+	 */
+	@Override
+	public void setFlagPos(Vector3f flagPos) {
+		this.flagPos = flagPos;
+		flagPosChanged = true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.lunaticsoft.combatarena.api.interfaces.IPlayer#flagInBase()
+	 */
+	@Override
+	public void flagInBase() {
+		flagCollected = false;
+
 	}
 }

@@ -49,7 +49,7 @@
           target: dist-jar              
          ================================= -->
 	<target name="distjar" depends="clean,compile" description="Create a jar">
-		<jar destfile="${deploy.dir}/killteam.jar" includes="**/*.{class|xml}">
+		<jar destfile="${deploy.dir}/killteam2.jar" includes="**/*.{class|xml}">
 			<fileset dir="${build.dir}" />
 		</jar>
 	</target>
