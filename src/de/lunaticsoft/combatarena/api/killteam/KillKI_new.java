@@ -136,9 +136,7 @@ public class KillKI_new implements IPlayer {
 		// entferne alle Objekte aus mapObjects die perceived wurden
 		for (final IWorldObject obj : perceivedObjects) {
 			MemorizedWorldObject memo = new MemorizedWorldObject(obj);
-			if (mapObjects.contains(memo)) {
 				mapObjects.remove(memo);
-			}
 		}
 
 		// die verbleibenden Objekte in mapObjects haetten perceived werden
@@ -377,12 +375,8 @@ public class KillKI_new implements IPlayer {
 		// then aim for tanks
 		if (o == null) {
 			o = getNearestObject(worldObjects, EObjectTypes.Competitor, 10);
-<<<<<<< HEAD
+
 		}//else System.out.println("greife Hangar an");
-=======
-		} else
-			System.out.println("greife Hangar an");
->>>>>>> 560131595f928a16c1360f79dcddb75a8ff7c802
 
 		if (o != null) {
 			if (o.getType() == EObjectTypes.Competitor) {
@@ -584,7 +578,6 @@ public class KillKI_new implements IPlayer {
 			final MemorizedWorldObject[] hangars = new MemorizedWorldObject[enemyHangars
 					.values().size()];
 			enemyHangars.values().toArray(hangars);
-<<<<<<< HEAD
 		
 			//wenn ein hangar in der map existiert, pfad zu diesem berechnen	
 			final LinkedTile target = map.getTileAtCoordinate(hangars[0].getPosition());
@@ -595,47 +588,18 @@ public class KillKI_new implements IPlayer {
 				//wenn entfernung zum hangar weniger als X betr�gt, das moveTarget auf den derzeitigen tile setzen => anhalten	
 	
 					path = new Path<LinkedTile>();
-=======
->>>>>>> 560131595f928a16c1360f79dcddb75a8ff7c802
-
-			// wenn ein hangar in der map existiert, pfad zu diesem berechnen
-			final LinkedTile target = map.getTileAtCoordinate(hangars[0]
-					.getPosition());
-			if (curPos.distance(target.getTileCenterCoordinates()) < 40) {
-				System.out
-						.println("halte an, befinde mich vor gegnerischem Hangar "
-								+ target);
-
-				this.stoppedTimeStamp = updateNr; // w�rgaround, bis es
-													// funktioniert das hangar
-													// korrekt als zerst�rt
-													// gemeldet werden
-				// wenn entfernung zum hangar weniger als X betr�gt, das
-				// moveTarget auf den derzeitigen tile setzen => anhalten
-
-				path = new Path<LinkedTile>();
 
 				moveTarget = curTile;
 				blackboard.curTask = Task.STOPATHANGAR;
 			} else if (!target.equals(lastPathTarget)) {
 				pathReset = true;
-<<<<<<< HEAD
 //				System.out.println("berechne Pfad zu Hangar"+ target);
-=======
-				System.out.println("berechne Pfad zu Hangar" + target);
->>>>>>> 560131595f928a16c1360f79dcddb75a8ff7c802
 				calcPathTo(target);
 			}
 
 			// wenn kein hangar existiert:
 		} else {
-
-<<<<<<< HEAD
 //			System.out.println("kein hangar existiert zu dem ein pfad berechnen kann");
-=======
-			System.out
-					.println("kein hangar existiert zu dem ein pfad berechnen kann");
->>>>>>> 560131595f928a16c1360f79dcddb75a8ff7c802
 			pathReset = true;
 			blackboard.curTask = Task.EXPLORE;
 		}

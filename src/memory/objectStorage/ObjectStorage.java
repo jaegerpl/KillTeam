@@ -65,6 +65,7 @@ public class ObjectStorage {
 	}
 	
 	synchronized public void removeObject(MemorizedWorldObject object) {
+		removeFromObjectsMap(object);
 		Point objectPosition = FastRoutableWorldMap.coordinates2MapIndex(object.getPosition());
 		switch(object.getType()) {
 			case Competitor:
@@ -87,7 +88,6 @@ public class ObjectStorage {
 				break;
 		}
 		knownObjects.remove(object);
-		removeFromObjectsMap(object);
 	}
 	
 	synchronized public Map<Point, MemorizedWorldObject> getEnemyTanks() {
@@ -188,23 +188,17 @@ public class ObjectStorage {
 	 * @param tiles
 	 * @return
 	 */
-//	public List<MemorizedWorldObject> getObjectsAtTiles(List<LinkedTile> tiles){
-		public Set<MemorizedWorldObject> getObjectsAtTiles(List<LinkedTile> tiles){
-		ArrayList<MemorizedWorldObject> list = new ArrayList<MemorizedWorldObject>();
+	public Set<MemorizedWorldObject> getObjectsAtTiles(List<LinkedTile> tiles){
 		Set<MemorizedWorldObject> set = new HashSet<MemorizedWorldObject>();
 		
 		for(LinkedTile tile : tiles){
 			if(objectsMap.containsKey(tile)){
 				List<MemorizedWorldObject> list2 = objectsMap.get(tile);
 					for(MemorizedWorldObject memo : list2){
-//						if(!list.contains(memo)){
-//							list.add(memo);
-//						}
 						set.add(memo);
 				}			
 			}
 		}
-//		return list;
 		return set;
 	}
 }
