@@ -208,11 +208,11 @@ public class KillKI_new implements IPlayer {
 		counterBack--;
 		this.viewRangeRadius = (counterFront + counterBack) / 2;
 		this.viewRangeOffset = this.viewRangeRadius - counterBack;
-		System.out.println("Radius: " + viewRangeRadius);
-		System.out.println("Offset: " + viewRangeOffset);
-		System.out.println();
-		System.out.println("Front: " + counterFront);
-		System.out.println("Back: " + counterBack);
+//		System.out.println("Radius: " + viewRangeRadius);
+//		System.out.println("Offset: " + viewRangeOffset);
+//		System.out.println();
+//		System.out.println("Front: " + counterFront);
+//		System.out.println("Back: " + counterBack);
 		this.calibrated = true;
 	}
 
@@ -250,7 +250,7 @@ public class KillKI_new implements IPlayer {
 
 	private void explore() {
 		if (pathReset) {
-			System.out.println("berechen neues explore ziel");
+//			System.out.println("berechen neues explore ziel");
 			// n�chstes ZIel am ende des Sichtbereiches in tile umwandeln
 			final Vector3f targetPos = this.curPos.add(curDirection.normalize()
 					.mult(60));
@@ -376,7 +376,7 @@ public class KillKI_new implements IPlayer {
 		// then aim for tanks
 		if (o == null) {
 			o = getNearestObject(worldObjects, EObjectTypes.Competitor, 10);
-		}else System.out.println("greife Hangar an");
+		}//else System.out.println("greife Hangar an");
 
 		if (o != null) {
 			if (o.getType() == EObjectTypes.Competitor) {
@@ -445,10 +445,10 @@ public class KillKI_new implements IPlayer {
 		final Vector3f voraus = curPos.add(world.getMyDirection().clone()
 				.normalize().mult(2));
 		if (null == voraus) {
-			System.out.println("Voraus ist NULL!!!");
+//			System.out.println("Voraus ist NULL!!!");
 		}
 		if ((voraus.x > 10000) || (voraus.z > 10000)) {
-			System.out.println("Alerm!");
+//			System.out.println("Alerm!");
 		}
 		if ((null != world.getTerrainNormal(voraus))
 				&& !world.isPassable(voraus)) {
@@ -470,7 +470,7 @@ public class KillKI_new implements IPlayer {
 		if (!tile.isExplored()) {
 			if ((tile.mapIndex.x > 60) || (tile.mapIndex.y > 60)
 					|| (tile.mapIndex.x < 0) || (tile.mapIndex.y < 0)) {
-				System.out.println("Debug mich");
+//				System.out.println("Debug mich");
 			}
 			boolean isPassable = true;
 			boolean isWater = false;
@@ -552,8 +552,8 @@ public class KillKI_new implements IPlayer {
 				pathReset =true; //pfad soll neu berechnet werden
 				
 				final MemorizedWorldObject hangar = (MemorizedWorldObject) obj;
-				System.out.println("Tank " + name + " was notified about "
-						+ type + " at Position " + hangar.getPosition());
+//				System.out.println("Tank " + name + " was notified about "
+//						+ type + " at Position " + hangar.getPosition());
 				if (blackboard.spottedHangar == hangar) {
 					final EColors color = hangar.getColor();
 					final Object[] hangars = objectStorage
@@ -579,7 +579,7 @@ public class KillKI_new implements IPlayer {
 			//wenn ein hangar in der map existiert, pfad zu diesem berechnen	
 			final LinkedTile target = map.getTileAtCoordinate(hangars[0].getPosition());
 			if(curPos.distance(target.getTileCenterCoordinates()) <40){
-				System.out.println("halte an, befinde mich vor gegnerischem Hangar "+target);
+//				System.out.println("halte an, befinde mich vor gegnerischem Hangar "+target);
 
 				this.stoppedTimeStamp = updateNr; //w�rgaround, bis es funktioniert das hangar korrekt als zerst�rt gemeldet werden
 				//wenn entfernung zum hangar weniger als X betr�gt, das moveTarget auf den derzeitigen tile setzen => anhalten	
@@ -590,14 +590,14 @@ public class KillKI_new implements IPlayer {
 				blackboard.curTask = Task.STOPATHANGAR;
 		} else if (!target.equals(lastPathTarget)) {
 				pathReset = true;
-				System.out.println("berechne Pfad zu Hangar"+ target);
+//				System.out.println("berechne Pfad zu Hangar"+ target);
 				calcPathTo(target);
 			}
 
 			//wenn kein hangar existiert:
 		} else {
 
-			System.out.println("kein hangar existiert zu dem ein pfad berechnen kann");
+//			System.out.println("kein hangar existiert zu dem ein pfad berechnen kann");
 			pathReset = true;
 			blackboard.curTask = Task.EXPLORE;
 		}

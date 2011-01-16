@@ -15,9 +15,7 @@ public interface IWaffenAutomat {
 	
 	public void saveX1(Vector3f vector3f);
 	public void saveX2(Vector3f vector3f);
-	public Vector3f getX3();
 	public void shoot(IWorldObject worldObject);
-	public void shoot2(IWorldObject worldObject);
 	
 	public IWorldInstance getWorld();
 	public float getForce();

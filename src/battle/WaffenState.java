@@ -22,7 +22,7 @@ public enum WaffenState implements IWaffenState {
 			
 		@Override
 		public void action(IWaffenAutomat a,IWorldObject worldObject) {
-			a.shoot2(worldObject);
+			a.shoot(worldObject);
 			a.setState(Idle);	
 		}}
 		;
