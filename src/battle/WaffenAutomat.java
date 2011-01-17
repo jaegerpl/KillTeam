@@ -5,6 +5,7 @@ import com.jme.math.Vector3f;
 
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldObject;
+import de.lunaticsoft.combatarena.objects.WorldObject;
 
 /**
  * @author pascal
@@ -65,7 +66,7 @@ public class WaffenAutomat implements IWaffenAutomat {
 	 * 
 	 * @return
 	 */
-	public double berechneZielSpeed(){
+	public float berechneZielSpeed(){
 		float distance = X2.distance(X1);
 		distance = Math.abs(distance);
 		
@@ -144,6 +145,7 @@ public class WaffenAutomat implements IWaffenAutomat {
 
 		// berechne Ziel Geschwindigkeit
 		float ZielSpeed = (float) berechneZielSpeed(); // DONE
+		Vector3f ZielDirection = berechneZielDirection();
 
 		// berechne Kugel Geschwindigkeit
 		Vector3f myPosition = world.getMyPosition().clone();
@@ -221,114 +223,30 @@ public class WaffenAutomat implements IWaffenAutomat {
 	}
 	
 	
-	public Vector3f optimaleRichtung(
-			float kugelspeed1,
-			float kugelspeed2,
-			float angle,
-			float distance,
-			float zielspeed,
-			IWorldObject worldObject,
-			Vector3f treffpunkt, int count){
-		
-		Vector3f treffPunkt = treffpunkt;
-		float KugelSpeedNew=0;
-		float schussWinkel=Angle;
-		float kugelspeedMittel;
-		float VorschussX=0,VorschussZ = 0;
-		float KugelTimeMittel;
-		
-//		kugelspeedMittel = (kugelspeed1 + kugelspeed2)/2;
-		kugelspeedMittel = kugelspeed1;
-		KugelSpeedNew = kugelspeed2;
-		
-		while(count!=0){
-			treffPunkt = new Vector3f();
-			kugelspeedMittel = (kugelspeedMittel + KugelSpeedNew) / 2;
-			
-//			KugelTimeMittel = (float) (distance / kugelspeedMittel * Math.cos(Math.toRadians(schussWinkel)));
-			KugelTimeMittel = (float) Math.sqrt((distance / 49.05f) * Math.tan(Math.toRadians(schussWinkel)));
-			VorschussZ = zielspeed * KugelTimeMittel * FastMath.sin(angle);
-			VorschussX = zielspeed * KugelTimeMittel * FastMath.cos(angle);
-			
-			
-			VorschussX = Math.abs(VorschussX);
-			VorschussZ = Math.abs(VorschussZ);
-			
-//			Punkt an dem sich das Ziel und Geschoss treffen
-			Vector3f Punkt = worldObject.getPosition().clone();
-		    
-//		    float x = Punkt.getX() - VorschussX;
-//			float z = Punkt.getZ() - VorschussZ;
-			float x = 0;
-			float z = 0;
-			if(X2.x == X1.x){
-				x = Punkt.getX();
-			}else if(X2.x > X1.x){
-				x = Punkt.getX() + VorschussX;
-			}else{
-				x = Punkt.getX() - VorschussX;
-			}
-			
-			if(X2.z == X1.z){
-				z = Punkt.getZ();
-			}else if(X2.z > X1.z){
-				z = Punkt.getZ() + VorschussZ;
-			}else{
-				z = Punkt.getZ() - VorschussZ;
-			}
-			treffPunkt.setX(x);
-			treffPunkt.setY(Punkt.getY());
-			treffPunkt.setZ(z);
-			
-			distance = world.getMyPosition().clone().distance(treffPunkt);
-			
-			KugelSpeedNew = getSpeed(schussWinkel,distance);
-//			this.Force = (Force + KugelSpeedNew) / 2;
-			
-			count--;
-		}
-//		System.out.println("VorschussZ = "+VorschussZ);
-//		System.out.println("VorschussX = "+VorschussX);
-//		System.out.println("treffPunkt = "+treffPunkt);
-		return treffPunkt;
-		
+	/**
+	 * Berechnet die Richtung, in die sich das Ziel bewegt
+	 * 
+	 * @return
+	 */
+	private Vector3f berechneZielDirection() {
+		return X2.clone().subtract(X1).normalize().clone();
 	}
-	
-	public float getAngleGrad(Vector3f me,Vector3f x1,Vector3f x2){
-		float a,b,c,cosAlfa,Alfa=0,tgAlfa;
-		
-//		System.out.println("me = "+me);
-//		System.out.println("x1 = "+x1);
-//		System.out.println("x2 = "+x2);
-		
-		c = (me.x - x2.x)*(me.x - x2.x) + (me.z - x2.z)*(me.z - x2.z);
-		c = FastMath.sqrt(c);
-		
-		a = (me.x - x1.x)*(me.x - x1.x) + (me.z - x1.z)*(me.z - x1.z);
-		a = FastMath.sqrt(a);
-		
-		b = (x1.x - x2.x)*(x1.x - x2.x) + (x1.z - x2.z)*(x1.z - x2.z);
-		b = FastMath.sqrt(b);
-		
-		cosAlfa = (b*b + c*c - a*a)/(2*b*c);
-		
-		tgAlfa = 1/(cosAlfa*cosAlfa) - 1;
-		tgAlfa = FastMath.sqrt(tgAlfa);
-		
-		Alfa = FastMath.atan(tgAlfa);
-		
-		Alfa = Alfa*FastMath.RAD_TO_DEG;
-		Alfa = 180 - Alfa;
 
+
+	public void shoot2(IWorldObject target){
+		float time = 1f; // halbe sekunde nach dem messen soll das ziel getroffen werden
+		float angle = 30;
+		float targetSpeed = berechneZielSpeed();
+		Vector3f targetDirection = berechneZielDirection();
+		Vector3f hitPosition = X2.clone();
+		hitPosition.addLocal(targetDirection.mult(targetSpeed*time));
 		
-		float alfa2,sinalfa;
-		sinalfa = 1 - cosAlfa*cosAlfa;
-		sinalfa = FastMath.sqrt(sinalfa);
+		Vector3f myPosition = world.getMyPosition().clone();
+		float distance = myPosition.distance(hitPosition);
+		float force = getSpeed(angle, distance);
 		
-		alfa2 = FastMath.atan2(sinalfa, cosAlfa);
-		alfa2 = alfa2*FastMath.RAD_TO_DEG;
-		alfa2 = 180 - alfa2;
-//		System.out.println("alfa2 = "+alfa2);
-		return alfa2;
+		Vector3f shootDirection = hitPosition.subtract(myPosition);
+		world.shoot(shootDirection, force, angle);
+		
 	}
 }
