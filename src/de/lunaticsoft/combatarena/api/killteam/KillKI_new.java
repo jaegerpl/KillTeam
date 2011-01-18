@@ -267,6 +267,8 @@ public class KillKI_new implements IPlayer {
 			this.objectStorage.storeObject(wO.getPosition(),
 					new MemorizedWorldObject(wO));
 		}
+		
+		this.blackboard.curTask = this.startTask;
 		// GOAP STUFF
 		globalKI.removeTank(this); // deregister tank in globalKI
 	}
@@ -410,10 +412,12 @@ public class KillKI_new implements IPlayer {
 			if (arrivedAtMoveTarget() || (moveTarget == null)) {
 				moveTarget = null;
 				// und naechsten Wegpunkt holen:
-				if (!path.isEmpty()) {
+				if (null != path && !path.isEmpty()) {
 					moveTarget = path.getNextWaypoint();
-				} else
-					world.stop();
+				} else{
+					this.world.stop();
+					this.isInvalidPath = true;
+				}
 			}
 			// wenn ziel nicht passierbar ist oder kein Ziel existiert,
 			// pathReset=true
@@ -613,6 +617,10 @@ public class KillKI_new implements IPlayer {
 		globalKI.registerTank(this); // register tank in globalKI
 		blackboard.direction = curDirection;
 		blackboard.inHangar = true;
+		
+		this.isInvalidPath = true;
+		moveTarget = null;
+		path = null;
 		
 		this.blackboard.curTask = startTask;
 
