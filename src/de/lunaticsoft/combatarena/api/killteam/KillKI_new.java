@@ -81,10 +81,8 @@ public class KillKI_new implements IPlayer {
 
 	
 	private void evalNextTask() {
-		if (blackboard.curTask == Task.DEFEND)
+		if (blackboard.curTask == Task.DEFEND) {
 			return;
-		else if (iHaveTheFlag && flagCollected) {
-			blackboard.curTask = Task.GoToBase;
 		} else if (blackboard.curTask == Task.EXPLORE) {
 			if (CTFmode) {
 				if (pathToFlagKnown()) {
@@ -114,6 +112,8 @@ public class KillKI_new implements IPlayer {
 			return false;
 		return true;
 	}
+	
+
 
 	public KillKI_new(final String name, final GlobalKI globalKI,
 			final Task task) {
@@ -248,6 +248,8 @@ public class KillKI_new implements IPlayer {
 			break;
 		case Flag:
 			flagCollected = true;
+			iHaveTheFlag = true;
+			iGotTheFlag();
 		default:
 			// DO NOTHING
 			break;
@@ -790,21 +792,19 @@ public class KillKI_new implements IPlayer {
 		evalNextTask();
 		curPos = world.getMyPosition();
 		curTile = map.getTileAtCoordinate(curPos);
-		
-		if(iHaveTheFlag) {
-System.out.println(name + ": " + curPos);
-		}
-		
+
 		if (this.blackboard.curTask == Task.DEFEND) {
 			defend();
 		} else if (this.blackboard.curTask == Task.CRUISE_MAP) {
 			cruiseMap();
-		} else if (this.blackboard.curTask == Task.GoToBase) {
-			goToBase();
 		} else if (this.blackboard.curTask == Task.EXPLORE) {
 			explore();
 		} else if (this.blackboard.curTask == Task.CTF_RETURN_TO_BASE) {
-			deliverFlag();
+			deliverFlag();		
+			if(20 >= curPos.subtract(spawnPos).length()) {
+				moveDirection = spawnPos.subtract(curPos);
+			}
+			
 			if(curPos.equals(spawnPos) && iHaveTheFlag) {
 				iDeliveredTheFlag();
 			}
@@ -822,9 +822,6 @@ System.out.println(name + ": " + curPos);
 			if(20 >= curPos.subtract(flagPos).length()) {
 				moveDirection = flagPos.subtract(curPos);
 			}
-			if(curPos.equals(flagPos)) {
-				iGotTheFlag();
-			}
 			
 			
 		} else if (this.blackboard.curTask == Task.STOPATHANGAR) {
@@ -840,6 +837,9 @@ System.out.println(name + ": " + curPos);
 		// wenn wir feststecken erstmal random bewegen, einen zug +
 		// pathreseten:)
 		if (stuck()) {
+			if(this.blackboard.curTask == Task.CTF_GET_THE_FLAG) {
+				calcPathTo(map.getTileAtCoordinate(flagPos));
+			}
 			System.out.println(name + " steckt fest. Sein Ziel ist "
 					+ moveTarget + "seine Aufgabe: " + blackboard.curTask
 					+ "und er befindet sich an Position "
@@ -899,6 +899,7 @@ System.out.println(name + ": " + curPos);
 	 */
 	@Override
 	public void setFlagPos(Vector3f flagPos) {
+System.out.println(flagPos);		
 		this.CTFmode = true;
 		this.flagPos = flagPos;
 		flagPosChanged = true;
