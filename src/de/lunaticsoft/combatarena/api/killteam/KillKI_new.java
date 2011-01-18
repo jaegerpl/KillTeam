@@ -714,10 +714,13 @@ public class KillKI_new implements IPlayer {
 		} else if (this.blackboard.curTask == Task.CTF) {
 			// todo zu aufwendig bei jeder kleiner flaggen bewegung pfad
 			// neukalkulieren, besser nur jede X zyklen neu generieren
-			if (flagPosChanged) {
-				pathReset = true;
-				calcPathTo(map.getTileAtCoordinate(flagPos));
-				flagPosChanged = false;
+			//alle 10 zyklen
+			if(this.updateNr%10 == 0){
+				if (flagPosChanged) {
+					pathReset = true;
+					calcPathTo(map.getTileAtCoordinate(flagPos));
+					flagPosChanged = false;
+				}
 			}
 		} else if (this.blackboard.curTask == Task.STOPATHANGAR) {
 			if (updateNr - stoppedTimeStamp > 20)
