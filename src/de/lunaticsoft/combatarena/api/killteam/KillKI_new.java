@@ -772,11 +772,6 @@ public class KillKI_new implements IPlayer {
 		System.out.println("########################### I GOT THE FLAG!! " + name);
 	}
 	
-	protected void iDeliveredTheFlag() {
-		this.iHaveTheFlag = false;
-		this.blackboard.curTask = Task.CTF_GET_THE_FLAG;
-	}
-	
 	protected void deliverFlag() {
 		System.out.println(curPos);
 		if(null == path || path.isEmpty()) {
@@ -809,9 +804,6 @@ public class KillKI_new implements IPlayer {
 				moveDirection = spawnPos.subtract(curPos);
 			}
 			
-			if(curPos.equals(spawnPos) && iHaveTheFlag) {
-				iDeliveredTheFlag();
-			}
 		} else if (this.blackboard.curTask == Task.CTF_GET_THE_FLAG) {
 			// todo zu aufwendig bei jeder kleiner flaggen bewegung pfad
 			// neukalkulieren, besser nur jede X zyklen neu generieren
@@ -903,7 +895,6 @@ public class KillKI_new implements IPlayer {
 	 */
 	@Override
 	public void setFlagPos(Vector3f flagPos) {
-System.out.println(flagPos);		
 		this.CTFmode = true;
 		this.flagPos = flagPos;
 		flagPosChanged = true;
@@ -917,7 +908,8 @@ System.out.println(flagPos);
 	@Override
 	public void flagInBase() {
 		flagCollected = false;
-
+		iHaveTheFlag = false;
+		this.blackboard.curTask  = Task.EXPLORE;
 	}
 	
 	public Task getTask(){
