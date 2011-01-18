@@ -73,6 +73,9 @@ public class KillKI_new implements IPlayer {
 	// Random fuer unstuck in update()
 	private java.util.Random rand;
 	private long stoppedTimeStamp;
+	
+	// Item oder Flag einsammeln
+	private boolean pathToObjectCalculated = false;
 
 	
 	private void evalNextTask() {
@@ -94,6 +97,12 @@ public class KillKI_new implements IPlayer {
 		} else if(blackboard.toolBoxSpotted == true){
 			blackboard.oldTask = blackboard.curTask;
 			blackboard.curTask = Task.ITEMCOLLECTING;
+			System.out.println("ITEMCOLLECTING STATE");
+		} else if(blackboard.toolBoxCollected == true){
+			blackboard.toolBoxCollected = false;
+			blackboard.curTask = blackboard.oldTask; // alten Taks wieder herstellen
+			blackboard.oldTask = null;
+			System.out.println("LEAVE ITEMCOLLECTING STATE");
 		}
 	}
 	
@@ -231,9 +240,9 @@ public class KillKI_new implements IPlayer {
 					blackboard.spottedToolBox = null;
 					blackboard.toolBoxCollected = true;
 					blackboard.hitsTaken = 0;
-					// TODO update object storage
 				}
 			}
+			System.out.println("KISTE EINGESAMMELT");
 			break;
 		case Flag:
 			flagCollected = true;
@@ -264,7 +273,7 @@ public class KillKI_new implements IPlayer {
 					.mult(60));
 			final LinkedTile targetTile = map.getTileAtCoordinate(targetPos);
 			if (!targetTile.isExplored()) {
-				System.out.println("Target Tile ist NOT EXPLORED");
+//				System.out.println("Target Tile ist NOT EXPLORED");
 				if (targetTile.isPassable()) {
 					// Wenn tile noch nicht erkundet + betretbar ist, dieses
 					// tile als neues Routenziel benutzen:
@@ -280,12 +289,12 @@ public class KillKI_new implements IPlayer {
 			// wenn tile bereits explorierbar ist, neues unexplored Tile 
 			// von der map besorgen:
 			else {
-				System.out.println("Target Tile IS EXLORED");
+//				System.out.println("Target Tile IS EXLORED");
 				final TreeMap<Integer, LinkedTile> sortedTiles = map
 						.getUnexploredTilesSortedByDistance(curPos);
 				// move to the nearest unexplored target, if one exists
 				if(!sortedTiles.isEmpty()){
-					System.out.println("Receiving UNEXPLORED target: unexploredTiles left = "+sortedTiles.size());
+//					System.out.println("Receiving UNEXPLORED target: unexploredTiles left = "+sortedTiles.size());
 					for (final LinkedTile i : sortedTiles.values()) {
 						calcPathTo(i);
 						// wenn der Pfad gueltig ist, suche abschliessen
@@ -437,8 +446,11 @@ public class KillKI_new implements IPlayer {
 					this.objectStorage.storeObject(wO.getPosition(),
 							new MemorizedWorldObject(wO));
 				}
-				blackboard.toolBoxSpotted = true; // evalNextTask will turn to ItemCollect-Task
-				blackboard.spottedToolBox = wO;
+				if(!blackboard.toolBoxSpotted){
+					blackboard.toolBoxSpotted = true; // evalNextTask will turn to ItemCollect-Task
+					blackboard.toolBoxCollected = false;
+					blackboard.spottedToolBox = wO;
+				}
 				// System.out.println("Item entdeckt");
 				break;
 			/*
@@ -737,6 +749,7 @@ public class KillKI_new implements IPlayer {
 		} else if (this.blackboard.curTask == Task.LOOT_AND_BURN_HANGAR) {
 			lootAndBurnHangar();
 		} else if (this.blackboard.curTask == Task.ITEMCOLLECTING){
+			System.out.println("IN Itemcollecting state");
 			collectItem();
 		}
 
@@ -763,8 +776,26 @@ public class KillKI_new implements IPlayer {
 	}
 
 	private void collectItem() {
-		
-		
+		if(!pathToObjectCalculated){
+			LinkedTile itemTile = map.getTileAtCoordinate(blackboard.spottedToolBox.getPosition());
+			calcPathTo(itemTile);
+			if(!isInvalidPath){
+				pathToObjectCalculated = true;	
+			} else {
+				// konnte keinen Pfad zum Item berechnen, ignoriere Kiste und gehe wieder in den alten Task
+				blackboard.curTask = blackboard.oldTask;
+				blackboard.spottedToolBox = null;
+				blackboard.toolBoxCollected = true;
+				blackboard.toolBoxSpotted = false;
+			}
+		} else {
+			if (!path.isEmpty()) {
+				moveTarget = path.getNextWaypoint();
+			} else {
+				//wir sind am Ziel-Tile, gehe jetzt zum Item
+				world.move(blackboard.spottedToolBox.getPosition().clone().subtract(world.getMyPosition()));
+			}
+		}
 	}
 
 

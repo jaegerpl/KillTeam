@@ -41,7 +41,7 @@ public class TankBlackboard {
 	public IWorldObject spottedToolBox; // IWorldObject of type Item
 	public boolean toolBoxCollected;	// true after picking up the specified toolbox
 	public boolean toolBoxSpotted;		// true after picking up the specified toolbox
-	public LinkedTile oldMoveTarget; 	// das target bevor das item gesehen wurde, muss später wieder hergestellt werden
+//	public LinkedTile oldMoveTarget; 	// das target bevor das item gesehen wurde, muss später wieder hergestellt werden
 	public Task oldTask;				// der alte Task muss wieder hergestellt werden nach dem einsammeln
 	
 	// CAPTURE THE FLAG STUFF
