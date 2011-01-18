@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -73,6 +74,8 @@ public class KillKI_new implements IPlayer {
 	// Random fuer unstuck in update()
 	private java.util.Random rand;
 	private long stoppedTimeStamp;
+	
+	protected float myCurrentSpeed = 0;
 
 	
 	private void evalNextTask() {
@@ -251,6 +254,14 @@ public class KillKI_new implements IPlayer {
 		// GOAP STUFF
 		globalKI.removeTank(this); // deregister tank in globalKI
 	}
+	
+	protected void cruiseMap() {
+		if(isInvalidPath || null == path || path.isEmpty()) {
+			//Neues Pfad berechnen
+			LinkedTile randomDestination = map.getRandomTarget();
+			calcPathTo(randomDestination);
+		}
+	}
 
 	private void explore() {
 		if (isInvalidPath) {
@@ -260,7 +271,6 @@ public class KillKI_new implements IPlayer {
 					.mult(60));
 			final LinkedTile targetTile = map.getTileAtCoordinate(targetPos);
 			if (!targetTile.isExplored()) {
-				System.out.println("Target Tile ist NOT EXPLORED");
 				if (targetTile.isPassable()) {
 					// Wenn tile noch nicht erkundet + betretbar ist, dieses
 					// tile als neues Routenziel benutzen:
@@ -276,12 +286,10 @@ public class KillKI_new implements IPlayer {
 			// wenn tile bereits explorierbar ist, neues unexplored Tile 
 			// von der map besorgen:
 			else {
-				System.out.println("Target Tile IS EXLORED");
 				final TreeMap<Integer, LinkedTile> sortedTiles = map
 						.getUnexploredTilesSortedByDistance(curPos);
 				// move to the nearest unexplored target, if one exists
 				if(!sortedTiles.isEmpty()){
-					System.out.println("Receiving UNEXPLORED target");
 					for (final LinkedTile i : sortedTiles.values()) {
 						calcPathTo(i);
 						// wenn der Pfad gueltig ist, suche abschliessen
@@ -290,14 +298,27 @@ public class KillKI_new implements IPlayer {
 					}
 					//Keinen Pfad zu irgend einem unexplored Tile gefunden
 					map.markAllUnexploredAsOutOfMap();
-					blackboard.curTask = Task.STOPATHANGAR;
+					setNewStateAfterMapIsExplored();
 				} else {
-					System.out.println("Receiving RANDOM target");
 				// move to a randomly choosen target
-					while(!isInvalidPath){
-						calcPathTo(map.getRandomTarget());	
-					}				
+					//while(!isInvalidPath){
+					//	calcPathTo(map.getRandomTarget());	
+					//}
+					setNewStateAfterMapIsExplored();
 				}
+			}
+		}
+	}
+	
+	protected void setNewStateAfterMapIsExplored() {
+		StringTokenizer tk = new StringTokenizer(name);
+		if(tk.countTokens() == 2) {
+			tk.nextToken();
+			int number = Integer.parseInt(tk.nextToken());
+			if(0 == number % 2) {
+				blackboard.curTask = Task.DEFEND;
+			} else {
+				blackboard.curTask = Task.CRUISE_MAP;
 			}
 		}
 	}
@@ -649,42 +670,54 @@ public class KillKI_new implements IPlayer {
 	 * 
 	 */
 	public void defend() {
-		// mithilfe explore vom hangar wegfahren :)
-		if (blackboard.inHangar
-				&& world.getMyPosition().distance(spawnPos) > 25) {
-			blackboard.inHangar = false;
-			isInvalidPath = true;
-		}
-
-		if (!blackboard.inHangar) {
-			if (isInvalidPath) {
-				final float distance = 25;
-				// float distance = 10;
-				double x = 0d; // real part
-				double z = 0d; // imaginary part
-
-				path = new Path<LinkedTile>();
-				path.setCircleCourse(true);
-
-				for (int angle = 0; angle < 360; angle += 15) {
-					x = distance * Math.cos(angle);
-					z = distance * Math.sin(angle);
-
-					final Vector3f d = spawnPos.clone();
-					d.x += x;
-					d.z += z;
-
-					path.addWaypoint(map.getTileAtCoordinate(d));
-
-				}
-
-				isInvalidPath = false;
+		final float circleCourseRadius = 25;
+		int tilesize = FastRoutableWorldMap.tilesize;
+		
+		
+		if(this.curPos.subtract(spawnPos).length() > circleCourseRadius + tilesize) {
+			//Zu weit weg für direkt bewegen
+			if(null == path || path.isEmpty()) {
+				calcPathTo(map.getTileAtCoordinate(spawnPos));
 			}
-
-		}
-		// wenn wir uns noch im hangar befinden, rausfahren
-		else {
-			explore();
+		} else {
+		
+			// mithilfe explore vom hangar wegfahren :)
+			if (blackboard.inHangar
+					&& world.getMyPosition().distance(spawnPos) > 25) {
+				blackboard.inHangar = false;
+				isInvalidPath = true;
+			}
+	
+			if (!blackboard.inHangar) {
+				if (isInvalidPath) {
+					
+					// float distance = 10;
+					double x = 0d; // real part
+					double z = 0d; // imaginary part
+	
+					path = new Path<LinkedTile>();
+					path.setCircleCourse(true);
+	
+					for (int angle = 0; angle < 360; angle += 15) {
+						x = circleCourseRadius * Math.cos(angle);
+						z = circleCourseRadius * Math.sin(angle);
+	
+						final Vector3f d = spawnPos.clone();
+						d.x += x;
+						d.z += z;
+	
+						path.addWaypoint(map.getTileAtCoordinate(d));
+	
+					}
+	
+					isInvalidPath = false;
+				}
+	
+			}
+			// wenn wir uns noch im hangar befinden, rausfahren
+			else {
+				explore();
+			}
 		}
 
 	}
@@ -710,6 +743,8 @@ public class KillKI_new implements IPlayer {
 
 		if (this.blackboard.curTask == Task.DEFEND) {
 			defend();
+		} else if (this.blackboard.curTask == Task.CRUISE_MAP) {
+			cruiseMap();
 		} else if (this.blackboard.curTask == Task.GoToBase) {
 			goToBase();
 		} else if (this.blackboard.curTask == Task.EXPLORE) {
