@@ -3,6 +3,7 @@ package map.fastmap;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -287,6 +288,20 @@ public class FastRoutableWorldMap{
 			return true;
 		}
 		return false;
+	}
+	
+	public void markAllUnexploredAsOutOfMap() {
+		Collection<LinkedTile> tiles = unexploredTiles.values();
+		List<LinkedTile> tilesToMark = new ArrayList<LinkedTile>();
+		
+		for(LinkedTile tile : tiles) {
+			//this.markTileAsOutOfMap(tile);
+			tilesToMark.add(tile);
+		}
+		
+		for(LinkedTile tileToMark : tilesToMark) {
+			this.markTileAsOutOfMap(tileToMark);
+		}
 	}
 	
 	

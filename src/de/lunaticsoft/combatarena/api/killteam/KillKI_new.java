@@ -47,7 +47,7 @@ public class KillKI_new implements IPlayer {
 	// route des tanks
 	private Path<LinkedTile> path;
 	private LinkedTile moveTarget;
-	private boolean pathReset;
+	private boolean isInvalidPath;
 	private LinkedTile lastPathTarget; // ziel der letzten Routenberechnung
 
 	
@@ -113,7 +113,7 @@ public class KillKI_new implements IPlayer {
 		this.objectStorage = globalKI.getObjectStorage();
 		this.blackboard.curTask = task;
 		this.path = new Path<LinkedTile>();
-		pathReset = true;
+		isInvalidPath = true;
 		calibrated = false;
 
 		lastPositions = new LinkedBlockingQueue<Vector3f>(2);
@@ -176,19 +176,19 @@ public class KillKI_new implements IPlayer {
 		// wenn tile nicht passable ist zudem ein Pfad berechnet werden soll,
 		// nix tun
 		if (!target.isPassable) {
-			pathReset = true;
+			isInvalidPath = true;
 			return;
 		}
-		if (pathReset) {
+		if (isInvalidPath) {
 			path = map.calculatePath(curTile, target);
-			pathReset = false;
+			isInvalidPath = false;
 		}
 		/*
 		 * if (myPosTile.equals(moveTarget)) //TODO muss nach update {
 		 * moveTarget = path.getNextWaypoint(); }
 		 */
 		if (path.isEmpty()) {
-			pathReset = true;
+			isInvalidPath = true;
 		}
 		moveTarget = path.getNextWaypoint();
 	}
@@ -257,7 +257,7 @@ public class KillKI_new implements IPlayer {
 	}
 
 	private void explore() {
-		if (pathReset) {
+		if (isInvalidPath) {
 //			System.out.println("berechen neues explore ziel");
 			// naechstes ZIel am ende des Sichtbereiches in tile umwandeln
 			final Vector3f targetPos = this.curPos.add(curDirection.normalize()
@@ -268,11 +268,11 @@ public class KillKI_new implements IPlayer {
 				if (targetTile.isPassable()) {
 					// Wenn tile noch nicht erkundet + betretbar ist, dieses
 					// tile als neues Routenziel benutzen:
-					pathReset = true;
+					isInvalidPath = true;
 					calcPathTo(targetTile);
 				}
 				// wenn kein gueltiger Pfad berechnet werden konnte
-				if (pathReset) {
+				if (isInvalidPath) {
 					// Rotieren und weitersuchen
 					this.curDirection = rotateVector(this.curDirection, 10);
 				}
@@ -289,13 +289,16 @@ public class KillKI_new implements IPlayer {
 					for (final LinkedTile i : sortedTiles.values()) {
 						calcPathTo(i);
 						// wenn der Pfad gueltig ist, suche abschliessen
-						if (!pathReset)
+						if (!isInvalidPath)
 							return;
 					}
+					//Keinen Pfad zu irgend einem unexplored Tile gefunden
+					map.markAllUnexploredAsOutOfMap();
+					blackboard.curTask = Task.STOPATHANGAR;
 				} else {
 					System.out.println("Receiving RANDOM target");
 				// move to a randomly choosen target
-					while(!pathReset){
+					while(!isInvalidPath){
 						calcPathTo(map.getRandomTarget());	
 					}				
 				}
@@ -372,7 +375,7 @@ public class KillKI_new implements IPlayer {
 		if (((moveTarget != null) && !moveTarget.isPassable)
 				|| (moveTarget == null)) {
 			moveTarget = null;
-			pathReset = true;
+			isInvalidPath = true;
 
 			return false;
 		}
@@ -380,7 +383,7 @@ public class KillKI_new implements IPlayer {
 		curDirection = moveTarget.getTileCenterCoordinates().subtract(curPos);
 		world.move(curDirection);
 		if (path.isEmpty()) {
-			pathReset = true;
+			isInvalidPath = true;
 		}
 		return true;
 	}
@@ -572,7 +575,7 @@ public class KillKI_new implements IPlayer {
 				// todo so �berarbeiten, das der task nur ge�ndert wird wenn
 				// der aktuelle ziel hangar entfernt wurde:
 				blackboard.curTask = Task.EXPLORE;
-				pathReset = true; // pfad soll neu berechnet werden
+				isInvalidPath = true; // pfad soll neu berechnet werden
 
 				final MemorizedWorldObject hangar = (MemorizedWorldObject) obj;
 				System.out.println("Tank " + name + " was notified about "
@@ -614,7 +617,7 @@ public class KillKI_new implements IPlayer {
 				moveTarget = curTile;
 				blackboard.curTask = Task.STOPATHANGAR;
 			} else if (!target.equals(lastPathTarget)) {
-				pathReset = true;
+				isInvalidPath = true;
 //				System.out.println("berechne Pfad zu Hangar"+ target);
 				calcPathTo(target);
 			}
@@ -622,7 +625,7 @@ public class KillKI_new implements IPlayer {
 			// wenn kein hangar existiert:
 		} else {
 //			System.out.println("kein hangar existiert zu dem ein pfad berechnen kann");
-			pathReset = true;
+			isInvalidPath = true;
 			blackboard.curTask = Task.EXPLORE;
 		}
 	}
@@ -656,11 +659,11 @@ public class KillKI_new implements IPlayer {
 		if (blackboard.inHangar
 				&& world.getMyPosition().distance(spawnPos) > 25) {
 			blackboard.inHangar = false;
-			pathReset = true;
+			isInvalidPath = true;
 		}
 
 		if (!blackboard.inHangar) {
-			if (pathReset) {
+			if (isInvalidPath) {
 				final float distance = 25;
 				// float distance = 10;
 				double x = 0d; // real part
@@ -681,7 +684,7 @@ public class KillKI_new implements IPlayer {
 
 				}
 
-				pathReset = false;
+				isInvalidPath = false;
 			}
 
 		}
@@ -694,7 +697,7 @@ public class KillKI_new implements IPlayer {
 
 	public void goToBase() {
 		if (!map.getTileAtCoordinate(spawnPos).equals(lastPathTarget)) {
-			pathReset = true;
+			isInvalidPath = true;
 			calcPathTo(map.getTileAtCoordinate(spawnPos));
 		}
 	}
@@ -720,10 +723,13 @@ public class KillKI_new implements IPlayer {
 		} else if (this.blackboard.curTask == Task.CTF) {
 			// todo zu aufwendig bei jeder kleiner flaggen bewegung pfad
 			// neukalkulieren, besser nur jede X zyklen neu generieren
-			if (flagPosChanged) {
-				pathReset = true;
-				calcPathTo(map.getTileAtCoordinate(flagPos));
-				flagPosChanged = false;
+			//alle 10 zyklen
+			if(this.updateNr%10 == 0){
+				if (flagPosChanged) {
+					isInvalidPath = true;
+					calcPathTo(map.getTileAtCoordinate(flagPos));
+					flagPosChanged = false;
+				}
 			}
 		} else if (this.blackboard.curTask == Task.STOPATHANGAR) {
 			if (updateNr - stoppedTimeStamp > 20)
@@ -748,7 +754,7 @@ public class KillKI_new implements IPlayer {
 			final Vector3f unstuckDirection = rotateVector(world
 					.getMyDirection().clone(), alpha);
 
-			pathReset = true;
+			isInvalidPath = true;
 			world.move(unstuckDirection);
 		} else {
 			// wenn wir nicht mehr festecken nach den Wegpunkten berechnen
