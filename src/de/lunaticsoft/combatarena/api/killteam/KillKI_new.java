@@ -75,7 +75,8 @@ public class KillKI_new implements IPlayer {
 	private java.util.Random rand;
 	private long stoppedTimeStamp;
 	
-	protected float myCurrentSpeed = 0;
+	// Item oder Flag einsammeln
+	private boolean pathToObjectCalculated = false;
 
 	
 	private void evalNextTask() {
@@ -94,6 +95,15 @@ public class KillKI_new implements IPlayer {
 				blackboard.curTask = Task.LOOT_AND_BURN_HANGAR;
 
 			}
+		} else if(blackboard.toolBoxSpotted == true){
+			blackboard.oldTask = blackboard.curTask;
+			blackboard.curTask = Task.ITEMCOLLECTING;
+			System.out.println("ITEMCOLLECTING STATE");
+		} else if(blackboard.toolBoxCollected == true){
+			blackboard.toolBoxCollected = false;
+			blackboard.curTask = blackboard.oldTask; // alten Taks wieder herstellen
+			blackboard.oldTask = null;
+			System.out.println("LEAVE ITEMCOLLECTING STATE");
 		}
 	}
 	
@@ -230,9 +240,10 @@ public class KillKI_new implements IPlayer {
 						.getPosition()) {
 					blackboard.spottedToolBox = null;
 					blackboard.toolBoxCollected = true;
-					// TODO update object storage
+					blackboard.hitsTaken = 0;
 				}
 			}
+			System.out.println("KISTE EINGESAMMELT");
 			break;
 		case Flag:
 			flagCollected = true;
@@ -454,6 +465,11 @@ public class KillKI_new implements IPlayer {
 					this.objectStorage.storeObject(wO.getPosition(),
 							new MemorizedWorldObject(wO));
 				}
+				if(!blackboard.toolBoxSpotted){
+					blackboard.toolBoxSpotted = true; // evalNextTask will turn to ItemCollect-Task
+					blackboard.toolBoxCollected = false;
+					blackboard.spottedToolBox = wO;
+				}
 				// System.out.println("Item entdeckt");
 				break;
 			/*
@@ -587,7 +603,7 @@ public class KillKI_new implements IPlayer {
 		case HangarRemoved:
 			if (blackboard.curTask == Task.LOOT_AND_BURN_HANGAR) {
 
-				// todo so �berarbeiten, das der task nur ge�ndert wird wenn
+				// todo so ï¿½berarbeiten, das der task nur geï¿½ndert wird wenn
 				// der aktuelle ziel hangar entfernt wurde:
 				blackboard.curTask = Task.EXPLORE;
 				isInvalidPath = true; // pfad soll neu berechnet werden
@@ -608,7 +624,7 @@ public class KillKI_new implements IPlayer {
 	}
 
 	/**
-	 * berechnet pfad zu n�chstem hangar in objectStorage
+	 * berechnet pfad zu nï¿½chstem hangar in objectStorage
 	 * objectStorage.getEnemyHangars();
 	 */
 	private void lootAndBurnHangar() {
@@ -624,8 +640,8 @@ public class KillKI_new implements IPlayer {
 			if(curPos.distance(target.getTileCenterCoordinates()) <40){
 //				System.out.println("halte an, befinde mich vor gegnerischem Hangar "+target);
 
-				this.stoppedTimeStamp = updateNr; //w�rgaround, bis es funktioniert das hangar korrekt als zerst�rt gemeldet werden
-				//wenn entfernung zum hangar weniger als X betr�gt, das moveTarget auf den derzeitigen tile setzen => anhalten	
+				this.stoppedTimeStamp = updateNr; //wï¿½rgaround, bis es funktioniert das hangar korrekt als zerstï¿½rt gemeldet werden
+				//wenn entfernung zum hangar weniger als X betrï¿½gt, das moveTarget auf den derzeitigen tile setzen => anhalten	
 	
 					path = new Path<LinkedTile>();
 
@@ -675,7 +691,7 @@ public class KillKI_new implements IPlayer {
 		
 		
 		if(this.curPos.subtract(spawnPos).length() > circleCourseRadius + tilesize) {
-			//Zu weit weg f�r direkt bewegen
+			//Zu weit weg für direkt bewegen
 			if(null == path || path.isEmpty()) {
 				calcPathTo(map.getTileAtCoordinate(spawnPos));
 			}
@@ -752,16 +768,22 @@ public class KillKI_new implements IPlayer {
 		} else if (this.blackboard.curTask == Task.CTF) {
 			// todo zu aufwendig bei jeder kleiner flaggen bewegung pfad
 			// neukalkulieren, besser nur jede X zyklen neu generieren
-			if (flagPosChanged) {
-				isInvalidPath = true;
-				calcPathTo(map.getTileAtCoordinate(flagPos));
-				flagPosChanged = false;
+			//alle 10 zyklen
+			if(this.updateNr%10 == 0){
+				if (flagPosChanged) {
+					isInvalidPath = true;
+					calcPathTo(map.getTileAtCoordinate(flagPos));
+					flagPosChanged = false;
+				}
 			}
 		} else if (this.blackboard.curTask == Task.STOPATHANGAR) {
 			if (updateNr - stoppedTimeStamp > 20)
 				this.blackboard.curTask = Task.EXPLORE;
 		} else if (this.blackboard.curTask == Task.LOOT_AND_BURN_HANGAR) {
 			lootAndBurnHangar();
+		} else if (this.blackboard.curTask == Task.ITEMCOLLECTING){
+			System.out.println("IN Itemcollecting state");
+			collectItem();
 		}
 
 		// wenn wir feststecken erstmal random bewegen, einen zug +
@@ -785,6 +807,30 @@ public class KillKI_new implements IPlayer {
 			moveToNextWaypoint();
 		}
 	}
+
+	private void collectItem() {
+		if(!pathToObjectCalculated){
+			LinkedTile itemTile = map.getTileAtCoordinate(blackboard.spottedToolBox.getPosition());
+			calcPathTo(itemTile);
+			if(!isInvalidPath){
+				pathToObjectCalculated = true;	
+			} else {
+				// konnte keinen Pfad zum Item berechnen, ignoriere Kiste und gehe wieder in den alten Task
+				blackboard.curTask = blackboard.oldTask;
+				blackboard.spottedToolBox = null;
+				blackboard.toolBoxCollected = true;
+				blackboard.toolBoxSpotted = false;
+			}
+		} else {
+			if (!path.isEmpty()) {
+				moveTarget = path.getNextWaypoint();
+			} else {
+				//wir sind am Ziel-Tile, gehe jetzt zum Item
+				world.move(blackboard.spottedToolBox.getPosition().clone().subtract(world.getMyPosition()));
+			}
+		}
+	}
+
 
 	/*
 	 * (non-Javadoc)

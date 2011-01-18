@@ -5,5 +5,6 @@ public enum Task {
 	CTF,
 	LOOT_AND_BURN_HANGAR,
 	CRUISE_MAP,
-	EXPLORE, GoToBase, STOPATHANGAR
+	EXPLORE, GoToBase, STOPATHANGAR,
+	ITEMCOLLECTING//wenn ein item perceived wurde und der tank dringend repariert werden muss
 }
