@@ -90,6 +90,10 @@ public class MemorizedMap{
 		return sortedTiles;
 	}
 	
+	public void markAllUnexploredAsOutOfMap() {
+		worldMap.markAllUnexploredAsOutOfMap();
+	}
+	
 //	public LinkedTile getNearestUnexploredTile(Vector3f position) {
 //		Point myPosition = worldMap.getTileAtCoordinate(position).getMapIndex();
 //		Map<Point, LinkedTile> unexploredTiles = worldMap.getUnexploredTiles();
