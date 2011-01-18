@@ -43,6 +43,7 @@ public class KillKI_new implements IPlayer {
 	private Vector3f spawnPos;
 	// aktuelle Position des Tanks
 	private Vector3f curDirection;
+	private Vector3f moveDirection = null;
 	private Vector3f curPos;
 	private LinkedTile curTile;
 	// route des tanks
@@ -87,7 +88,7 @@ public class KillKI_new implements IPlayer {
 		} else if (blackboard.curTask == Task.EXPLORE) {
 			if (CTFmode) {
 				if (pathToFlagKnown()) {
-					blackboard.curTask = Task.CTF;
+					blackboard.curTask = Task.CTF_GET_THE_FLAG;
 				}
 				else
 					blackboard.curTask = Task.EXPLORE;
@@ -95,7 +96,7 @@ public class KillKI_new implements IPlayer {
 				blackboard.curTask = Task.LOOT_AND_BURN_HANGAR;
 
 			}
-		} else if(blackboard.toolBoxSpotted == true){
+		} /*else if(blackboard.toolBoxSpotted == true){
 			blackboard.oldTask = blackboard.curTask;
 			blackboard.curTask = Task.ITEMCOLLECTING;
 			System.out.println("ITEMCOLLECTING STATE");
@@ -104,7 +105,7 @@ public class KillKI_new implements IPlayer {
 			blackboard.curTask = blackboard.oldTask; // alten Taks wieder herstellen
 			blackboard.oldTask = null;
 			System.out.println("LEAVE ITEMCOLLECTING STATE");
-		}
+		}*/
 	}
 	
 
@@ -387,32 +388,46 @@ public class KillKI_new implements IPlayer {
 	 * @return true wenn der tank momentan ein gueltiges moveTarget hat wohin
 	 *         er sich bewegt
 	 */
-	private boolean moveToNextWaypoint() {
-		// wenn wir an aktuellen ziel angekommen sind oder keins existiert,
-		// naechstes Ziel besorgen
-		if (arrivedAtMoveTarget() || (moveTarget == null)) {
-			moveTarget = null;
-			// und naechsten Wegpunkt holen:
-			if (!path.isEmpty()) {
-				moveTarget = path.getNextWaypoint();
-			} else
-				world.stop();
-		}
-		// wenn ziel nicht passierbar ist oder kein Ziel existiert,
-		// pathReset=true
-		if (((moveTarget != null) && !moveTarget.isPassable)
-				|| (moveTarget == null)) {
-			moveTarget = null;
-			isInvalidPath = true;
+	private boolean move() {
 
-			return false;
+		if(this.blackboard.curTask == Task.ITEMCOLLECTING) {
+			Vector3f toolBoxPosition = blackboard.spottedToolBox.getPosition();
+			if(FastRoutableWorldMap.tilesize >= curPos.subtract(toolBoxPosition).length()) {
+				moveDirection = toolBoxPosition.subtract(curPos);
+				world.move(moveDirection);
+				moveDirection = null;
+				return true;
+			}
+			
+		} 
+		if(null == moveDirection) {
+			// wenn wir an aktuellen ziel angekommen sind oder keins existiert,
+			// naechstes Ziel besorgen
+			if (arrivedAtMoveTarget() || (moveTarget == null)) {
+				moveTarget = null;
+				// und naechsten Wegpunkt holen:
+				if (!path.isEmpty()) {
+					moveTarget = path.getNextWaypoint();
+				} else
+					world.stop();
+			}
+			// wenn ziel nicht passierbar ist oder kein Ziel existiert,
+			// pathReset=true
+			if (((moveTarget != null) && !moveTarget.isPassable)
+					|| (moveTarget == null)) {
+				moveTarget = null;
+				isInvalidPath = true;
+	
+				return false;
+			}
+			// zum naechsten Ziel bewegen
+			moveDirection = moveTarget.getTileCenterCoordinates().subtract(curPos);
 		}
-		// zum naechsten Ziel bewegen
-		curDirection = moveTarget.getTileCenterCoordinates().subtract(curPos);
-		world.move(curDirection);
+		world.move(moveDirection);
 		if (path.isEmpty()) {
 			isInvalidPath = true;
 		}
+		moveDirection = null;
 		return true;
 	}
 
@@ -744,6 +759,24 @@ public class KillKI_new implements IPlayer {
 			calcPathTo(map.getTileAtCoordinate(spawnPos));
 		}
 	}
+	
+	protected void iGotTheFlag() {
+		this.iHaveTheFlag = true;
+		this.blackboard.curTask = Task.CTF_RETURN_TO_BASE;
+		System.out.println("########################### I GOT THE FLAG!! " + name);
+	}
+	
+	protected void iDeliveredTheFlag() {
+		this.iHaveTheFlag = false;
+		this.blackboard.curTask = Task.CTF_GET_THE_FLAG;
+	}
+	
+	protected void deliverFlag() {
+		System.out.println(curPos);
+		if(null == path || path.isEmpty()) {
+			goToBase();
+		}
+	}
 
 	@Override
 	public void update(final float interpolation) {
@@ -751,12 +784,17 @@ public class KillKI_new implements IPlayer {
 		if (!calibrated) {
 			calibrate();
 		}
+
 		// aktualisiere Klassenvariablen
 		scanTerrain();
 		evalNextTask();
 		curPos = world.getMyPosition();
 		curTile = map.getTileAtCoordinate(curPos);
-
+		
+		if(iHaveTheFlag) {
+System.out.println(name + ": " + curPos);
+		}
+		
 		if (this.blackboard.curTask == Task.DEFEND) {
 			defend();
 		} else if (this.blackboard.curTask == Task.CRUISE_MAP) {
@@ -765,10 +803,15 @@ public class KillKI_new implements IPlayer {
 			goToBase();
 		} else if (this.blackboard.curTask == Task.EXPLORE) {
 			explore();
-		} else if (this.blackboard.curTask == Task.CTF) {
+		} else if (this.blackboard.curTask == Task.CTF_RETURN_TO_BASE) {
+			deliverFlag();
+			if(curPos.equals(spawnPos) && iHaveTheFlag) {
+				iDeliveredTheFlag();
+			}
+		} else if (this.blackboard.curTask == Task.CTF_GET_THE_FLAG) {
 			// todo zu aufwendig bei jeder kleiner flaggen bewegung pfad
 			// neukalkulieren, besser nur jede X zyklen neu generieren
-			//alle 10 zyklen
+			//alle 10 zyklen		
 			if(this.updateNr%10 == 0){
 				if (flagPosChanged) {
 					isInvalidPath = true;
@@ -776,6 +819,14 @@ public class KillKI_new implements IPlayer {
 					flagPosChanged = false;
 				}
 			}
+			if(20 >= curPos.subtract(flagPos).length()) {
+				moveDirection = flagPos.subtract(curPos);
+			}
+			if(curPos.equals(flagPos)) {
+				iGotTheFlag();
+			}
+			
+			
 		} else if (this.blackboard.curTask == Task.STOPATHANGAR) {
 			if (updateNr - stoppedTimeStamp > 20)
 				this.blackboard.curTask = Task.EXPLORE;
@@ -804,11 +855,18 @@ public class KillKI_new implements IPlayer {
 			world.move(unstuckDirection);
 		} else {
 			// wenn wir nicht mehr festecken nach den Wegpunkten berechnen
-			moveToNextWaypoint();
+			move();
 		}
 	}
 
 	private void collectItem() {
+		if(null == path || path.isEmpty()) {
+			Vector3f toolBoxPosition = blackboard.spottedToolBox.getPosition();
+			if(FastRoutableWorldMap.tilesize >= curPos.subtract(toolBoxPosition).length()) {
+				
+			}
+		}
+		
 		if(!pathToObjectCalculated){
 			LinkedTile itemTile = map.getTileAtCoordinate(blackboard.spottedToolBox.getPosition());
 			calcPathTo(itemTile);
@@ -841,6 +899,7 @@ public class KillKI_new implements IPlayer {
 	 */
 	@Override
 	public void setFlagPos(Vector3f flagPos) {
+		this.CTFmode = true;
 		this.flagPos = flagPos;
 		flagPosChanged = true;
 	}
