@@ -162,9 +162,9 @@ public class KillKI_new implements IPlayer {
 	
 	
 	/**
-	 * berechnet neuen path zu target, wenn ein ung�ltiger Pfad berechnet oder
+	 * berechnet neuen path zu target, wenn ein ungueltiger Pfad berechnet oder
 	 * das ziel nicht betretbar istwird pathReset = true gesetzt nachdem ein
-	 * neuer pfad gesetzt wurde ist moveTarget der n�chste Wegpunkt
+	 * neuer pfad gesetzt wurde ist moveTarget der naechste Wegpunkt
 	 * 
 	 * @param target
 	 */
@@ -260,6 +260,7 @@ public class KillKI_new implements IPlayer {
 					.mult(60));
 			final LinkedTile targetTile = map.getTileAtCoordinate(targetPos);
 			if (!targetTile.isExplored()) {
+				System.out.println("Target Tile ist NOT EXPLORED");
 				if (targetTile.isPassable()) {
 					// Wenn tile noch nicht erkundet + betretbar ist, dieses
 					// tile als neues Routenziel benutzen:
@@ -275,13 +276,24 @@ public class KillKI_new implements IPlayer {
 			// wenn tile bereits explorierbar ist, neues unexplored Tile 
 			// von der map besorgen:
 			else {
+				System.out.println("Target Tile IS EXLORED");
 				final TreeMap<Integer, LinkedTile> sortedTiles = map
 						.getUnexploredTilesSortedByDistance(curPos);
-				for (final LinkedTile i : sortedTiles.values()) {
-					calcPathTo(i);
-					// wenn der Pfad gueltig ist, suche abschliessen
-					if (!pathReset)
-						return;
+				// move to the nearest unexplored target, if one exists
+				if(!sortedTiles.isEmpty()){
+					System.out.println("Receiving UNEXPLORED target");
+					for (final LinkedTile i : sortedTiles.values()) {
+						calcPathTo(i);
+						// wenn der Pfad gueltig ist, suche abschliessen
+						if (!pathReset)
+							return;
+					}
+				} else {
+					System.out.println("Receiving RANDOM target");
+				// move to a randomly choosen target
+					while(!pathReset){
+						calcPathTo(map.getRandomTarget());	
+					}				
 				}
 			}
 		}
@@ -710,9 +722,7 @@ public class KillKI_new implements IPlayer {
 		} else if (this.blackboard.curTask == Task.STOPATHANGAR) {
 			if (updateNr - stoppedTimeStamp > 20)
 				this.blackboard.curTask = Task.EXPLORE;
-		}
-
-		else if (this.blackboard.curTask == Task.LOOT_AND_BURN_HANGAR) {
+		} else if (this.blackboard.curTask == Task.LOOT_AND_BURN_HANGAR) {
 			lootAndBurnHangar();
 		}
 
@@ -732,11 +742,10 @@ public class KillKI_new implements IPlayer {
 
 			pathReset = true;
 			world.move(unstuckDirection);
-		}
-		// wenn wir nicht mehr festecken nach den Wegpunkten berechnen
-		else
-
+		} else {
+			// wenn wir nicht mehr festecken nach den Wegpunkten berechnen
 			moveToNextWaypoint();
+		}
 	}
 
 	/*

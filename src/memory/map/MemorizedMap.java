@@ -171,5 +171,14 @@ public class MemorizedMap{
 //		
 //		
 //	}
+	
+	/**
+	 * Generates a random passable target in the map
+	 * 
+	 * @return
+	 */
+	public LinkedTile getRandomTarget(){
+		return worldMap.getRandomTarget();
+	}
 
 }

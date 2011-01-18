@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.jme.math.Vector3f;
@@ -15,6 +16,12 @@ import com.jme.math.Vector3f;
 import de.lunaticsoft.combatarena.api.interfaces.IPlayer;
 
 public class FastRoutableWorldMap{
+	
+	// Min-Max Positions of Map-Tiles
+	int minXPos = Integer.MAX_VALUE;
+	int maxXPos = Integer.MIN_VALUE;
+	int minYPos = Integer.MAX_VALUE;
+	int maxYPos = Integer.MIN_VALUE;
 	
 	public static final int tilesize = 10;
 	
@@ -45,6 +52,13 @@ public class FastRoutableWorldMap{
 		}
 	}
 
+	/**
+	 * Creates an unepxlored tile and adds it to the map.
+	 * Also keeps track of it in the unexploredTilesList.
+	 * 
+	 * @param tilePosition
+	 * @return
+	 */
 	private LinkedTile createUnexploredTileAtPosition(Point tilePosition) {
 		if(tilePosition.x > 60 || tilePosition.y > 60) {
 			System.out.println("Argh!");
@@ -55,6 +69,15 @@ public class FastRoutableWorldMap{
 		return unexploredTile;
 	}
 	
+	/**
+	 * Marks a tile as explored and adds its specific features. Also removes this explored tile from
+	 * the unexploredTilesList
+	 * 
+	 * @param tile
+	 * @param isWater
+	 * @param isPassable
+	 * @param normalVector
+	 */
 	public void exploreTile(LinkedTile tile, boolean isWater, boolean isPassable, Vector3f normalVector) {
 		//System.out.println("Tile erkundet: " + tile.mapIndex + " Passierbar: " + isPassable);		
 		tile.exploreTile(isWater, isPassable, normalVector);
@@ -63,6 +86,10 @@ public class FastRoutableWorldMap{
 		}
 	}
 	
+	/**
+	 * Marks a tile as out of Map and removes it from the unexploredTilesList if necessary
+	 * @param tile
+	 */
 	public void markTileAsOutOfMap(LinkedTile tile) {
 		tile.markAsOutOfMap();
 		if(unexploredTiles.containsKey(tile.getMapIndex())) {
@@ -224,6 +251,21 @@ public class FastRoutableWorldMap{
 		}
 		
 		map.put(tile.getMapIndex(), tile);
+		
+		// update Min-Max Map-Tile Values
+		Point point = tile.getMapIndex();
+		if(point.x > maxXPos){
+			maxXPos = point.x;
+		}
+		if(point.x < minXPos){
+			minXPos = point.x;
+		}
+		if(point.y > maxYPos){
+			maxYPos = point.y;
+		}
+		if(point.y < minYPos){
+			minYPos = point.y;
+		}
 	}
 	
 	public Map<Point, LinkedTile> getUnexploredTiles() {
@@ -286,6 +328,22 @@ public class FastRoutableWorldMap{
 
 	public Map<Point,LinkedTile> getMap(){
 		return this.map;
+	}
+	
+	/**
+	 * Generates a random passable target in the map
+	 * 
+	 * @return
+	 */
+	public LinkedTile getRandomTarget(){
+		Random r = new Random();
+		LinkedTile tile;
+		do {
+			int randX = r.nextInt(maxXPos - minXPos) - minXPos;
+			int randY = r.nextInt(maxYPos - minYPos) - minYPos;
+			tile = getTileAtMapIndex(new Point(randX, randY));
+		} while (!tile.isPassable);
+		return tile;
 	}
 
 }
