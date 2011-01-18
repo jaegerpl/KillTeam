@@ -91,6 +91,9 @@ public class KillKI_new implements IPlayer {
 				blackboard.curTask = Task.LOOT_AND_BURN_HANGAR;
 
 			}
+		} else if(blackboard.toolBoxSpotted == true){
+			blackboard.oldTask = blackboard.curTask;
+			blackboard.curTask = Task.ITEMCOLLECTING;
 		}
 	}
 	
@@ -227,6 +230,7 @@ public class KillKI_new implements IPlayer {
 						.getPosition()) {
 					blackboard.spottedToolBox = null;
 					blackboard.toolBoxCollected = true;
+					blackboard.hitsTaken = 0;
 					// TODO update object storage
 				}
 			}
@@ -281,7 +285,7 @@ public class KillKI_new implements IPlayer {
 						.getUnexploredTilesSortedByDistance(curPos);
 				// move to the nearest unexplored target, if one exists
 				if(!sortedTiles.isEmpty()){
-					System.out.println("Receiving UNEXPLORED target");
+					System.out.println("Receiving UNEXPLORED target: unexploredTiles left = "+sortedTiles.size());
 					for (final LinkedTile i : sortedTiles.values()) {
 						calcPathTo(i);
 						// wenn der Pfad gueltig ist, suche abschliessen
@@ -430,6 +434,8 @@ public class KillKI_new implements IPlayer {
 					this.objectStorage.storeObject(wO.getPosition(),
 							new MemorizedWorldObject(wO));
 				}
+				blackboard.toolBoxSpotted = true; // evalNextTask will turn to ItemCollect-Task
+				blackboard.spottedToolBox = wO;
 				// System.out.println("Item entdeckt");
 				break;
 			/*
@@ -724,6 +730,8 @@ public class KillKI_new implements IPlayer {
 				this.blackboard.curTask = Task.EXPLORE;
 		} else if (this.blackboard.curTask == Task.LOOT_AND_BURN_HANGAR) {
 			lootAndBurnHangar();
+		} else if (this.blackboard.curTask == Task.ITEMCOLLECTING){
+			collectItem();
 		}
 
 		// wenn wir feststecken erstmal random bewegen, einen zug +
@@ -747,6 +755,12 @@ public class KillKI_new implements IPlayer {
 			moveToNextWaypoint();
 		}
 	}
+
+	private void collectItem() {
+		
+		
+	}
+
 
 	/*
 	 * (non-Javadoc)
