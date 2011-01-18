@@ -29,7 +29,7 @@ public class LinkedTile implements IPathNode {
 
 	public boolean isPassable;
 	protected Vector3f normalVector;
-	public Point mapIndex;
+	private Point mapIndex;
 	protected Vector3f tileCenterCoordinates;
 	
 	protected boolean isExplored;

@@ -46,9 +46,9 @@ public class FastRoutableWorldMap{
 	}
 
 	private LinkedTile createUnexploredTileAtPosition(Point tilePosition) {
-if(tilePosition.x > 60 || tilePosition.y > 60) {
-	System.out.println("Argh!");
-}
+		if(tilePosition.x > 60 || tilePosition.y > 60) {
+			System.out.println("Argh!");
+		}
 		LinkedTile unexploredTile = new LinkedTile(tilePosition, false, true, new Vector3f(0,0,0), false);
 		addTile(unexploredTile);
 		unexploredTiles.put(tilePosition, unexploredTile);
@@ -56,7 +56,7 @@ if(tilePosition.x > 60 || tilePosition.y > 60) {
 	}
 	
 	public void exploreTile(LinkedTile tile, boolean isWater, boolean isPassable, Vector3f normalVector) {
-//System.out.println("Tile erkundet: " + tile.mapIndex + " Passierbar: " + isPassable);		
+		//System.out.println("Tile erkundet: " + tile.mapIndex + " Passierbar: " + isPassable);		
 		tile.exploreTile(isWater, isPassable, normalVector);
 		if(unexploredTiles.containsKey(tile.getMapIndex())) {
 			unexploredTiles.remove(tile.getMapIndex());
@@ -76,9 +76,7 @@ if(tilePosition.x > 60 || tilePosition.y > 60) {
 	
 	synchronized public List<LinkedTile> getTilesPossiblyInViewRange(Vector3f myPosition) {
 		List<LinkedTile> list = new ArrayList<LinkedTile>();
-		// get tile center for current position
-		Vector3f tileCenter = getTileCenterCoordinates(myPosition);
-		Point thisTile = getTileAtCoordinate(myPosition).mapIndex;
+		Point thisTile = getTileAtCoordinate(myPosition).getMapIndex();
 		int x = thisTile.x;
 		int y = thisTile.y;
 		
@@ -103,41 +101,41 @@ if(tilePosition.x > 60 || tilePosition.y > 60) {
 		return list;
 	}
 	
-	synchronized public List<LinkedTile> getEmptyTilesPossiblyInViewRange(Vector3f pos){
-		List<LinkedTile> list = getTilesPossiblyInViewRange(pos);
-		
-		List<LinkedTile> retList = new ArrayList<LinkedTile>();
-		for(LinkedTile t : list){
-			if(!t.isExplored()){
-				retList.add(t);
-			}
-		}
-		return retList;
-	}
+//	synchronized public List<LinkedTile> getEmptyTilesPossiblyInViewRange(Vector3f pos){
+//		List<LinkedTile> list = getTilesPossiblyInViewRange(pos);
+//		
+//		List<LinkedTile> retList = new ArrayList<LinkedTile>();
+//		for(LinkedTile t : list){
+//			if(!t.isExplored()){
+//				retList.add(t);
+//			}
+//		}
+//		return retList;
+//	}
 	
-	/**
-	 * Registers a tank at the WorldMap.<br>
-	 * A queue for the tank is created an a reference is returned.
-	 * 
-	 * @param tank 
-	 * @return the queue for the tank to write it's information into
-	 */
-	public ConcurrentLinkedQueue<LinkedTile> registerTank(IPlayer tank){
-		ConcurrentLinkedQueue<LinkedTile> list;
-		synchronized (queues) {
-			if(!queues.containsKey(tank.hashCode()+"")){
-				list = new ConcurrentLinkedQueue<LinkedTile>();
-				queues.put(tank.hashCode()+"", list);
-			}else {
-				list = (ConcurrentLinkedQueue<LinkedTile>) queues.get(tank.hashCode()+"");
-			}
-		}
-		return list;
-	}
+//	/**
+//	 * Registers a tank at the WorldMap.<br>
+//	 * A queue for the tank is created an a reference is returned.
+//	 * 
+//	 * @param tank 
+//	 * @return the queue for the tank to write it's information into
+//	 */
+//	public ConcurrentLinkedQueue<LinkedTile> registerTank(IPlayer tank){
+//		ConcurrentLinkedQueue<LinkedTile> list;
+//		synchronized (queues) {
+//			if(!queues.containsKey(tank.hashCode()+"")){
+//				list = new ConcurrentLinkedQueue<LinkedTile>();
+//				queues.put(tank.hashCode()+"", list);
+//			}else {
+//				list = (ConcurrentLinkedQueue<LinkedTile>) queues.get(tank.hashCode()+"");
+//			}
+//		}
+//		return list;
+//	}
 	
 	
 	synchronized public void addTile(LinkedTile tile) {
-		Point pos = tile.mapIndex;
+		Point pos = tile.getMapIndex();
 		if(map.containsKey(pos)) {
 			if(!map.get(pos).isExplored() && tile.isExplored()) {
 				map.get(pos).exploreTile(tile.isWater(), tile.isPassable(), tile.getNormalVector());
@@ -225,16 +223,16 @@ if(tilePosition.x > 60 || tilePosition.y > 60) {
 			tile.addNeighbour(tmpTile, LinkedTile.DIRECTION_SOUTHWEST);
 		}
 		
-		map.put(tile.mapIndex, tile);
+		map.put(tile.getMapIndex(), tile);
 	}
 	
 	public Map<Point, LinkedTile> getUnexploredTiles() {
 		return unexploredTiles;
 	}
 	
-	public boolean tileIsInViewRange(Vector3f myPosition, Vector3f viewDirection, LinkedTile tile) {
-		return positionIsInViewRange(myPosition, viewDirection, tile.getTileCenterCoordinates());
-	}
+//	public boolean tileIsInViewRange(Vector3f myPosition, Vector3f viewDirection, LinkedTile tile) {
+//		return positionIsInViewRange(myPosition, viewDirection, tile.getTileCenterCoordinates());
+//	}
 	
 	public boolean positionIsInViewRange(Vector3f myPosition, Vector3f viewDirection, Vector3f position) {
 		Vector3f test = viewDirection.normalize();

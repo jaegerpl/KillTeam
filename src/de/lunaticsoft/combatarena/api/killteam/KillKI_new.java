@@ -471,8 +471,8 @@ public class KillKI_new implements IPlayer {
 
 	private void scanTile(final LinkedTile tile) {
 		if (!tile.isExplored()) {
-			if ((tile.mapIndex.x > 60) || (tile.mapIndex.y > 60)
-					|| (tile.mapIndex.x < 0) || (tile.mapIndex.y < 0)) {
+			if ((tile.getMapIndex().x > 60) || (tile.getMapIndex().y > 60)
+					|| (tile.getMapIndex().x < 0) || (tile.getMapIndex().y < 0)) {
 //				System.out.println("Debug mich");
 			}
 			boolean isPassable = true;

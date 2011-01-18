@@ -37,9 +37,9 @@ public class MemorizedMap{
 		return worldMap;
 	}
 	
-	public synchronized ConcurrentLinkedQueue<LinkedTile> registerTank(IPlayer tank) {
-		return worldMap.registerTank(tank);
-	}
+//	public synchronized ConcurrentLinkedQueue<LinkedTile> registerTank(IPlayer tank) {
+//		return worldMap.registerTank(tank);
+//	}
 	
 	public synchronized LinkedTile convertTileToBase(LinkedTile tile) {
 		if(1 == tile.getPrecisionLevel()) {
@@ -69,7 +69,6 @@ public class MemorizedMap{
 	}
 	
 	public void markTileAsOutOfMap(LinkedTile tile) {
-		
 		worldMap.markTileAsOutOfMap(tile);
 	}
 	
@@ -91,28 +90,28 @@ public class MemorizedMap{
 		return sortedTiles;
 	}
 	
-	public LinkedTile getNearestUnexploredTile(Vector3f position) {
-		Point myPosition = worldMap.getTileAtCoordinate(position).getMapIndex();
-		Map<Point, LinkedTile> unexploredTiles = worldMap.getUnexploredTiles();
-		if(0 == unexploredTiles.size()) {
-			return null;
-		}
-		if(!unexploredTiles.containsKey(myPosition)) {
-			Set<Point> coordinates = unexploredTiles.keySet();
-			Point nearest = null;
-			int nearestDistance = 0;
-			for(Point coord : coordinates) {
-				int thisDistance = pathCalculator.calculateApproximatedDistance(myPosition, coord);
-				if(nearest == null || thisDistance < nearestDistance) {
-					nearest = coord;
-					nearestDistance = thisDistance;
-				}
-			}
-			return unexploredTiles.get(nearest);
-		} else {
-			return unexploredTiles.get(myPosition);
-		}
-	}
+//	public LinkedTile getNearestUnexploredTile(Vector3f position) {
+//		Point myPosition = worldMap.getTileAtCoordinate(position).getMapIndex();
+//		Map<Point, LinkedTile> unexploredTiles = worldMap.getUnexploredTiles();
+//		if(0 == unexploredTiles.size()) {
+//			return null;
+//		}
+//		if(!unexploredTiles.containsKey(myPosition)) {
+//			Set<Point> coordinates = unexploredTiles.keySet();
+//			Point nearest = null;
+//			int nearestDistance = 0;
+//			for(Point coord : coordinates) {
+//				int thisDistance = pathCalculator.calculateApproximatedDistance(myPosition, coord);
+//				if(nearest == null || thisDistance < nearestDistance) {
+//					nearest = coord;
+//					nearestDistance = thisDistance;
+//				}
+//			}
+//			return unexploredTiles.get(nearest);
+//		} else {
+//			return unexploredTiles.get(myPosition);
+//		}
+//	}
 	
 	public LinkedTile getTileAtCoordinate(Vector3f position){
 		return worldMap.getTileAtCoordinate(position);
@@ -122,9 +121,9 @@ public class MemorizedMap{
 		return worldMap.getTilesPossiblyInViewRange(myPosition);
 	}
 	
-	public List<LinkedTile> getEmptyTilesPossiblyInViewRange(Vector3f myPosition) {
-		return worldMap.getEmptyTilesPossiblyInViewRange(myPosition);
-	}
+//	public List<LinkedTile> getEmptyTilesPossiblyInViewRange(Vector3f myPosition) {
+//		return worldMap.getEmptyTilesPossiblyInViewRange(myPosition);
+//	}
 	
 	public LinkedTile getTileAtMapIndex(Point point){
 		return getTileAtCoordinate(FastRoutableWorldMap.getTileCenterCoordinates(point));
@@ -135,42 +134,42 @@ public class MemorizedMap{
 		return astar.calculateApproximatedDistance(x, y);
 	}
 	
-	public boolean tileIsInViewRange(Vector3f myPosition, Vector3f viewDirection, LinkedTile tile) {
-		return worldMap.tileIsInViewRange(myPosition, viewDirection, tile);
-	}
+//	public boolean tileIsInViewRange(Vector3f myPosition, Vector3f viewDirection, LinkedTile tile) {
+//		return worldMap.tileIsInViewRange(myPosition, viewDirection, tile);
+//	}
 	
 	public boolean positionIsInViewRange(Vector3f myPosition, Vector3f viewDirection, Vector3f position) {
 		return worldMap.positionIsInViewRange(myPosition, viewDirection, position);
 	}
 	
 	
-	public Path<LinkedTile> getCirclePathAroundPos(Vector3f pos){
-		int increment = 40;
-		
-		Path<LinkedTile> circleCource = new Path<LinkedTile>();
-		
-		List<Vector3f> scanPositions = new ArrayList<Vector3f>();
-
-		scanPositions.add(pos.add(new Vector3f(increment, 0, increment)));
-		scanPositions.add(pos.add(new Vector3f(-increment, 0, increment)));
-		scanPositions.add(pos.add(new Vector3f(increment, 0, -increment)));
-		scanPositions.add(pos.add(new Vector3f(-increment, 0, -increment)));
-		
-		
-		Iterator<Vector3f> posIt = scanPositions.iterator();
-		Vector3f lastPosition = posIt.next();
-		Vector3f current;
-		while(posIt.hasNext()) {
-			current = posIt.next();
-			circleCource.appendPath(this.pathCalculator.calculatePath(this.getTileAtCoordinate(lastPosition), this.getTileAtCoordinate(current)));
-			lastPosition = current;
-		}
-		
-		circleCource.setCircleCourse(true);
-		
-		return circleCource;
-		
-		
-	}
+//	public Path<LinkedTile> getCirclePathAroundPos(Vector3f pos){
+//		int increment = 40;
+//		
+//		Path<LinkedTile> circleCource = new Path<LinkedTile>();
+//		
+//		List<Vector3f> scanPositions = new ArrayList<Vector3f>();
+//
+//		scanPositions.add(pos.add(new Vector3f(increment, 0, increment)));
+//		scanPositions.add(pos.add(new Vector3f(-increment, 0, increment)));
+//		scanPositions.add(pos.add(new Vector3f(increment, 0, -increment)));
+//		scanPositions.add(pos.add(new Vector3f(-increment, 0, -increment)));
+//		
+//		
+//		Iterator<Vector3f> posIt = scanPositions.iterator();
+//		Vector3f lastPosition = posIt.next();
+//		Vector3f current;
+//		while(posIt.hasNext()) {
+//			current = posIt.next();
+//			circleCource.appendPath(this.pathCalculator.calculatePath(this.getTileAtCoordinate(lastPosition), this.getTileAtCoordinate(current)));
+//			lastPosition = current;
+//		}
+//		
+//		circleCource.setCircleCourse(true);
+//		
+//		return circleCource;
+//		
+//		
+//	}
 
 }
