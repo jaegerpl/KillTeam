@@ -2,6 +2,7 @@ package de.lunaticsoft.combatarena.api.killteam.globalKI;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.jme.math.Vector3f;
 
@@ -10,6 +11,7 @@ import memory.objectStorage.MemorizedWorldObject;
 import memory.objectStorage.ObjectStorage;
 import de.lunaticsoft.combatarena.api.interfaces.IWorldInstance;
 import de.lunaticsoft.combatarena.api.killteam.KillKI_new;
+import de.lunaticsoft.combatarena.api.killteam.Task;
 import debug.MapServer;
 
 /**
@@ -81,6 +83,16 @@ public class GlobalKI {
 	 */
 	public void removeTank(KillKI_new tank){
 		players.remove(tank);
+	}
+	
+	public boolean hasCTFTank(){
+		Set<KillKI_new> kis = players.keySet();
+		for(KillKI_new p: kis){
+			if(p.getTask() == Task.CTF_GET_THE_FLAG || p.getTask() == Task.CTF_RETURN_TO_BASE)
+				return true;
+		}
+		
+		return false;
 	}
 	
 	/**

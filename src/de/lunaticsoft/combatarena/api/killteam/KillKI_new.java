@@ -64,6 +64,7 @@ public class KillKI_new implements IPlayer {
 	private IWaffenAutomat waffenAutomat;
 	private int WOExistanceUpdate = 0;
 	private final Queue<Vector3f> lastPositions;
+	private final Task startTask;
 
 	
 	// CTF Stuff
@@ -84,7 +85,7 @@ public class KillKI_new implements IPlayer {
 		if (blackboard.curTask == Task.DEFEND) {
 			return;
 		} else if (blackboard.curTask == Task.EXPLORE) {
-			if (CTFmode) {
+			if (CTFmode && !this.globalKI.hasCTFTank()) {
 				if (pathToFlagKnown()) {
 					blackboard.curTask = Task.CTF_GET_THE_FLAG;
 				}
@@ -117,6 +118,7 @@ public class KillKI_new implements IPlayer {
 
 	public KillKI_new(final String name, final GlobalKI globalKI,
 			final Task task) {
+		this.startTask = task;
 		this.name = name;
 		this.blackboard = new TankBlackboard();
 		this.globalKI = globalKI;
@@ -611,6 +613,8 @@ public class KillKI_new implements IPlayer {
 		globalKI.registerTank(this); // register tank in globalKI
 		blackboard.direction = curDirection;
 		blackboard.inHangar = true;
+		
+		this.blackboard.curTask = startTask;
 
 	}
 
@@ -914,5 +918,9 @@ System.out.println(flagPos);
 	public void flagInBase() {
 		flagCollected = false;
 
+	}
+	
+	public Task getTask(){
+		return this.blackboard.curTask;
 	}
 }
