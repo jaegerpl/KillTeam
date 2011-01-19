@@ -95,7 +95,16 @@ public class KillKI_new implements IPlayer {
 				blackboard.curTask = Task.LOOT_AND_BURN_HANGAR;
 
 			}
-		} /*else if(blackboard.toolBoxSpotted == true){
+		
+		}else{
+			if(this.curPos.subtract(spawnPos).length() < 20){
+				this.blackboard.curTask = Task.EXPLORE;
+			}
+		}
+		
+		
+		
+		/*else if(blackboard.toolBoxSpotted == true){
 			blackboard.oldTask = blackboard.curTask;
 			blackboard.curTask = Task.ITEMCOLLECTING;
 			System.out.println("ITEMCOLLECTING STATE");
@@ -105,6 +114,7 @@ public class KillKI_new implements IPlayer {
 			blackboard.oldTask = null;
 			System.out.println("LEAVE ITEMCOLLECTING STATE");
 		}*/
+		
 	}
 	
 
@@ -246,7 +256,7 @@ public class KillKI_new implements IPlayer {
 					blackboard.hitsTaken = 0;
 				}
 			}
-			System.out.println("KISTE EINGESAMMELT");
+		//	System.out.println("KISTE EINGESAMMELT");
 			break;
 		case Flag:
 			flagCollected = true;
@@ -638,8 +648,8 @@ public class KillKI_new implements IPlayer {
 				isInvalidPath = true; // pfad soll neu berechnet werden
 
 				final MemorizedWorldObject hangar = (MemorizedWorldObject) obj;
-				System.out.println("Tank " + name + " was notified about "
-						+ type + " at Position " + hangar.getPosition());
+			//	System.out.println("Tank " + name + " was notified about "
+			//			+ type + " at Position " + hangar.getPosition());
 				if (blackboard.spottedHangar == hangar) {
 					final EColors color = hangar.getColor();
 					final Object[] hangars = objectStorage
@@ -777,11 +787,11 @@ public class KillKI_new implements IPlayer {
 	protected void iGotTheFlag() {
 		this.iHaveTheFlag = true;
 		this.blackboard.curTask = Task.CTF_RETURN_TO_BASE;
-		System.out.println("########################### I GOT THE FLAG!! " + name);
+		//System.out.println("########################### I GOT THE FLAG!! " + name);
 	}
 	
 	protected void deliverFlag() {
-		System.out.println(curPos);
+//		System.out.println(curPos);
 		if(null == path || path.isEmpty()) {
 			goToBase();
 		}
@@ -834,8 +844,9 @@ public class KillKI_new implements IPlayer {
 		} else if (this.blackboard.curTask == Task.LOOT_AND_BURN_HANGAR) {
 			lootAndBurnHangar();
 		} else if (this.blackboard.curTask == Task.ITEMCOLLECTING){
-			System.out.println("IN Itemcollecting state");
-			collectItem();
+		//	System.out.println("IN Itemcollecting state");
+			explore();
+			this.blackboard.curTask = Task.EXPLORE;
 		}
 
 		// wenn wir feststecken erstmal random bewegen, einen zug +
@@ -844,12 +855,12 @@ public class KillKI_new implements IPlayer {
 			if(this.blackboard.curTask == Task.CTF_GET_THE_FLAG) {
 				calcPathTo(map.getTileAtCoordinate(flagPos));
 			}
-			System.out.println(name + " steckt fest. Sein Ziel ist "
+		/*	System.out.println(name + " steckt fest. Sein Ziel ist "
 					+ moveTarget + "seine Aufgabe: " + blackboard.curTask
 					+ "und er befindet sich an Position "
 					+ map.getTileAtCoordinate(curPos)
 					+ " seine aktuellen Wegpunkte: " + path);
-
+*/
 			final int offset = rand.nextInt(45);
 			final int alpha = 90 + offset;
 			final Vector3f unstuckDirection = rotateVector(world

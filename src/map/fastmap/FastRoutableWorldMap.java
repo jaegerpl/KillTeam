@@ -62,7 +62,7 @@ public class FastRoutableWorldMap{
 	 */
 	private LinkedTile createUnexploredTileAtPosition(Point tilePosition) {
 		if(tilePosition.x > 60 || tilePosition.y > 60) {
-			System.out.println("Argh!");
+			//System.out.println("Argh!");
 		}
 		LinkedTile unexploredTile = new LinkedTile(tilePosition, false, true, new Vector3f(0,0,0), false);
 		addTile(unexploredTile);
